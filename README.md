@@ -51,6 +51,39 @@ The repository now includes a first-pass local-first scaffold for OpenClaw:
 - helper scripts in [scripts](/Users/sean/Repos/gcp-claw-lab/scripts)
 
 Current limitation:
-- the Docker image is only a scaffold right now
-- it does not yet install or launch OpenClaw
-- the next step is to wire in the actual OpenClaw runtime command and VM bootstrap for Docker
+- the container runtime is wired for `openclaw`, but the exact app-level onboarding and cloud secret injection flow still needs to be finalized
+
+## Local OpenClaw
+
+Native local development remains the preferred fast path.
+Use [openclaw.local.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.json5.example) as the basis for `~/.openclaw/openclaw.json`.
+
+Config ownership model:
+- repo templates in [config](/Users/sean/Repos/gcp-claw-lab/config) are the canonical source for managed behavior
+- the live local-native config in `~/.openclaw/openclaw.json` remains the active runtime file on your laptop
+- auth, tokens, wizard state, and other runtime-managed fields stay outside Git
+- use [check-openclaw-local-sync.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/check-openclaw-local-sync.mjs) to compare managed local-native fields against the repo template
+
+## Docker Workflow
+
+Local Docker parity check:
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+./scripts/onboard-local-container.sh
+./scripts/run-local.sh
+```
+
+Cloud VM container flow:
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+./scripts/onboard-cloud-container.sh
+./scripts/run-cloud.sh
+```
+
+Notes:
+- local Docker uses named volumes for `~/.openclaw` and `workspace/.openclaw`
+- cloud Docker persists runtime state under `/opt/openclaw/state`
+- both container flows mount the reviewed repository workspace read-only
+- container startup merges the repo config template into the persisted runtime config while preserving auth, wizard, meta, and gateway auth state

@@ -364,6 +364,12 @@ Do NOT:
 
 OpenClaw configuration should be split between version-controlled non-secret files and Secret Manager-backed runtime secrets.
 
+Configuration ownership model:
+- Repository config templates define the canonical managed behavior
+- The live local-native runtime is still driven from `~/.openclaw/openclaw.json`
+- Container runtimes keep persisted state in their runtime volume/path, not in Git
+- Runtime-managed fields such as onboarding metadata, auth state, and generated tokens are not the repository source of truth
+
 Version control in Git:
 - OpenClaw base configuration
 - Agent instruction files such as `AGENTS.md`
@@ -401,17 +407,19 @@ Recommended local gateway defaults:
 
 Recommended workflow:
 1. Update reviewed configuration in Git.
-2. Test the change locally against the repository workspace.
-3. Smoke test cloud-parity container behavior locally when needed.
-4. Deploy or sync configuration to the VM.
-5. Fetch required secrets from Secret Manager at startup.
-6. Render runtime configuration if templating is used.
-7. Start or restart the OpenClaw service.
+2. Keep the live local-native config in `~/.openclaw` aligned with the repository template for managed fields.
+3. Test the change locally against the repository workspace.
+4. Smoke test cloud-parity container behavior locally when needed.
+5. Deploy or sync configuration to the VM.
+6. Fetch required secrets from Secret Manager at startup.
+7. Render or merge runtime configuration if templating is used.
+8. Start or restart the OpenClaw service.
 
 Operational guidance:
 - Git is the source of truth for non-secret configuration
 - Secret Manager is the source of truth for secret material
 - The VM should hold only rendered runtime state
+- Runtime-managed config fields should persist locally or in container state, but should not replace the repo-managed template as the source of truth
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
 
