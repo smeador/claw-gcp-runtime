@@ -338,6 +338,8 @@ Local development:
 - Prefer a local OpenClaw runtime for the fastest iteration loop
 - Keep the active workspace in the repository
 - Test new skills locally before deploying them to the VM
+- Keep the local gateway bound to loopback only unless there is an explicit need for remote exposure
+- Do not enable Tailscale or tailnet exposure initially
 
 Cloud deployment:
 - Run OpenClaw in Docker on the VM
@@ -390,6 +392,12 @@ Recommended repository layout:
 - `/config/`
 - `/docker/`
 - `/scripts/`
+
+Recommended local gateway defaults:
+- Bind mode: `loopback`
+- Port: `18789`
+- Shared auth enabled if the gateway is ever exposed beyond loopback
+- No initial Tailscale or tailnet exposure
 
 Recommended workflow:
 1. Update reviewed configuration in Git.
