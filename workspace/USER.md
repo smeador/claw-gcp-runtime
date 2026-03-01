@@ -2,8 +2,8 @@
 
 _Learn about the person you're helping. Update this as you go._
 
-- **Name:** _(not shared yet)_
-- **What to call them:** _(ask next)_
+- **Name:** Sean
+- **What to call them:** Sean
 - **Pronouns:** _(optional)_
 - **Timezone:** America/Chicago
 - **Notes:** Well-rounded engineer with broad software experience. Kind and empathetic; deeply cares about people, family, and animals. Vegetarian.
