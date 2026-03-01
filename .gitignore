@@ -3,8 +3,16 @@
 *.tfstate
 *.tfstate.*
 *.tfvars
+*.env
+*.env.local
+*.log
 crash.log
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+scratch.md
+scratch.sh
+config/openclaw.local.json5
+config/openclaw.cloud.json5
+docker/compose.override.yml
