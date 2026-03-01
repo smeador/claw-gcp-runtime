@@ -1,0 +1,13 @@
+{
+  "name": "agent-lab-budget-shutdown",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@google-cloud/compute": "^5.1.0",
+    "@google-cloud/functions-framework": "^3.4.6"
+  }
+}
