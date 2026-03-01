@@ -1,0 +1,13 @@
+services:
+  openclaw:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: agent-lab-openclaw:cloud
+    working_dir: /workspace
+    volumes:
+      - ../workspace:/workspace:ro
+      - ../config:/config:ro
+    environment:
+      OPENCLAW_CONFIG: /config/openclaw.cloud.json5
+    restart: unless-stopped

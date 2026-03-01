@@ -1,0 +1,11 @@
+{
+  // Copy to openclaw.local.json5 and fill in local values as needed.
+  workspace: "/workspace",
+  profile: "agent-lab-local",
+  logLevel: "info",
+  skills: {
+    bundled: false,
+    user: false,
+    workspace: true
+  }
+}
