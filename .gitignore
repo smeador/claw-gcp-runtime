@@ -15,4 +15,6 @@ scratch.md
 scratch.sh
 config/openclaw.local.json5
 config/openclaw.cloud.json5
+config/openclaw.container.json5
 docker/compose.override.yml
+workspace/.openclaw/
