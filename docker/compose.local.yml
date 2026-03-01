@@ -1,14 +1,39 @@
 services:
-  openclaw:
+  openclaw-gateway:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     image: agent-lab-openclaw:local
-    working_dir: /workspace
+    environment:
+      OPENCLAW_WORKSPACE: /workspace
+      OPENCLAW_CONFIG_SEED: /config/openclaw.container.json5.example
     volumes:
       - ../workspace:/workspace:ro
       - ../config:/config:ro
+      - openclaw_home_local:/home/node/.openclaw
+      - openclaw_workspace_state_local:/workspace/.openclaw
+    ports:
+      - "127.0.0.1:18789:18789"
+    command: ["gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"]
+    restart: unless-stopped
+
+  openclaw-cli:
+    image: agent-lab-openclaw:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     environment:
-      OPENCLAW_CONFIG: /config/openclaw.local.json5
-    stdin_open: true
-    tty: true
+      OPENCLAW_WORKSPACE: /workspace
+      OPENCLAW_CONFIG_SEED: /config/openclaw.container.json5.example
+    volumes:
+      - ../workspace:/workspace:ro
+      - ../config:/config:ro
+      - openclaw_home_local:/home/node/.openclaw
+      - openclaw_workspace_state_local:/workspace/.openclaw
+    entrypoint: ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
+    command: ["status"]
+    profiles: ["cli"]
+
+volumes:
+  openclaw_home_local:
+  openclaw_workspace_state_local:

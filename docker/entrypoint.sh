@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+
+HOME_DIR="${HOME:-/home/node}"
+STATE_DIR="${HOME_DIR}/.openclaw"
+WORKSPACE_DIR="${OPENCLAW_WORKSPACE:-/workspace}"
+CONFIG_PATH="${STATE_DIR}/openclaw.json"
+CONFIG_SEED="${OPENCLAW_CONFIG_SEED:-}"
+
+mkdir -p "${STATE_DIR}" "${WORKSPACE_DIR}/.openclaw"
+
+if [ -n "${CONFIG_SEED}" ] && [ -f "${CONFIG_SEED}" ]; then
+  if [ -f "${CONFIG_PATH}" ]; then
+    tmp="$(mktemp)"
+    jq -s '
+      . as [$existing, $template]
+      | $template
+      | .auth = ($existing.auth // .auth)
+      | .wizard = ($existing.wizard // .wizard)
+      | .meta = ($existing.meta // .meta)
+      | .gateway = (($template.gateway // {}) + {auth: (($existing.gateway // {}).auth // (($template.gateway // {}).auth // {}))})
+    ' "${CONFIG_PATH}" "${CONFIG_SEED}" > "${tmp}"
+    mv "${tmp}" "${CONFIG_PATH}"
+  else
+    cp "${CONFIG_SEED}" "${CONFIG_PATH}"
+  fi
+fi
+
+if [ "$#" -eq 0 ]; then
+  set -- gateway --bind lan --port 18789
+fi
+
+exec openclaw "$@"
