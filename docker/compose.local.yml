@@ -1,0 +1,14 @@
+services:
+  openclaw:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: agent-lab-openclaw:local
+    working_dir: /workspace
+    volumes:
+      - ../workspace:/workspace:ro
+      - ../config:/config:ro
+    environment:
+      OPENCLAW_CONFIG: /config/openclaw.local.json5
+    stdin_open: true
+    tty: true
