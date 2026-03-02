@@ -69,6 +69,7 @@ Local Docker secret source:
 - this file is ignored by Git
 - `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
+- local Docker publishes the gateway on `127.0.0.1:18790` so it does not collide with a native local gateway on `127.0.0.1:18789`
 
 ## Docker Workflow
 

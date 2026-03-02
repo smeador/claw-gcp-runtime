@@ -23,6 +23,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    network_mode: "service:openclaw-gateway"
+    depends_on:
+      openclaw-gateway:
+        condition: service_started
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json

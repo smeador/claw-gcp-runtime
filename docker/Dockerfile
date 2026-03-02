@@ -19,7 +19,6 @@ RUN chmod +x /usr/local/bin/agent-lab-openclaw-entrypoint \
   && mkdir -p /workspace /home/node/.openclaw \
   && chown -R node:node /workspace /home/node
 
-USER node
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]

@@ -10,6 +10,10 @@ CONFIG_SOURCE="${OPENCLAW_CONFIG_SOURCE:-}"
 
 mkdir -p "${STATE_DIR}" "${WORKSPACE_DIR}/.openclaw"
 
+if [ "$(id -u)" -eq 0 ]; then
+  chown -R node:node "${STATE_DIR}" "${WORKSPACE_DIR}/.openclaw"
+fi
+
 if [ -n "${CONFIG_SOURCE}" ] && [ -f "${CONFIG_SOURCE}" ]; then
   if [ -f "${CONFIG_PATH}" ]; then
     tmp="$(mktemp)"
@@ -42,6 +46,11 @@ fi
 
 if [ "$#" -eq 0 ]; then
   set -- gateway --bind lan --port 18789
+fi
+
+if [ "$(id -u)" -eq 0 ]; then
+  chown -R node:node "${STATE_DIR}" "${WORKSPACE_DIR}/.openclaw"
+  exec setpriv --reuid "$(id -u node)" --regid "$(id -g node)" --init-groups openclaw "$@"
 fi
 
 exec openclaw "$@"
