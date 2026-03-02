@@ -378,6 +378,8 @@ Secret ownership model:
 - The payload contract should be documented in the repository and treated as a security-sensitive interface
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
+- `gateway.auth` should be treated as a rendered config secret
+- Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
 
 Version control in Git:
 - OpenClaw base configuration
@@ -403,6 +405,12 @@ Recommended runtime layout on the VM:
 - `/opt/openclaw/state/home/`
 - `/opt/openclaw/state/runtime/`
 - `/opt/openclaw/state/workspace/`
+
+Filesystem requirements for persisted runtime state:
+- State paths must be owned by the dedicated `openclaw` user
+- State paths should not be world-readable
+- `/opt/openclaw/state/home/` should be treated as sensitive because it may contain live provider auth state
+- `/opt/openclaw/state/runtime/` should be treated as sensitive because it contains rendered runtime config with secrets
 
 Recommended repository layout:
 - `/opentofu/`
@@ -438,6 +446,7 @@ Operational guidance:
 - OpenClaw config secrets should be rendered to a private runtime file and mounted read-only into the container
 - Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
+- Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
 

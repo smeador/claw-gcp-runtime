@@ -17,3 +17,7 @@ install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state/home"
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state/runtime"
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state/workspace"
+
+# Persisted OpenClaw runtime state may contain live provider auth and should
+# remain accessible only to the dedicated runtime user.
+chmod 0750 "${OPENCLAW_ROOT}/state" "${OPENCLAW_ROOT}/state/home" "${OPENCLAW_ROOT}/state/runtime" "${OPENCLAW_ROOT}/state/workspace"

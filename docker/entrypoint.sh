@@ -16,8 +16,8 @@ if [ -n "${CONFIG_SOURCE}" ] && [ -f "${CONFIG_SOURCE}" ]; then
     jq -s '
       . as [$existing, $source]
       | $source
-      | .wizard = ($existing.wizard // .wizard)
-      | .meta = ($existing.meta // .meta)
+      | if ($existing.wizard | type) == "object" then .wizard = $existing.wizard else . end
+      | if ($existing.meta | type) == "object" then .meta = $existing.meta else . end
     ' "${CONFIG_PATH}" "${CONFIG_SOURCE}" > "${tmp}"
     mv "${tmp}" "${CONFIG_PATH}"
   else
