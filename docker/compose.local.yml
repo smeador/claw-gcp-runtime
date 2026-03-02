@@ -15,7 +15,7 @@ services:
       - openclaw_workspace_state_local:/workspace/.openclaw
     ports:
       - "127.0.0.1:18789:18789"
-    command: ["gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"]
+    command: ["gateway"]
     restart: unless-stopped
 
   openclaw-cli:

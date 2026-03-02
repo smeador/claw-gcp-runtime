@@ -67,7 +67,7 @@ Config ownership model:
 Local Docker secret source:
 - create `config/secrets.local.json` from [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
 - this file is ignored by Git
-- `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.container.json`
+- `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
 
 ## Docker Workflow
@@ -94,6 +94,10 @@ Notes:
 - cloud Docker persists runtime state under `/opt/openclaw/state`
 - both container flows mount the reviewed repository workspace read-only
 - container startup treats the rendered config as authoritative for managed fields and preserves runtime metadata in persisted state
+- rendered config is the right place for `gateway.auth` and other config-bound secrets
+- provider auth is established inside each environment and persists in runtime state under `~/.openclaw` or `/opt/openclaw/state/home`
+- redeploying a container preserves provider auth only if the persistent state path or volume is preserved
+- persisted runtime state should be treated as sensitive because it may contain live provider credentials
 
 Cloud secret payload shape:
 - the GCP secret should contain a JSON object shaped like [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
