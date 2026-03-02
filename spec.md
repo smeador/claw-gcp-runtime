@@ -432,6 +432,7 @@ Recommended local Docker parity defaults:
 - Host-published Docker-local gateway: `127.0.0.1:18790`
 - Allowed Control UI origins: `http://127.0.0.1:18790` and `http://localhost:18790`
 - Docker-local gateway state is separate from native local gateway state and should be treated as a distinct environment for provider auth and device pairing
+- A repo-local Docker bootstrap step should render config, build images, seed state directories, and fix ownership before onboarding or runtime start
 
 Container runtime constraints:
 - OpenClaw should not attempt to install or manage host daemons from inside the application container
@@ -445,6 +446,7 @@ Container onboarding guidance:
 - Use `onboard` only for fresh environment initialization or intentional reset tests
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
+- Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
 
 Scheduling guidance:
 - OpenClaw recurring jobs may run inside the long-lived gateway process if the gateway scheduler/cron features are enabled
