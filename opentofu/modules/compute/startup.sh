@@ -15,4 +15,5 @@ install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/logs"
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state"
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state/home"
+install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state/runtime"
 install -d -o "${OPENCLAW_USER}" -g "${OPENCLAW_USER}" -m 0750 "${OPENCLAW_ROOT}/state/workspace"

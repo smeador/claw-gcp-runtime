@@ -6,10 +6,11 @@ services:
     image: agent-lab-openclaw:local
     environment:
       OPENCLAW_WORKSPACE: /workspace
-      OPENCLAW_CONFIG_SEED: /config/openclaw.container.json5.example
+      OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
     volumes:
       - ../workspace:/workspace:ro
       - ../config:/config:ro
+      - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
     ports:
@@ -24,10 +25,11 @@ services:
       dockerfile: docker/Dockerfile
     environment:
       OPENCLAW_WORKSPACE: /workspace
-      OPENCLAW_CONFIG_SEED: /config/openclaw.container.json5.example
+      OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
     volumes:
       - ../workspace:/workspace:ro
       - ../config:/config:ro
+      - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
     entrypoint: ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
