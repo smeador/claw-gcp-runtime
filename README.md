@@ -70,6 +70,7 @@ Local Docker secret source:
 - `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
 - local Docker publishes the gateway on `127.0.0.1:18790` so it does not collide with a native local gateway on `127.0.0.1:18789`
+- `./scripts/prepare-local-docker.sh` performs the upstream-style Docker bootstrap pass: render config, build images, seed state directories, and fix ownership before onboarding or runtime
 
 ## Docker Workflow
 
@@ -78,8 +79,17 @@ Local Docker parity check:
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
 cp config/secrets.local.json.example config/secrets.local.json
+./scripts/prepare-local-docker.sh
 ./scripts/onboard-local-container.sh
 ./scripts/run-local.sh
+./scripts/print-local-docker-access.sh
+```
+
+To reset Docker-local OpenClaw to a fresh state without touching native local OpenClaw:
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+./scripts/reset-local-docker.sh
 ```
 
 Cloud VM container flow:
@@ -92,6 +102,7 @@ cd /Users/sean/Repos/gcp-claw-lab
 
 Notes:
 - local Docker uses named volumes for `~/.openclaw` and `workspace/.openclaw`
+- local Docker bootstrap is intentionally modeled on upstream `docker-setup.sh`, but preserves this repo's rendered-config and shared-workspace approach
 - cloud Docker persists runtime state under `/opt/openclaw/state`
 - both container flows mount the reviewed repository workspace read-only
 - container startup treats the rendered config as authoritative for managed fields and preserves runtime metadata in persisted state

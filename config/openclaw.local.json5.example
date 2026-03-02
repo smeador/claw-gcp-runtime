@@ -2,7 +2,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openai-codex/gpt-5.3-codex"
+        "primary": "openai/gpt-5.2"
       },
       "workspace": "/Users/sean/Repos/gcp-claw-lab/workspace",
       "compaction": {
