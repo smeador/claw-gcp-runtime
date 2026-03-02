@@ -369,6 +369,15 @@ Configuration ownership model:
 - The live local-native runtime is still driven from `~/.openclaw/openclaw.json`
 - Container runtimes keep persisted state in their runtime volume/path, not in Git
 - Runtime-managed fields such as onboarding metadata, auth state, and generated tokens are not the repository source of truth
+- Container runtimes should consume an authoritative rendered config file derived from the repo template plus environment-specific secrets
+
+Secret ownership model:
+- A single JSON secret payload is used for OpenClaw runtime config secrets
+- That payload currently contains `auth` and `gateway.auth`
+- The payload is merged into the environment-specific OpenClaw template at render time
+- The payload contract should be documented in the repository and treated as a security-sensitive interface
+- Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
+- Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 
 Version control in Git:
 - OpenClaw base configuration
@@ -384,12 +393,16 @@ Do not store in Git:
 - Secret payloads
 - Live `.env` files
 - Logs, caches, or session artifacts
+- Rendered runtime config containing secrets
 
 Recommended runtime layout on the VM:
 - `/opt/openclaw/config/`
 - `/opt/openclaw/agents/`
 - `/opt/openclaw/scripts/`
 - `/opt/openclaw/logs/`
+- `/opt/openclaw/state/home/`
+- `/opt/openclaw/state/runtime/`
+- `/opt/openclaw/state/workspace/`
 
 Recommended repository layout:
 - `/opentofu/`
@@ -410,16 +423,21 @@ Recommended workflow:
 2. Keep the live local-native config in `~/.openclaw` aligned with the repository template for managed fields.
 3. Test the change locally against the repository workspace.
 4. Smoke test cloud-parity container behavior locally when needed.
-5. Deploy or sync configuration to the VM.
-6. Fetch required secrets from Secret Manager at startup.
-7. Render or merge runtime configuration if templating is used.
-8. Start or restart the OpenClaw service.
+5. Render local or cloud runtime config from the repo template plus the appropriate secret source.
+6. For local Docker, use a Git-ignored local secret file with the same payload shape as cloud.
+7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup.
+8. Deploy or sync configuration to the VM.
+9. Start or restart the OpenClaw service.
 
 Operational guidance:
 - Git is the source of truth for non-secret configuration
 - Secret Manager is the source of truth for secret material
 - The VM should hold only rendered runtime state
 - Runtime-managed config fields should persist locally or in container state, but should not replace the repo-managed template as the source of truth
+- Local Docker should use a Git-ignored local secret file for parity testing rather than storing important credentials only in container state
+- OpenClaw config secrets should be rendered to a private runtime file and mounted read-only into the container
+- Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
+- Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
 

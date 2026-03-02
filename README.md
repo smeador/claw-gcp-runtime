@@ -51,7 +51,7 @@ The repository now includes a first-pass local-first scaffold for OpenClaw:
 - helper scripts in [scripts](/Users/sean/Repos/gcp-claw-lab/scripts)
 
 Current limitation:
-- the container runtime is wired for `openclaw`, but the exact app-level onboarding and cloud secret injection flow still needs to be finalized
+- the container runtime is wired for `openclaw`, but the exact provider-specific cloud auth payload still needs to be finalized
 
 ## Local OpenClaw
 
@@ -64,12 +64,19 @@ Config ownership model:
 - auth, tokens, wizard state, and other runtime-managed fields stay outside Git
 - use [check-openclaw-local-sync.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/check-openclaw-local-sync.mjs) to compare managed local-native fields against the repo template
 
+Local Docker secret source:
+- create `config/secrets.local.json` from [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
+- this file is ignored by Git
+- `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.container.json`
+- the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
+
 ## Docker Workflow
 
 Local Docker parity check:
 
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
+cp config/secrets.local.json.example config/secrets.local.json
 ./scripts/onboard-local-container.sh
 ./scripts/run-local.sh
 ```
@@ -78,12 +85,17 @@ Cloud VM container flow:
 
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
-./scripts/onboard-cloud-container.sh
-./scripts/run-cloud.sh
+./scripts/onboard-cloud-container.sh OPENCLAW_CONFIG_SECRET_NAME
+./scripts/run-cloud.sh OPENCLAW_CONFIG_SECRET_NAME
 ```
 
 Notes:
 - local Docker uses named volumes for `~/.openclaw` and `workspace/.openclaw`
 - cloud Docker persists runtime state under `/opt/openclaw/state`
 - both container flows mount the reviewed repository workspace read-only
-- container startup merges the repo config template into the persisted runtime config while preserving auth, wizard, meta, and gateway auth state
+- container startup treats the rendered config as authoritative for managed fields and preserves runtime metadata in persisted state
+
+Cloud secret payload shape:
+- the GCP secret should contain a JSON object shaped like [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
+- the payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
+- that JSON is merged into [openclaw.cloud.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.cloud.json5.example) to produce `/opt/openclaw/state/runtime/openclaw.json`
