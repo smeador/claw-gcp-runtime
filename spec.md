@@ -411,6 +411,7 @@ Filesystem requirements for persisted runtime state:
 - State paths should not be world-readable
 - `/opt/openclaw/state/home/` should be treated as sensitive because it may contain live provider auth state
 - `/opt/openclaw/state/runtime/` should be treated as sensitive because it contains rendered runtime config with secrets
+- OpenClaw agent/session subpaths created under persisted state must also remain owned by the runtime user so lockfiles and session metadata can be written during chat, onboarding, and device approval flows
 
 Recommended repository layout:
 - `/opentofu/`
@@ -425,6 +426,31 @@ Recommended local gateway defaults:
 - Port: `18789`
 - Shared auth enabled if the gateway is ever exposed beyond loopback
 - No initial Tailscale or tailnet exposure
+
+Recommended local Docker parity defaults:
+- Internal gateway port: `18789`
+- Host-published Docker-local gateway: `127.0.0.1:18790`
+- Allowed Control UI origins: `http://127.0.0.1:18790` and `http://localhost:18790`
+- Docker-local gateway state is separate from native local gateway state and should be treated as a distinct environment for provider auth and device pairing
+
+Container runtime constraints:
+- OpenClaw should not attempt to install or manage host daemons from inside the application container
+- `systemd`, `launchd`, and similar host init integrations are not expected to be available inside Docker-local or Docker-cloud runtime containers
+- Docker restart policy or host-level service management should be used for container lifecycle, not OpenClaw daemon installation inside the container
+- Hook or service flows that assume host init availability should be skipped or handled outside the application container
+
+Container onboarding guidance:
+- Do not rerun full `onboard` for routine auth refresh in an already-initialized container environment
+- Prefer `configure` for targeted container-local auth or model/provider setup changes
+- Use `onboard` only for fresh environment initialization or intentional reset tests
+- Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
+- Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
+
+Scheduling guidance:
+- OpenClaw recurring jobs may run inside the long-lived gateway process if the gateway scheduler/cron features are enabled
+- Containerized scheduling does not require `systemd` inside the application container
+- Host-level schedulers such as `systemd` timers or cron may still be used outside the container for infrastructure lifecycle tasks
+- The preferred model is Docker managing the service lifecycle and OpenClaw managing agent-native recurring work
 
 Recommended workflow:
 1. Update reviewed configuration in Git.
@@ -447,6 +473,7 @@ Operational guidance:
 - Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
+- Treat paired-device state as environment-local sensitive runtime state that survives normal redeploys when the state path is preserved
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
 

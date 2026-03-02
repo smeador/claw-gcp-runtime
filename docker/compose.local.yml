@@ -14,7 +14,7 @@ services:
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
     ports:
-      - "127.0.0.1:18789:18789"
+      - "127.0.0.1:18790:18789"
     command: ["gateway"]
     restart: unless-stopped
 
@@ -23,6 +23,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    network_mode: "service:openclaw-gateway"
+    depends_on:
+      openclaw-gateway:
+        condition: service_started
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
