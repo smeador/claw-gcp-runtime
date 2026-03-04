@@ -376,6 +376,7 @@ Secret ownership model:
 - That payload currently contains `auth` and `gateway.auth`
 - The payload is merged into the environment-specific OpenClaw template at render time
 - The payload contract should be documented in the repository and treated as a security-sensitive interface
+- Local and cloud environments should use separate secret payload files even when they share the same schema
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
@@ -398,6 +399,7 @@ Do not store in Git:
 - Rendered runtime config containing secrets
 
 Recommended runtime layout on the VM:
+- `/opt/openclaw/app/`
 - `/opt/openclaw/config/`
 - `/opt/openclaw/agents/`
 - `/opt/openclaw/scripts/`
@@ -405,12 +407,14 @@ Recommended runtime layout on the VM:
 - `/opt/openclaw/state/home/`
 - `/opt/openclaw/state/runtime/`
 - `/opt/openclaw/state/workspace/`
+- `/opt/openclaw/state/memory/`
 
 Filesystem requirements for persisted runtime state:
 - State paths must be owned by the dedicated `openclaw` user
 - State paths should not be world-readable
 - `/opt/openclaw/state/home/` should be treated as sensitive because it may contain live provider auth state
 - `/opt/openclaw/state/runtime/` should be treated as sensitive because it contains rendered runtime config with secrets
+- `/opt/openclaw/state/memory/` should be treated as sensitive because it contains persisted learned context
 - OpenClaw agent/session subpaths created under persisted state must also remain owned by the runtime user so lockfiles and session metadata can be written during chat, onboarding, and device approval flows
 
 Recommended repository layout:
@@ -432,7 +436,10 @@ Recommended local Docker parity defaults:
 - Host-published Docker-local gateway: `127.0.0.1:18790`
 - Allowed Control UI origins: `http://127.0.0.1:18790` and `http://localhost:18790`
 - Docker-local gateway state is separate from native local gateway state and should be treated as a distinct environment for provider auth and device pairing
-- A repo-local Docker bootstrap step should render config, build images, seed state directories, and fix ownership before onboarding or runtime start
+- A repo-local Docker bootstrap step should render config, build images, seed state directories, and fix ownership before runtime start
+- Hardened runtime containers should keep `/workspace`, `/config`, and `/runtime` read-only and use dedicated writable state mounts instead
+- Required writable Docker-local state paths are `/home/node/.openclaw`, `/workspace/.openclaw`, and `/workspace/memory`
+- A separate root-owned dev container may share the same state volumes for manual editing/debugging without loosening the runtime gateway container
 
 Container runtime constraints:
 - OpenClaw should not attempt to install or manage host daemons from inside the application container
@@ -440,11 +447,13 @@ Container runtime constraints:
 - Docker restart policy or host-level service management should be used for container lifecycle, not OpenClaw daemon installation inside the container
 - Hook or service flows that assume host init availability should be skipped or handled outside the application container
 
-Container onboarding guidance:
-- Do not rerun full `onboard` for routine auth refresh in an already-initialized container environment
-- Prefer `configure` for targeted container-local auth or model/provider setup changes
-- Use `onboard` only for fresh environment initialization or intentional reset tests
+Container operations guidance:
+- Treat runtime onboarding as a bootstrap/recovery path, not a routine operational workflow
+- Routine provider changes should use targeted model auth commands such as `openclaw models auth login --provider openai` or `openclaw models auth paste-token --provider openai`
+- Routine gateway token rotation should happen by updating the environment-specific secret payload and restarting or redeploying the gateway
+- Routine skills and hooks changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
+- Routine container administration should prefer shelling into the running `openclaw-gateway` container and running OpenClaw commands there, rather than relying on long one-off `docker compose ... run` invocations
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
 - Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
 
@@ -453,6 +462,13 @@ Scheduling guidance:
 - Containerized scheduling does not require `systemd` inside the application container
 - Host-level schedulers such as `systemd` timers or cron may still be used outside the container for infrastructure lifecycle tasks
 - The preferred model is Docker managing the service lifecycle and OpenClaw managing agent-native recurring work
+
+Cloud deployment guidance:
+- The VM should keep a synced application bundle under `/opt/openclaw/app`
+- Docker should be installed on the VM host and managed by the host OS, not by OpenClaw inside the application container
+- The cloud runtime secret should live in Secret Manager as a single JSON payload and be rendered on the VM host into `/opt/openclaw/state/runtime/openclaw.json`
+- The VM service account should receive secret-level access only to the OpenClaw runtime secret
+- Cloud container deploys should update repo-managed workspace/config files while preserving `/opt/openclaw/state/{home,workspace,memory}`
 
 Recommended workflow:
 1. Update reviewed configuration in Git.
@@ -476,6 +492,7 @@ Operational guidance:
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
 - Treat paired-device state as environment-local sensitive runtime state that survives normal redeploys when the state path is preserved
+- Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy or skill rewrites
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
 
@@ -526,6 +543,7 @@ Future enhancements:
 - Add skill auditing pipeline
 - Add monitoring dashboard
 - Add log-based alerts
+- Improve local developer experience with a clearer steady-state playbook and fewer commands for provider registration, token rotation, and device pairing
 
 ---
 
@@ -564,6 +582,8 @@ Phase 2:
 - Add monitoring dashboards
 - Add structured log export
 - Introduce secret rotation schedule
+- Smooth the cloud operator flow further so first deploy, secret push, and app sync require fewer manual steps
 
 Phase 3:
 - Explore autonomous coding workflows
+- Refine local and cloud operator tooling so provider registration, token rotation, skill updates, and device pairing are less clunky

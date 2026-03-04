@@ -70,7 +70,12 @@ Local Docker secret source:
 - `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
 - local Docker publishes the gateway on `127.0.0.1:18790` so it does not collide with a native local gateway on `127.0.0.1:18789`
-- `./scripts/prepare-local-docker.sh` performs the upstream-style Docker bootstrap pass: render config, build images, seed state directories, and fix ownership before onboarding or runtime
+- `./scripts/prepare-local-docker.sh` performs the upstream-style Docker bootstrap pass: render config, build images, seed state directories, and fix ownership before runtime
+
+Cloud secret source:
+- create `config/secrets.cloud.json` from [secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
+- this file is ignored by Git
+- keep cloud gateway tokens and any cloud-specific secret values separate from local Docker
 
 ## Docker Workflow
 
@@ -80,7 +85,6 @@ Local Docker parity check:
 cd /Users/sean/Repos/gcp-claw-lab
 cp config/secrets.local.json.example config/secrets.local.json
 ./scripts/prepare-local-docker.sh
-./scripts/onboard-local-container.sh
 ./scripts/run-local.sh
 ./scripts/print-local-docker-access.sh
 ```
@@ -96,22 +100,82 @@ Cloud VM container flow:
 
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
-./scripts/onboard-cloud-container.sh OPENCLAW_CONFIG_SECRET_NAME
+cp config/secrets.cloud.json.example config/secrets.cloud.json
+./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
+./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
+./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
 ./scripts/run-cloud.sh OPENCLAW_CONFIG_SECRET_NAME
 ```
 
+Steady-state operator actions:
+
+- Shell into Docker-local for routine operations:
+  ```bash
+  cd /Users/sean/Repos/gcp-claw-lab
+  docker compose -f docker/compose.local.yml exec openclaw-gateway bash
+  ```
+- Then run inside the Docker-local container:
+  ```bash
+  openclaw devices list
+  openclaw devices approve
+  openclaw models auth login --provider openai
+  # or
+  openclaw models auth paste-token --provider openai
+  ```
+- Shell into cloud for routine operations:
+  ```bash
+  gcloud compute ssh claw-runtime-vm --project claw-runtime-example --zone us-central1-a --tunnel-through-iap
+  cd /opt/openclaw/app
+  sudo docker-compose -f docker/compose.cloud.yml exec openclaw-gateway bash
+  ```
+- Then run inside the cloud container:
+  ```bash
+  openclaw devices list
+  openclaw devices approve
+  openclaw models auth login --provider openai
+  # or
+  openclaw models auth paste-token --provider openai
+  ```
+- Rotate the Docker-local gateway token:
+  1. edit `config/secrets.local.json`
+  2. run `./scripts/prepare-local-docker.sh`
+  3. run `docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway`
+- Rotate the cloud gateway token:
+  1. edit `config/secrets.cloud.json`
+  2. run `./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID`
+  3. run `./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME`
+- Add or update skills:
+  1. edit files under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
+  2. test locally
+  3. rerun `./scripts/prepare-local-docker.sh` and restart Docker-local, or redeploy cloud
+- Add or update hooks:
+  1. edit the relevant repo-managed config template under [config](/Users/sean/Repos/gcp-claw-lab/config)
+  2. rerender/restart locally with `./scripts/prepare-local-docker.sh`
+  3. push/redeploy for cloud with `./scripts/push-cloud-runtime-secret.sh` and `./scripts/deploy-cloud.sh`
+
 Notes:
-- local Docker uses named volumes for `~/.openclaw` and `workspace/.openclaw`
+- local Docker uses named volumes for `~/.openclaw`, `workspace/.openclaw`, and `workspace/memory`
 - local Docker bootstrap is intentionally modeled on upstream `docker-setup.sh`, but preserves this repo's rendered-config and shared-workspace approach
 - cloud Docker persists runtime state under `/opt/openclaw/state`
-- both container flows mount the reviewed repository workspace read-only
+- the runtime gateway mounts the reviewed repository workspace read-only and only writable state paths remain mutable
+- the writable runtime paths are `/home/node/.openclaw`, `/workspace/.openclaw`, and `/workspace/memory`
+- the optional `openclaw-dev` container is a separate root-owned dev shell for VS Code and experiments; it shares the same runtime volumes but does not run a second gateway
 - container startup treats the rendered config as authoritative for managed fields and preserves runtime metadata in persisted state
 - rendered config is the right place for `gateway.auth` and other config-bound secrets
 - provider auth is established inside each environment and persists in runtime state under `~/.openclaw` or `/opt/openclaw/state/home`
 - redeploying a container preserves provider auth only if the persistent state path or volume is preserved
 - persisted runtime state should be treated as sensitive because it may contain live provider credentials
+- steady-state operations should use targeted commands such as `openclaw models auth ...` and `openclaw devices ...`; avoid `onboard`/`configure` for routine container administration
+- for routine container administration, shell into `openclaw-gateway` and run OpenClaw commands there rather than relying on long one-off `docker compose ... run` commands
+
+Cloud operator notes:
+- OpenTofu creates the Secret Manager secret container and grants the VM service account secret accessor on that secret
+- Push a secret version with [push-cloud-runtime-secret.sh](/Users/sean/Repos/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh) before first cloud runtime start
+- Sync the app bundle to `/opt/openclaw/app` on the VM with [sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
+- [deploy-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/deploy-cloud.sh) installs Docker on the VM if needed, renders the cloud runtime config on the host, and starts the gateway container
+- Cloud runtime state persists under `/opt/openclaw/state/{home,runtime,workspace,memory}`
 
 Cloud secret payload shape:
-- the GCP secret should contain a JSON object shaped like [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
+- the GCP secret should contain a JSON object shaped like [secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
 - the payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
 - that JSON is merged into [openclaw.cloud.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.cloud.json5.example) to produce `/opt/openclaw/state/runtime/openclaw.json`

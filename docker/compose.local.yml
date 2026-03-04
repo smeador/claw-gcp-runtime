@@ -13,6 +13,7 @@ services:
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
+      - openclaw_memory_local:/workspace/memory
     ports:
       - "127.0.0.1:18790:18789"
     command: ["gateway"]
@@ -36,10 +37,36 @@ services:
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
+      - openclaw_memory_local:/workspace/memory
     entrypoint: ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
     command: ["status"]
     profiles: ["cli"]
 
+  openclaw-dev:
+    image: agent-lab-openclaw:local
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    user: root
+    network_mode: "service:openclaw-gateway"
+    depends_on:
+      openclaw-gateway:
+        condition: service_started
+    environment:
+      OPENCLAW_WORKSPACE: /workspace
+      OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+    volumes:
+      - ..:/repo
+      - ../workspace:/workspace
+      - ../config:/config
+      - ../config/rendered:/runtime
+      - openclaw_home_local:/home/node/.openclaw
+      - openclaw_workspace_state_local:/workspace/.openclaw
+      - openclaw_memory_local:/workspace/memory
+    entrypoint: ["/bin/bash", "-lc"]
+    command: ["sleep infinity"]
+
 volumes:
   openclaw_home_local:
   openclaw_workspace_state_local:
+  openclaw_memory_local:
