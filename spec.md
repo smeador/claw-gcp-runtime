@@ -454,6 +454,7 @@ Container operations guidance:
 - Routine skills and hooks changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
 - Routine container administration should prefer shelling into the running `openclaw-gateway` container and running OpenClaw commands there, rather than relying on long one-off `docker compose ... run` invocations
+- `boot-md` should be explicitly disabled in repo-managed templates unless there is a reviewed startup-automation need for it
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
 - Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
 

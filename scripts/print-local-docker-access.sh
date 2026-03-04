@@ -27,7 +27,7 @@ Notes:
 - Approve device pairing against Docker-local runtime state, not host-native OpenClaw
 
 Shell into the Docker-local gateway container:
-  docker compose -f docker/compose.local.yml exec openclaw-gateway bash
+  bash ./scripts/shell-local-gateway.sh
 
 Then run these commands inside the container:
 - Device pairing:

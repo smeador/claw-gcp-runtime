@@ -112,7 +112,7 @@ Steady-state operator actions:
 - Shell into Docker-local for routine operations:
   ```bash
   cd /Users/sean/Repos/gcp-claw-lab
-  docker compose -f docker/compose.local.yml exec openclaw-gateway bash
+  bash ./scripts/shell-local-gateway.sh
   ```
 - Then run inside the Docker-local container:
   ```bash
@@ -124,9 +124,8 @@ Steady-state operator actions:
   ```
 - Shell into cloud for routine operations:
   ```bash
-  gcloud compute ssh claw-runtime-vm --project claw-runtime-example --zone us-central1-a --tunnel-through-iap
-  cd /opt/openclaw/app
-  sudo docker-compose -f docker/compose.cloud.yml exec openclaw-gateway bash
+  cd /Users/sean/Repos/gcp-claw-lab
+  bash ./scripts/shell-cloud-gateway.sh claw-runtime-vm claw-runtime-example us-central1-a
   ```
 - Then run inside the cloud container:
   ```bash
@@ -167,6 +166,7 @@ Notes:
 - persisted runtime state should be treated as sensitive because it may contain live provider credentials
 - steady-state operations should use targeted commands such as `openclaw models auth ...` and `openclaw devices ...`; avoid `onboard`/`configure` for routine container administration
 - for routine container administration, shell into `openclaw-gateway` and run OpenClaw commands there rather than relying on long one-off `docker compose ... run` commands
+- `boot-md` is explicitly disabled in the repo-managed templates; the allowed bundled internal hooks are `bootstrap-extra-files`, `command-logger`, and `session-memory`
 
 Cloud operator notes:
 - OpenTofu creates the Secret Manager secret container and grants the VM service account secret accessor on that secret
