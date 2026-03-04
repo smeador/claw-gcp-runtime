@@ -30,6 +30,9 @@
     "internal": {
       "enabled": true,
       "entries": {
+        "boot-md": {
+          "enabled": false
+        },
         "bootstrap-extra-files": {
           "enabled": true
         },
