@@ -14,6 +14,7 @@ docker compose -f docker/compose.local.yml run --rm --no-deps --user root --entr
     /home/node/.openclaw/identity \
     /home/node/.openclaw/agents/main/agent \
     /home/node/.openclaw/agents/main/sessions \
-    /workspace/.openclaw
-  chown -R node:node /home/node/.openclaw /workspace/.openclaw
+    /workspace/.openclaw \
+    /workspace/memory
+  chown -R node:node /home/node/.openclaw /workspace/.openclaw /workspace/memory
 '

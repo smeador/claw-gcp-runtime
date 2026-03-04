@@ -1,0 +1,23 @@
+{
+  "name": "agent-lab-openclaw-dev",
+  "dockerComposeFile": [
+    "../docker/compose.local.yml"
+  ],
+  "service": "openclaw-dev",
+  "runServices": [
+    "openclaw-gateway",
+    "openclaw-dev"
+  ],
+  "workspaceFolder": "/repo",
+  "remoteUser": "root",
+  "containerUser": "root",
+  "shutdownAction": "none",
+  "overrideCommand": false,
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

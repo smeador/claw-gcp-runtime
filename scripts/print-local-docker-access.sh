@@ -26,15 +26,29 @@ Notes:
 - Docker-local OpenClaw uses http://127.0.0.1:18790
 - Approve device pairing against Docker-local runtime state, not host-native OpenClaw
 
-Device pairing commands:
-- List pending/paired devices:
-  docker compose -f docker/compose.local.yml run --rm openclaw-cli devices list
-- Approve a pending device:
-  docker compose -f docker/compose.local.yml run --rm openclaw-cli devices approve
+Shell into the Docker-local gateway container:
+  docker compose -f docker/compose.local.yml exec openclaw-gateway bash
 
-Auth/config commands:
-- Targeted auth or provider setup refresh:
-  docker compose -f docker/compose.local.yml run --rm openclaw-cli configure
-- Fresh container onboarding:
-  bash ./scripts/onboard-local-container.sh
+Then run these commands inside the container:
+- Device pairing:
+  openclaw devices list
+  openclaw devices approve
+- Update provider auth with an interactive login flow:
+  openclaw models auth login --provider openai
+- Update provider auth with an API key:
+  openclaw models auth paste-token --provider openai
+
+Steady-state operations:
+- Rotate the Docker-local gateway token:
+  1. Edit config/secrets.local.json
+  2. bash ./scripts/prepare-local-docker.sh
+  3. docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+- Add or update reviewed skills:
+  edit workspace/skills/ and then rerun:
+  bash ./scripts/prepare-local-docker.sh
+  docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+- Add or update reviewed hooks:
+  edit config/openclaw.container.json5.example or the relevant repo-managed workspace files, then rerun:
+  bash ./scripts/prepare-local-docker.sh
+  docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
 EOF
