@@ -124,3 +124,9 @@ variable "shutdown_function_region" {
   type        = string
   default     = "us-central1"
 }
+
+variable "openclaw_runtime_secret_name" {
+  description = "Secret Manager secret name for the rendered OpenClaw runtime payload."
+  type        = string
+  default     = "openclaw-runtime-config"
+}

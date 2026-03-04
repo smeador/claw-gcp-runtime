@@ -27,3 +27,8 @@ output "shutdown_function_name" {
   description = "Cloud Run function that stops the Agent VM."
   value       = module.cost_controls.function_name
 }
+
+output "openclaw_runtime_secret_name" {
+  description = "Secret Manager secret that stores the OpenClaw cloud runtime payload."
+  value       = google_secret_manager_secret.openclaw_runtime.secret_id
+}
