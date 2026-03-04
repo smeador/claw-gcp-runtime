@@ -69,6 +69,26 @@ module "compute" {
   depends_on = [google_project_service.required]
 }
 
+resource "google_secret_manager_secret" "openclaw_runtime" {
+  project   = var.project_id
+  secret_id = var.openclaw_runtime_secret_name
+
+  replication {
+    auto {}
+  }
+
+  labels = var.labels
+
+  depends_on = [google_project_service.required]
+}
+
+resource "google_secret_manager_secret_iam_member" "openclaw_runtime_vm_access" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.openclaw_runtime.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${module.compute.service_account_email}"
+}
+
 module "cost_controls" {
   source = "../../modules/cost_controls"
 
