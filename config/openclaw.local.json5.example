@@ -26,6 +26,14 @@
   "session": {
     "dmScope": "per-channel-peer"
   },
+  "channels": {
+    "telegram": {
+      "enabled": false,
+      "dmPolicy": "pairing",
+      "groupPolicy": "disabled",
+      "configWrites": false
+    }
+  },
   "hooks": {
     "internal": {
       "enabled": true,

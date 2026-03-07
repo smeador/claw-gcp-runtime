@@ -22,3 +22,5 @@ config/rendered/
 docker/compose.override.yml
 workspace/.openclaw/
 workspace/memory/
+__pycache__/
+*.pyc

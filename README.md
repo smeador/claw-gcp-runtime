@@ -77,6 +77,14 @@ Cloud secret source:
 - this file is ignored by Git
 - keep cloud gateway tokens and any cloud-specific secret values separate from local Docker
 
+Telegram channel defaults:
+- Telegram is the first recommended messaging platform for this lab
+- keep Telegram disabled by default in the shared templates until a bot token is added
+- use DM pairing only, with groups disabled
+- keep `configWrites` disabled so the live instance cannot rewrite repo-managed behavior through the channel
+- inject the bot token through `channels.telegram.botToken` in `config/secrets.local.json` or `config/secrets.cloud.json`
+- Telegram DM pairing state persists under `~/.openclaw/credentials/` and is distinct from node device pairing state under `~/.openclaw/devices/`
+
 ## Docker Workflow
 
 Local Docker parity check:
@@ -116,8 +124,8 @@ Steady-state operator actions:
   ```
 - Then run inside the Docker-local container:
   ```bash
-  openclaw devices list
-  openclaw devices approve
+  openclaw pairing list telegram
+  openclaw pairing approve telegram <CODE>
   openclaw models auth login --provider openai
   # or
   openclaw models auth paste-token --provider openai
@@ -129,8 +137,8 @@ Steady-state operator actions:
   ```
 - Then run inside the cloud container:
   ```bash
-  openclaw devices list
-  openclaw devices approve
+  openclaw pairing list telegram
+  openclaw pairing approve telegram <CODE>
   openclaw models auth login --provider openai
   # or
   openclaw models auth paste-token --provider openai
@@ -151,6 +159,14 @@ Steady-state operator actions:
   1. edit the relevant repo-managed config template under [config](/Users/sean/Repos/gcp-claw-lab/config)
   2. rerender/restart locally with `./scripts/prepare-local-docker.sh`
   3. push/redeploy for cloud with `./scripts/push-cloud-runtime-secret.sh` and `./scripts/deploy-cloud.sh`
+- Enable Telegram:
+  1. create a bot token with BotFather
+  2. set `channels.telegram.enabled` to `true` and `channels.telegram.botToken` in the relevant secrets file
+  3. local Docker: run `./scripts/prepare-local-docker.sh` and restart the gateway
+  4. cloud: run `./scripts/push-cloud-runtime-secret.sh` and `./scripts/deploy-cloud.sh`
+  5. shell into `openclaw-gateway` and approve the Telegram pairing with:
+     `openclaw pairing list telegram` then `openclaw pairing approve telegram <CODE>`
+  6. Telegram messaging is now confirmed working in Docker-local; cloud should follow the same pairing/state model because `/home/node/.openclaw` persists on the host-mounted state path
 
 Notes:
 - local Docker uses named volumes for `~/.openclaw`, `workspace/.openclaw`, and `workspace/memory`
@@ -167,6 +183,8 @@ Notes:
 - steady-state operations should use targeted commands such as `openclaw models auth ...` and `openclaw devices ...`; avoid `onboard`/`configure` for routine container administration
 - for routine container administration, shell into `openclaw-gateway` and run OpenClaw commands there rather than relying on long one-off `docker compose ... run` commands
 - `boot-md` is explicitly disabled in the repo-managed templates; the allowed bundled internal hooks are `bootstrap-extra-files`, `command-logger`, and `session-memory`
+- Telegram DM pairing approvals live under `~/.openclaw/credentials/`; OpenClaw node/app device pairing approvals live under `~/.openclaw/devices/`
+
 
 Cloud operator notes:
 - OpenTofu creates the Secret Manager secret container and grants the VM service account secret accessor on that secret
