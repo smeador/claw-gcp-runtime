@@ -30,9 +30,9 @@ Shell into the Docker-local gateway container:
   bash ./scripts/shell-local-gateway.sh
 
 Then run these commands inside the container:
-- Device pairing:
-  openclaw devices list
-  openclaw devices approve
+- Telegram pairing:
+  openclaw pairing list telegram
+  openclaw pairing approve telegram <CODE>
 - Update provider auth with an interactive login flow:
   openclaw models auth login --provider openai
 - Update provider auth with an API key:

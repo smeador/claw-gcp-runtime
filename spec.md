@@ -454,6 +454,7 @@ Container operations guidance:
 - Routine skills and hooks changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
 - Routine container administration should prefer shelling into the running `openclaw-gateway` container and running OpenClaw commands there, rather than relying on long one-off `docker compose ... run` invocations
+- Telegram pairing should use the explicit pairing commands for that channel, e.g. `openclaw pairing list telegram` and `openclaw pairing approve telegram <CODE>`
 - `boot-md` should be explicitly disabled in repo-managed templates unless there is a reviewed startup-automation need for it
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
 - Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
@@ -482,6 +483,15 @@ Recommended workflow:
 8. Deploy or sync configuration to the VM.
 9. Start or restart the OpenClaw service.
 
+Messaging platform guidance:
+- Start with Telegram as the first and only messaging platform for phase 1
+- Use a token-based Telegram bot instead of a QR-paired channel for the initial rollout
+- Keep Telegram limited to DM pairing first and leave group access disabled
+- Keep channel-driven config writes disabled so the live instance cannot mutate reviewed repository behavior through the messaging surface
+- Add the bot token through the environment-specific secret payload under `channels.telegram.botToken`
+- Treat Telegram DM pairing state under `~/.openclaw/credentials/` as distinct from node device pairing state under `~/.openclaw/devices/`
+- Persist both pairing stores with the rest of `~/.openclaw` across normal container redeploys
+
 Operational guidance:
 - Git is the source of truth for non-secret configuration
 - Secret Manager is the source of truth for secret material
@@ -493,6 +503,7 @@ Operational guidance:
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
 - Treat paired-device state as environment-local sensitive runtime state that survives normal redeploys when the state path is preserved
+- Treat Telegram DM approval files in `credentials/` with the same sensitivity as node/app device approval files in `devices/`
 - Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy or skill rewrites
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
@@ -539,6 +550,9 @@ Initial recommended skills:
 - `allowed-web-research`
 - `report-daily-summary`
 - `opentofu-readonly-review`
+- `pip-email-triage` (read-only IMAP triage for Pip mailbox in local-first testing)
+- `pip-gmail-gog` (OpenClaw Gmail PubSub integration via `gog` in local-first testing)
+
 
 Future enhancements:
 - Add skill auditing pipeline
