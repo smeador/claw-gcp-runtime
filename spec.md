@@ -550,8 +550,25 @@ Initial recommended skills:
 - `allowed-web-research`
 - `report-daily-summary`
 - `opentofu-readonly-review`
-- `pip-email-triage` (read-only IMAP triage for Pip mailbox in local-first testing)
 - `pip-gmail-gog` (OpenClaw Gmail PubSub integration via `gog` in local-first testing)
+- `pip-newsletter-digest` (newsletter-only daily digest from email intake)
+
+Newsletter ingest policy (current phase):
+- Primary source of truth for daily digest is rolling 24-hour historical pull using sender/title/content matching
+- Pub/Sub/webhook ingestion is retained as optional context and future realtime enhancement, not a hard prerequisite for digest coverage
+- Digest jobs should remain reliable even if webhook events are delayed or missed
+
+Gmail + gog + Tailscale implementation decisions:
+- Primary setup path is local-native first, then Docker/cloud rollout after behavior is stable.
+- Gateway Tailscale exposure should remain `off` for this workflow; Tailscale Funnel is used for Gmail webhook ingress only.
+- Gmail webhook setup uses:
+  - `openclaw webhooks gmail setup --account pip@meador.me --project agent-lab-488918 --tailscale funnel`
+- Watcher runtime command remains available:
+  - `openclaw webhooks gmail run`
+- If organizational policy blocks project selection until tagging is complete, ensure the project has required `environment` tag binding before Gmail setup.
+- Daily digest runs are approved to use Gmail API backfill (rolling 24h) as the default operational mode.
+  - `Stanford`
+  - `Substack`
 
 
 Future enhancements:
