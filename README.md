@@ -185,6 +185,65 @@ Notes:
 - `boot-md` is explicitly disabled in the repo-managed templates; the allowed bundled internal hooks are `bootstrap-extra-files`, `command-logger`, and `session-memory`
 - Telegram DM pairing approvals live under `~/.openclaw/credentials/`; OpenClaw node/app device pairing approvals live under `~/.openclaw/devices/`
 
+Email integration starter:
+- A Gmail `gog` integration skill is available at [pip-gmail-gog](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
+- Local-first Gmail webhook setup helper:
+  ```bash
+  bash ./scripts/gmail/setup-gog-local.sh automation@example.com [PROJECT_ID]
+  ```
+- Manual local watcher helper (only if not using gateway-managed watcher):
+  ```bash
+  bash ./scripts/gmail/run-gog-local.sh
+  ```
+- Current daily digest default is 24-hour historical pull from email using sender/title/content matching; Pub/Sub/webhook ingestion is kept configured as optional context/future realtime enhancement.
+
+Gmail + gog + Tailscale runbook (local-native):
+- Preconditions:
+  - `gcloud`, `openclaw`, `tailscale`, and `gog` are installed
+  - Google OAuth/Gmail setup is completed for `automation@example.com`
+  - GCP project is `claw-runtime-example`
+- If org policy requires an environment tag, bind it on project `707779566246` before setup.
+- Keep gateway Tailscale mode off:
+  ```bash
+  openclaw config set gateway.tailscale.mode off
+  ```
+- Bring up Tailscale:
+  ```bash
+  tailscale up
+  tailscale status
+  ```
+- Configure Gmail webhook setup with Tailscale Funnel:
+  ```bash
+  openclaw webhooks gmail setup \
+    --account automation@example.com \
+    --project claw-runtime-example \
+    --tailscale funnel
+  ```
+- Run watcher when needed:
+  ```bash
+  openclaw webhooks gmail run
+  ```
+
+Decisions captured:
+- Newsletter digest source of truth is Gmail API historical backfill over rolling 24 hours.
+- Pub/Sub/webhook ingestion remains configured as optional context/future realtime use.
+- Current newsletter digest behavior is defined in [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md).
+- Telegram pairing workflow uses:
+  - `openclaw pairing list telegram`
+  - `openclaw pairing approve telegram <CODE>`
+
+Reading workflow starter skills:
+- [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md) for newsletter-only daily digest (email input only)
+
+Local security shutdown helper:
+- Stop local OpenClaw runtime (Docker + native service/processes), bring Tailscale down, and quit the Tailscale app UI:
+  ```bash
+  bash ./scripts/security-shutdown-local.sh
+  ```
+- Keep the Tailscale app UI running:
+  ```bash
+  bash ./scripts/security-shutdown-local.sh --keep-tailscale-app
+  ```
 
 Cloud operator notes:
 - OpenTofu creates the Secret Manager secret container and grants the VM service account secret accessor on that secret

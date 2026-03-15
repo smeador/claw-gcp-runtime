@@ -15,6 +15,9 @@ Use this skill to produce Pip's daily newsletter digest from email only.
 - Include backlog items still in inbox within the window, even if they predate the current webhook watcher session
 - Pub/Sub webhook events are optional context, not the sole source of truth
 - Do not depend on Gmail labels in the current phase; use sender/title/content matching until Pip's labeling workflow is set up correctly
+- Use a two-pass retrieval strategy:
+  - first fetch metadata/snippets for the active lookback window
+  - then fetch full bodies only for messages selected into the digest
 
 ## Current sources
 
@@ -95,6 +98,11 @@ Rules:
 - Prefer canonical sender/publication identification over labels for now.
 - Source query must include relevant newsletter messages within the active lookback window, not only newly arrived webhook events.
 - Prefer the newsletter body as the primary source of truth for the summary.
+- First identify candidate messages using sender, subject, publication, received date, and snippet/preview when available.
+- Only fetch the full body after a message has been selected as one of:
+  - a named daily newsletter
+  - a Substack item to include
+  - a Stanford item to include
 
 ## Lookback policy
 
@@ -103,6 +111,16 @@ Rules:
 - If webhook ingestion and historical pull disagree, prefer the historical pull result for coverage.
 - Gmail API backfill over the default 24-hour window is pre-approved for this skill and does not require additional confirmation.
 - For the `Substack` section specifically, include remaining Substack emails from the last `2 days`.
+- For the `Stanford` section specifically, include Stanford newsletter emails from the last `2 days`.
+
+## Retrieval policy
+
+- Be efficient with mailbox access.
+- Do not eagerly fetch full HTML/text bodies for every message in the lookback window.
+- Start with a metadata pass over the active window.
+- Build the digest candidate set from that metadata pass.
+- Fetch full bodies only for messages that will actually be summarized in the output.
+- If multiple copies or forwards of the same newsletter issue appear, prefer the cleanest original copy and avoid duplicate body fetches.
 
 ## Required digest format
 
@@ -150,6 +168,7 @@ If a named daily newsletter is not found, note it explicitly.
 
 - Summarize each remaining Substack email from the last 2 days that is not already covered in `Daily Newsletters`
 - Exclude `AI News` from this section because it is already covered above
+- Apply that exclusion silently; do not print a note saying that `AI News` was excluded
 - These are usually longer-form pieces, so each summary should capture:
   - core thesis
   - main arguments or sections
