@@ -1,0 +1,67 @@
+# pip-gmail-send
+
+Use this skill when Pip needs to send an email from Pip's Gmail account through `gog`.
+
+## Purpose
+
+- Send an email from `automation@example.com`, using HTML plus a plain-text fallback when formatting matters
+- Support digests, notes, and other low-risk outbound mail to Sean
+- Keep email sending local-first before promoting the same pattern to Docker/cloud
+
+## Allowed actions
+
+- Send email through `gog gmail send`
+- Send to `user@example.com` by default
+- Use a concise, descriptive subject line
+- Include HTML email bodies when presentation matters, provided a plain-text fallback is also sent
+
+## Not allowed
+
+- Store OAuth/client secrets in repo-managed files
+- Send broad outbound mail without explicit approval
+- Send attachments unless explicitly requested
+
+## Requirements
+
+- `gog` installed and authorized for `automation@example.com`
+- Gmail send access already working for that account
+
+## Default policy
+
+- Default sender account: `automation@example.com`
+- Default recipient: `user@example.com`
+- Default format for digests: HTML with a plain-text fallback
+- If the user asks to "email me" without further detail, send to `user@example.com`
+
+## Local helper
+
+```bash
+bash scripts/gmail/send-gog-local.sh automation@example.com user@example.com "Test subject" -
+```
+
+Then provide the body on stdin.
+
+Example:
+
+```bash
+printf 'This is a test from Pip.\n' | bash scripts/gmail/send-gog-local.sh automation@example.com user@example.com "Pip test" -
+```
+
+HTML example:
+
+```bash
+printf 'This is a test from Pip.\n' | bash scripts/gmail/send-gog-local.sh \
+  automation@example.com \
+  user@example.com \
+  "Pip HTML test" \
+  - \
+  /Users/sean/Repos/gcp-claw-lab/workspace/.tmp/pip-test.html
+```
+
+## Output requirements
+
+- Confirm recipient, subject, and that the send succeeded
+- Do not print tokens, credentials, or raw OAuth material
+- Keep the message body concise unless the user requests a longer email
+- When sending HTML, always include a plain-text fallback body
+- Distinguish clearly between the plain-text body and the HTML body; do not send HTML-looking text as the plain-text body

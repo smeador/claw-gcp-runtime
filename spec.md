@@ -551,6 +551,7 @@ Initial recommended skills:
 - `report-daily-summary`
 - `opentofu-readonly-review`
 - `pip-gmail-gog` (OpenClaw Gmail PubSub integration via `gog` in local-first testing)
+- `pip-gmail-send` (outbound Gmail send via `gog` for Pip's account)
 - `pip-newsletter-digest` (newsletter-only daily digest from email intake)
 
 Newsletter ingest policy (current phase):
@@ -567,8 +568,12 @@ Gmail + gog + Tailscale implementation decisions:
   - `openclaw webhooks gmail run`
 - If organizational policy blocks project selection until tagging is complete, ensure the project has required `environment` tag binding before Gmail setup.
 - Daily digest runs are approved to use Gmail API backfill (rolling 24h) as the default operational mode.
-  - `Stanford`
-  - `Substack`
+- Daily digest delivery is email-only by default in the current phase:
+  - from `automation@example.com`
+  - to `user@example.com`
+  - subject format `Pip Newsletter Digest - YYYY-MM-DD`
+  - HTML body with inline styling for email clients, plus a plain-text fallback
+  - if send fails, digest generation still succeeds and reports the delivery failure
 
 
 Future enhancements:
