@@ -8,7 +8,7 @@ ENV NODE_ENV=production
 ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends bash ca-certificates curl jq tini \
+  && apt-get install -y --no-install-recommends bash ca-certificates curl jq ripgrep tini \
   && if [ -n "${OPENCLAW_APT_PACKAGES}" ]; then apt-get install -y --no-install-recommends ${OPENCLAW_APT_PACKAGES}; fi \
   && rm -rf /var/lib/apt/lists/*
 

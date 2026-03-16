@@ -58,6 +58,12 @@ Current limitation:
 Native local development remains the preferred fast path.
 Use [openclaw.local.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.json5.example) as the basis for `~/.openclaw/openclaw.json`.
 
+Native local prerequisites:
+- install `ripgrep` so agent/tool flows that prefer `rg` work reliably:
+  ```bash
+  brew install ripgrep
+  ```
+
 Config ownership model:
 - repo templates in [config](/Users/sean/Repos/gcp-claw-lab/config) are the canonical source for managed behavior
 - the live local-native config in `~/.openclaw/openclaw.json` remains the active runtime file on your laptop
@@ -171,6 +177,7 @@ Steady-state operator actions:
 Notes:
 - local Docker uses named volumes for `~/.openclaw`, `workspace/.openclaw`, and `workspace/memory`
 - local Docker bootstrap is intentionally modeled on upstream `docker-setup.sh`, but preserves this repo's rendered-config and shared-workspace approach
+- the Docker image installs `ripgrep` so `rg` is available inside Docker-local and cloud containers
 - cloud Docker persists runtime state under `/opt/openclaw/state`
 - the runtime gateway mounts the reviewed repository workspace read-only and only writable state paths remain mutable
 - the writable runtime paths are `/home/node/.openclaw`, `/workspace/.openclaw`, and `/workspace/memory`
@@ -187,6 +194,7 @@ Notes:
 
 Email integration starter:
 - A Gmail `gog` integration skill is available at [pip-gmail-gog](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
+- A Gmail send skill is available at [pip-gmail-send](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-send/SKILL.md)
 - Local-first Gmail webhook setup helper:
   ```bash
   bash ./scripts/gmail/setup-gog-local.sh pip@meador.me [PROJECT_ID]
@@ -195,7 +203,21 @@ Email integration starter:
   ```bash
   bash ./scripts/gmail/run-gog-local.sh
   ```
+- Local send helper:
+  ```bash
+  printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh pip@meador.me sean@meador.me "Pip test" -
+  ```
+- Local HTML send helper:
+  ```bash
+  printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh \
+    pip@meador.me \
+    sean@meador.me \
+    "Pip HTML test" \
+    - \
+    /Users/sean/Repos/gcp-claw-lab/workspace/.tmp/pip-test.html
+  ```
 - Current daily digest default is 24-hour historical pull from email using sender/title/content matching; Pub/Sub/webhook ingestion is kept configured as optional context/future realtime enhancement.
+- `pip-newsletter-digest` now sends the completed digest by default as an HTML email with a plain-text fallback from `pip@meador.me` to `sean@meador.me` with subject `Pip Newsletter Digest - YYYY-MM-DD`.
 
 Gmail + gog + Tailscale runbook (local-native):
 - Preconditions:
@@ -234,6 +256,10 @@ Decisions captured:
 
 Reading workflow starter skills:
 - [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md) for newsletter-only daily digest (email input only)
+- Default behavior for [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md):
+  1. generate the digest
+  2. email it to `sean@meador.me`
+  3. if send fails, still return the digest and report the delivery failure
 
 Local security shutdown helper:
 - Stop local OpenClaw runtime (Docker + native service/processes), bring Tailscale down, and quit the Tailscale app UI:

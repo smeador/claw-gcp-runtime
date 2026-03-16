@@ -21,6 +21,10 @@ This workspace is for OpenClaw running in the Agent Lab project.
 - Do not perform autonomous web scraping outside allowlisted skills and domains
 - Do not rely on `~/.openclaw/skills` as a source of project-critical behavior
 - Do not treat local override files, `.env` files, or OpenTofu state as valid sources of truth
+- Do not assume `/tmp` or other host-global temp directories are writable from the runtime
+- Prefer workspace-local temporary paths for ephemeral files when a tool needs scratch space
+- If temporary files are required, keep them inside reviewed workspace paths or configured writable mounts and clean them up after use
+- Use `workspace/.tmp/` as the default repository-local scratch directory for ephemeral files
 
 ## Change Discipline
 
