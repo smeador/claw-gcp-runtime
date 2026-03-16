@@ -16,7 +16,7 @@ services:
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
-      - openclaw_workspace_tmp_local:/workspace/.tmp
+      - ../workspace/.tmp:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
     ports:
       - "127.0.0.1:18790:18789"
@@ -44,7 +44,7 @@ services:
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
-      - openclaw_workspace_tmp_local:/workspace/.tmp
+      - ../workspace/.tmp:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
     entrypoint: ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
     command: ["status"]
@@ -73,7 +73,7 @@ services:
       - ../config/rendered:/runtime
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
-      - openclaw_workspace_tmp_local:/workspace/.tmp
+      - ../workspace/.tmp:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
     entrypoint: ["/bin/bash", "-lc"]
     command: ["sleep infinity"]
@@ -81,5 +81,4 @@ services:
 volumes:
   openclaw_home_local:
   openclaw_workspace_state_local:
-  openclaw_workspace_tmp_local:
   openclaw_memory_local:

@@ -207,6 +207,11 @@ Email integration starter:
   ```bash
   printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh automation@example.com user@example.com "Pip test" -
   ```
+- Docker Gmail bootstrap helper:
+  ```bash
+  bash ./scripts/gmail/bootstrap-gog-docker-local.sh automation@example.com
+  ```
+  This command starts the Docker-local gateway if needed, installs Gmail OAuth client credentials into the container, tries to import an existing host `gog` token, and if no exportable host token exists falls back to an interactive Gmail consent flow inside the container.
 - Local HTML send helper:
   ```bash
   printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh \

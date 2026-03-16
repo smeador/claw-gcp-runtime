@@ -22,6 +22,7 @@ EOF
 fi
 
 bash ./scripts/render-openclaw-local.sh
+mkdir -p workspace/.tmp
 docker compose -f docker/compose.local.yml build openclaw-gateway openclaw-cli
 
 # Match upstream docker-setup.sh behavior: eagerly seed OpenClaw state paths
@@ -33,7 +34,6 @@ docker compose -f docker/compose.local.yml run --rm --no-deps --user root --entr
     /home/node/.openclaw/agents/main/agent \
     /home/node/.openclaw/agents/main/sessions \
     /workspace/.openclaw \
-    /workspace/.tmp \
     /workspace/memory
-  chown -R node:node /home/node/.openclaw /workspace/.openclaw /workspace/.tmp /workspace/memory
+  chown -R node:node /home/node/.openclaw /workspace/.openclaw /workspace/memory
 '
