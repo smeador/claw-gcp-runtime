@@ -18,6 +18,7 @@ config/openclaw.cloud.json5
 config/openclaw.container.json5
 config/secrets.local.json
 config/secrets.cloud.json
+config/docker.local.env
 config/rendered/
 docker/compose.override.yml
 workspace/.openclaw/

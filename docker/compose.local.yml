@@ -4,15 +4,19 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     image: agent-lab-openclaw:local
+    env_file:
+      - ../config/docker.local.env
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
     volumes:
       - ../workspace:/workspace:ro
       - ../config:/config:ro
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
+      - openclaw_workspace_tmp_local:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
     ports:
       - "127.0.0.1:18790:18789"
@@ -28,15 +32,19 @@ services:
     depends_on:
       openclaw-gateway:
         condition: service_started
+    env_file:
+      - ../config/docker.local.env
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
     volumes:
       - ../workspace:/workspace:ro
       - ../config:/config:ro
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
+      - openclaw_workspace_tmp_local:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
     entrypoint: ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
     command: ["status"]
@@ -52,9 +60,12 @@ services:
     depends_on:
       openclaw-gateway:
         condition: service_started
+    env_file:
+      - ../config/docker.local.env
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
     volumes:
       - ..:/repo
       - ../workspace:/workspace
@@ -62,6 +73,7 @@ services:
       - ../config/rendered:/runtime
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
+      - openclaw_workspace_tmp_local:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
     entrypoint: ["/bin/bash", "-lc"]
     command: ["sleep infinity"]
@@ -69,4 +81,5 @@ services:
 volumes:
   openclaw_home_local:
   openclaw_workspace_state_local:
+  openclaw_workspace_tmp_local:
   openclaw_memory_local:
