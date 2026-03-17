@@ -70,11 +70,25 @@ Config ownership model:
 - auth, tokens, wizard state, and other runtime-managed fields stay outside Git
 - use [check-openclaw-local-sync.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/check-openclaw-local-sync.mjs) to compare managed local-native fields against the repo template
 
+Authentication model:
+- native local is allowed to use direct interactive OAuth/provider login when that is the cleanest local-native path
+- Docker-local and cloud should prefer non-interactive runtime auth where possible
+- OpenClaw config-bound secrets belong in environment secret overlays under [config](/Users/sean/Repos/gcp-claw-lab/config)
+- runtime-issued auth state belongs in the environment-specific state directory only:
+  - native local: `~/.openclaw`
+  - Docker local: `/home/node/.openclaw` on the Docker volume
+  - cloud: `${OPENCLAW_DEPLOY_ROOT}/state/home`
+- do not make Docker-local or cloud depend on native-local runtime state as an implicit config source
+
 Local Docker secret source:
 - create `config/secrets.local.json` from [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
 - this file is ignored by Git
 - `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
+- if Docker-local should use the same Gmail hook settings as native local, copy them explicitly into the local secret overlay once with:
+  ```bash
+  node ./scripts/gmail/sync-native-gmail-hook-to-secret-overlay.mjs config/secrets.local.json
+  ```
 - local Docker publishes the gateway on `127.0.0.1:18790` so it does not collide with a native local gateway on `127.0.0.1:18789`
 - `./scripts/prepare-local-docker.sh` performs the upstream-style Docker bootstrap pass: render config, build images, seed state directories, and fix ownership before runtime
 
@@ -187,6 +201,7 @@ Notes:
 - provider auth is established inside each environment and persists in runtime state under `~/.openclaw` or `/opt/openclaw/state/home`
 - redeploying a container preserves provider auth only if the persistent state path or volume is preserved
 - persisted runtime state should be treated as sensitive because it may contain live provider credentials
+- runtime containers receive only rendered runtime config and writable state paths; they do not mount the whole repo config tree
 - steady-state operations should use targeted commands such as `openclaw models auth ...` and `openclaw devices ...`; avoid `onboard`/`configure` for routine container administration
 - for routine container administration, shell into `openclaw-gateway` and run OpenClaw commands there rather than relying on long one-off `docker compose ... run` commands
 - `boot-md` is explicitly disabled in the repo-managed templates; the allowed bundled internal hooks are `bootstrap-extra-files`, `command-logger`, and `session-memory`
@@ -195,6 +210,9 @@ Notes:
 Email integration starter:
 - A Gmail `gog` integration skill is available at [pip-gmail-gog](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
 - A Gmail send skill is available at [pip-gmail-send](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-send/SKILL.md)
+- Gmail auth split:
+  - native local may keep using user OAuth for `pip@meador.me`
+  - Docker-local and cloud should prefer Google Workspace service-account auth for `pip@meador.me`
 - Local-first Gmail webhook setup helper:
   ```bash
   bash ./scripts/gmail/setup-gog-local.sh pip@meador.me [PROJECT_ID]
@@ -209,9 +227,21 @@ Email integration starter:
   ```
 - Docker Gmail bootstrap helper:
   ```bash
-  bash ./scripts/gmail/bootstrap-gog-docker-local.sh pip@meador.me
+  bash ./scripts/gmail/bootstrap-gog-docker-local.sh \
+    pip@meador.me \
+    /ABS/PATH/service-account.json
   ```
-  This command starts the Docker-local gateway if needed, installs Gmail OAuth client credentials into the container, tries to import an existing host `gog` token, and if no exportable host token exists falls back to an interactive Gmail consent flow inside the container.
+  This command starts the Docker-local gateway if needed and configures `gog` inside the container to use the Workspace service account for `pip@meador.me`.
+- Cloud Gmail bootstrap helper:
+  ```bash
+  bash ./scripts/gmail/bootstrap-gog-cloud-service-account.sh \
+    VM_NAME \
+    PROJECT_ID \
+    ZONE \
+    /ABS/PATH/service-account.json \
+    pip@meador.me
+  ```
+  This copies the service-account key to the VM, installs it into the cloud runtime state, and configures `gog` inside the cloud container to impersonate `pip@meador.me`.
 - Local HTML send helper:
   ```bash
   printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh \
@@ -254,6 +284,8 @@ Gmail + gog + Tailscale runbook (local-native):
 Decisions captured:
 - Newsletter digest source of truth is Gmail API historical backfill over rolling 24 hours.
 - Pub/Sub/webhook ingestion remains configured as optional context/future realtime use.
+- Native local remains allowed to use OAuth when that is the cleaner local path.
+- Docker-local and cloud should use explicit rendered config overlays plus Gmail Workspace service-account auth rather than inheriting native-local runtime state.
 - Current newsletter digest behavior is defined in [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md).
 - Telegram pairing workflow uses:
   - `openclaw pairing list telegram`

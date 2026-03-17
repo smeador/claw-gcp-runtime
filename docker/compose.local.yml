@@ -12,7 +12,6 @@ services:
       GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
     volumes:
       - ../workspace:/workspace:ro
-      - ../config:/config:ro
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
@@ -40,7 +39,6 @@ services:
       GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
     volumes:
       - ../workspace:/workspace:ro
-      - ../config:/config:ro
       - ../config/rendered:/runtime:ro
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw
@@ -69,7 +67,6 @@ services:
     volumes:
       - ..:/repo
       - ../workspace:/workspace
-      - ../config:/config
       - ../config/rendered:/runtime
       - openclaw_home_local:/home/node/.openclaw
       - openclaw_workspace_state_local:/workspace/.openclaw

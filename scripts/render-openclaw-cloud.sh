@@ -31,9 +31,9 @@ SECRET_JSON="$(
 
 cd "$(dirname "$0")/.."
 
-jq -s '.[0] * .[1]' \
-  config/openclaw.cloud.json5.example \
-  <(printf '%s\n' "${SECRET_JSON}") \
-  > "${RUNTIME_DIR}/openclaw.json"
+node scripts/render-openclaw-config.mjs \
+  --template config/openclaw.cloud.json5.example \
+  --output "${RUNTIME_DIR}/openclaw.json" \
+  --gcp-secret-json "${SECRET_JSON}"
 
-chmod 644 "${RUNTIME_DIR}/openclaw.json"
+chmod 600 "${RUNTIME_DIR}/openclaw.json"

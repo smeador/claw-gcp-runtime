@@ -373,11 +373,12 @@ Configuration ownership model:
 
 Secret ownership model:
 - A single JSON secret payload is used for OpenClaw runtime config secrets
-- That payload currently contains `auth` and `gateway.auth`
+- That payload currently contains `auth`, `gateway.auth`, optional channel secrets, and optional hook configuration such as `hooks.gmail`
 - The payload is merged into the environment-specific OpenClaw template at render time
 - The payload contract should be documented in the repository and treated as a security-sensitive interface
 - Local and cloud environments should use separate secret payload files even when they share the same schema
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
+- External integration bootstrap secrets that are not part of OpenClaw config, such as a Gmail Workspace service-account JSON key for `gog`, should be handled separately from the OpenClaw runtime config payload
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
 - Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
@@ -437,7 +438,7 @@ Recommended local Docker parity defaults:
 - Allowed Control UI origins: `http://127.0.0.1:18790` and `http://localhost:18790`
 - Docker-local gateway state is separate from native local gateway state and should be treated as a distinct environment for provider auth and device pairing
 - A repo-local Docker bootstrap step should render config, build images, seed state directories, and fix ownership before runtime start
-- Hardened runtime containers should keep `/workspace`, `/config`, and `/runtime` read-only and use dedicated writable state mounts instead
+- Hardened runtime containers should keep `/workspace` and `/runtime` read-only and use dedicated writable state mounts instead
 - Required writable Docker-local state paths are `/home/node/.openclaw`, `/workspace/.openclaw`, and `/workspace/memory`
 - A separate root-owned dev container may share the same state volumes for manual editing/debugging without loosening the runtime gateway container
 
@@ -482,6 +483,13 @@ Recommended workflow:
 7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup.
 8. Deploy or sync configuration to the VM.
 9. Start or restart the OpenClaw service.
+
+Authentication guidance by environment:
+- Native local should prefer direct interactive OAuth/provider login when that is the cleanest local operator workflow.
+- Docker-local and cloud should prefer non-interactive auth for server-style integrations where possible.
+- Native-local runtime state must not be treated as an implicit config source for Docker-local or cloud.
+- Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `pip@meador.me`.
+- Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
 
 Messaging platform guidance:
 - Start with Telegram as the first and only messaging platform for phase 1
@@ -561,6 +569,7 @@ Newsletter ingest policy (current phase):
 
 Gmail + gog + Tailscale implementation decisions:
 - Primary setup path is local-native first, then Docker/cloud rollout after behavior is stable.
+- Native-local Gmail auth may use OAuth; Docker-local and cloud should use the Workspace service account path for `pip@meador.me`.
 - Gateway Tailscale exposure should remain `off` for this workflow; Tailscale Funnel is used for Gmail webhook ingress only.
 - Gmail webhook setup uses:
   - `openclaw webhooks gmail setup --account pip@meador.me --project agent-lab-488918 --tailscale funnel`
