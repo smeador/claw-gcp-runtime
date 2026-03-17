@@ -10,7 +10,7 @@ The configuration still uses HCL's standard `terraform {}` block name because Op
 - `opentofu/modules/network`: VPC, subnet, router, NAT, IAP SSH firewall
 - `opentofu/modules/compute`: VM, service account, startup bootstrap
 - `opentofu/modules/cost_controls`: budget Pub/Sub and shutdown automation
-- `workspace`: reviewed OpenClaw workspace files and skills
+- `workspace`: reviewed OpenClaw workspace files
 - `config`: local and cloud OpenClaw config templates
 - `docker`: container and compose assets
 - `scripts`: local and cloud run helpers
@@ -40,316 +40,200 @@ After apply, connect with:
 gcloud compute ssh agent-lab-vm --project agent-lab-488918 --zone us-central1-a --tunnel-through-iap
 ```
 
-## OpenClaw App Layer
+## Setup and Usage
 
-The repository now includes a first-pass local-first scaffold for OpenClaw:
+This repo has three operating modes:
 
-- workspace policy in [AGENTS.md](/Users/sean/Repos/gcp-claw-lab/workspace/AGENTS.md) and [TOOLS.md](/Users/sean/Repos/gcp-claw-lab/workspace/TOOLS.md)
-- reviewed starter skills under [skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
-- local and cloud config templates in [config](/Users/sean/Repos/gcp-claw-lab/config)
-- Docker assets in [docker](/Users/sean/Repos/gcp-claw-lab/docker)
-- helper scripts in [scripts](/Users/sean/Repos/gcp-claw-lab/scripts)
+- native local: fastest iteration on your laptop
+- Docker-local: local cloud-parity runtime
+- cloud: Docker on the GCP VM
 
-Current limitation:
-- the container runtime is wired for `openclaw`, but the exact provider-specific cloud auth payload still needs to be finalized
+### Dependency management
 
-## Local OpenClaw
+Pinned runtime versions live in [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json).
 
-Native local development remains the preferred fast path.
-Use [openclaw.local.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.json5.example) as the basis for `~/.openclaw/openclaw.json`.
+Use:
 
-Native local prerequisites:
-- install `ripgrep` so agent/tool flows that prefer `rg` work reliably:
-  ```bash
-  brew install ripgrep
-  ```
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+npm run deps:show
+```
 
-Config ownership model:
-- repo templates in [config](/Users/sean/Repos/gcp-claw-lab/config) are the canonical source for managed behavior
-- the live local-native config in `~/.openclaw/openclaw.json` remains the active runtime file on your laptop
-- auth, tokens, wizard state, and other runtime-managed fields stay outside Git
-- use [check-openclaw-local-sync.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/check-openclaw-local-sync.mjs) to compare managed local-native fields against the repo template
+That reports:
 
-Authentication model:
-- native local is allowed to use direct interactive OAuth/provider login when that is the cleanest local-native path
-- Docker-local and cloud should prefer non-interactive runtime auth where possible
-- OpenClaw config-bound secrets belong in environment secret overlays under [config](/Users/sean/Repos/gcp-claw-lab/config)
-- runtime-issued auth state belongs in the environment-specific state directory only:
+- pinned repo versions
+- installed local `openclaw`
+- installed local `gog`
+- local Docker / Node / npm / ripgrep versions
+
+After editing [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json), regenerate derived files with:
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+npm run deps:sync
+npm run deps:lock:function
+```
+
+What this updates:
+
+- `config/docker.build.env` for Docker build args
+- Cloud Function `package.json` from the central version manifest
+- Cloud Function `package-lock.json`
+
+Native-local host tools are still operator-managed. The repo does not auto-upgrade your Homebrew-installed `openclaw`, `gog`, or `ripgrep`.
+
+### Authentication and secrets
+
+Secrets are split by environment:
+
+- [config/secrets.local.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json)
+- [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json)
+
+Start from:
+
+- [config/secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
+- [config/secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
+
+Rules:
+
+- repo templates under [config](/Users/sean/Repos/gcp-claw-lab/config) are the source of truth for managed behavior
+- secret overlay files are Git-ignored and hold config-bound secret values
+- runtime auth state stays environment-local:
   - native local: `~/.openclaw`
-  - Docker local: `/home/node/.openclaw` on the Docker volume
-  - cloud: `${OPENCLAW_DEPLOY_ROOT}/state/home`
-- do not make Docker-local or cloud depend on native-local runtime state as an implicit config source
-- for local Docker, `gog` service-account bootstrap data may also be stored in `config/secrets.local.json` under `gog.serviceAccounts`; that branch is rendered into a separate Docker bootstrap file and not merged into `openclaw.json`
+  - Docker-local: `/home/node/.openclaw`
+  - cloud: `/opt/openclaw/state/home`
 
-Model auth split:
-- native local may keep using OAuth or provider-managed local auth in `~/.openclaw`
-- Docker-local may source API-key providers from the same local secret overlay file
-- when `config/secrets.local.json` includes `auth.profiles.<profile>.apiKey` for an `api_key` profile, `./scripts/prepare-local-docker.sh` emits it into `config/docker.local.env` and strips the raw token out of the rendered OpenClaw config
-- actual OAuth sessions or other runtime-managed provider auth remain environment-local runtime state, not repo-managed config
-- native local model auth should be established in `~/.openclaw`
-- Docker-local non-API-key model auth should be established inside `/home/node/.openclaw` for the container runtime
-- cloud model auth should be established inside `${OPENCLAW_DEPLOY_ROOT}/state/home`
+Current auth model:
 
-Local Docker secret source:
-- create `config/secrets.local.json` from [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
-- this file is ignored by Git
-- `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
-- `./scripts/prepare-local-docker.sh` also renders `config/docker.local.env` from the same local secret file
-- if `gog.serviceAccounts["pip@meador.me"]` is present, `./scripts/prepare-local-docker.sh` also renders `config/rendered/gog-service-account.json`
-- the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
-- for Docker-local, leave Gmail Pub/Sub/webhook hooks disabled unless you are explicitly testing realtime ingestion
-- if Docker-local should use the same Gmail hook settings as native local, copy them explicitly into the local secret overlay once with:
-  ```bash
-  node ./scripts/gmail/sync-native-gmail-hook-to-secret-overlay.mjs config/secrets.local.json
-  ```
-- local Docker publishes the gateway on `127.0.0.1:18790` so it does not collide with a native local gateway on `127.0.0.1:18789`
-- `./scripts/prepare-local-docker.sh` performs the upstream-style Docker bootstrap pass: render config, build images, seed state directories, and fix ownership before runtime
+- native local
+  - OpenAI/provider auth: local OAuth or local provider auth is fine
+  - Gmail: user OAuth is fine
+- Docker-local
+  - OpenAI API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.local.json`
+  - Gmail service account: store JSON object under `gog.serviceAccounts["pip@meador.me"]` in `config/secrets.local.json`
+- cloud
+  - config secrets come from Secret Manager via `config/secrets.cloud.json` shape
+  - Gmail service-account bootstrap remains explicit
 
-Cloud secret source:
-- create `config/secrets.cloud.json` from [secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
-- this file is ignored by Git
-- keep cloud gateway tokens and any cloud-specific secret values separate from local Docker
+Docker-local notes:
 
-Telegram channel defaults:
-- Telegram is the first recommended messaging platform for this lab
-- keep Telegram disabled by default in the shared templates until a bot token is added
-- use DM pairing only, with groups disabled
-- keep `configWrites` disabled so the live instance cannot rewrite repo-managed behavior through the channel
-- inject the bot token through `channels.telegram.botToken` in `config/secrets.local.json` or `config/secrets.cloud.json`
-- Telegram DM pairing state persists under `~/.openclaw/credentials/` and is distinct from node device pairing state under `~/.openclaw/devices/`
+- `./scripts/prepare-local-docker.sh` renders:
+  - `config/rendered/openclaw.json`
+  - `config/docker.local.env`
+  - `config/docker.build.env`
+  - `config/rendered/gog-service-account.json` when Gmail service-account data is present
+- Gmail Pub/Sub/webhook hooks should stay disabled in Docker-local unless you are explicitly testing realtime ingestion
 
-## Docker Workflow
+### Native local
 
-Local Docker parity check:
+Use [config/openclaw.local.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.json5.example) as the basis for `~/.openclaw/openclaw.json`.
+
+Recommended prerequisite:
+
+```bash
+brew install ripgrep
+```
+
+### Docker-local
+
+Initial setup:
 
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
+npm run deps:sync
 cp config/secrets.local.json.example config/secrets.local.json
-./scripts/prepare-local-docker.sh
-./scripts/run-local.sh
-./scripts/print-local-docker-access.sh
+bash ./scripts/prepare-local-docker.sh
+bash ./scripts/run-local.sh
+bash ./scripts/print-local-docker-access.sh
 ```
 
-To reset Docker-local OpenClaw to a fresh state without touching native local OpenClaw:
+Gateway addresses:
+
+- native local: `http://127.0.0.1:18789`
+- Docker-local: `http://127.0.0.1:18790`
+
+Routine operations:
+
+- shell into the Docker-local gateway:
+  ```bash
+  bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-local-gateway.sh
+  ```
+- recreate the gateway after secret/config changes:
+  ```bash
+  docker compose --env-file /Users/sean/Repos/gcp-claw-lab/config/docker.build.env -f /Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  ```
+- reset Docker-local state without touching native local:
+  ```bash
+  bash /Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh
+  ```
+
+### Cloud
+
+Cloud container flow:
 
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
-./scripts/reset-local-docker.sh
-```
-
-Cloud VM container flow:
-
-```bash
-cd /Users/sean/Repos/gcp-claw-lab
+npm run deps:sync
 cp config/secrets.cloud.json.example config/secrets.cloud.json
-./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
-./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
-./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
-./scripts/run-cloud.sh OPENCLAW_CONFIG_SECRET_NAME
+bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
+bash ./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
+bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
+bash ./scripts/run-cloud.sh OPENCLAW_CONFIG_SECRET_NAME
 ```
 
-Steady-state operator actions:
+Shell into the cloud gateway:
 
-- Shell into Docker-local for routine operations:
-  ```bash
-  cd /Users/sean/Repos/gcp-claw-lab
-  bash ./scripts/shell-local-gateway.sh
-  ```
-- Then run inside the Docker-local container:
-  ```bash
-  openclaw pairing list telegram
-  openclaw pairing approve telegram <CODE>
-  ```
-- For Docker-local OpenAI API-key auth, set `auth.profiles.openai:default.apiKey` in `config/secrets.local.json` and rerun:
-  ```bash
-  cd /Users/sean/Repos/gcp-claw-lab
-  bash ./scripts/prepare-local-docker.sh
-  docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
-  ```
-- Shell into cloud for routine operations:
-  ```bash
-  cd /Users/sean/Repos/gcp-claw-lab
-  bash ./scripts/shell-cloud-gateway.sh agent-lab-vm agent-lab-488918 us-central1-a
-  ```
-- Then run inside the cloud container:
-  ```bash
-  openclaw pairing list telegram
-  openclaw pairing approve telegram <CODE>
-  ```
-- Bootstrap OpenAI model auth into cloud runtime state:
-  ```bash
-  cd /Users/sean/Repos/gcp-claw-lab
-  bash ./scripts/models/bootstrap-openai-cloud.sh agent-lab-vm agent-lab-488918 us-central1-a
-  ```
-- Rotate the Docker-local gateway token:
-  1. edit `config/secrets.local.json`
-  2. run `./scripts/prepare-local-docker.sh`
-  3. run `docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway`
-- Rotate the Docker-local OpenAI API key:
-  1. edit `auth.profiles.openai:default.apiKey` in `config/secrets.local.json`
-  2. run `./scripts/prepare-local-docker.sh`
-  3. run `docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway`
-- Rotate the cloud gateway token:
-  1. edit `config/secrets.cloud.json`
-  2. run `./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID`
-  3. run `./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME`
-- Add or update skills:
-  1. edit files under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
-  2. test locally
-  3. rerun `./scripts/prepare-local-docker.sh` and restart Docker-local, or redeploy cloud
-- Add or update hooks:
-  1. edit the relevant repo-managed config template under [config](/Users/sean/Repos/gcp-claw-lab/config)
-  2. rerender/restart locally with `./scripts/prepare-local-docker.sh`
-  3. push/redeploy for cloud with `./scripts/push-cloud-runtime-secret.sh` and `./scripts/deploy-cloud.sh`
-- Enable Telegram:
-  1. create a bot token with BotFather
-  2. set `channels.telegram.enabled` to `true` and `channels.telegram.botToken` in the relevant secrets file
-  3. local Docker: run `./scripts/prepare-local-docker.sh` and restart the gateway
-  4. cloud: run `./scripts/push-cloud-runtime-secret.sh` and `./scripts/deploy-cloud.sh`
-  5. shell into `openclaw-gateway` and approve the Telegram pairing with:
-     `openclaw pairing list telegram` then `openclaw pairing approve telegram <CODE>`
-  6. Telegram messaging is now confirmed working in Docker-local; cloud should follow the same pairing/state model because `/home/node/.openclaw` persists on the host-mounted state path
+```bash
+bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+```
 
-Notes:
-- local Docker uses named volumes for `~/.openclaw`, `workspace/.openclaw`, and `workspace/memory`
-- local Docker bootstrap is intentionally modeled on upstream `docker-setup.sh`, but preserves this repo's rendered-config and shared-workspace approach
-- the Docker image installs `ripgrep` so `rg` is available inside Docker-local and cloud containers
-- cloud Docker persists runtime state under `/opt/openclaw/state`
-- the runtime gateway mounts the reviewed repository workspace read-only and only writable state paths remain mutable
-- the writable runtime paths are `/home/node/.openclaw`, `/workspace/.openclaw`, and `/workspace/memory`
-- the optional `openclaw-dev` container is a separate root-owned dev shell for VS Code and experiments; it shares the same runtime volumes but does not run a second gateway
-- container startup treats the rendered config as authoritative for managed fields and preserves runtime metadata in persisted state
-- rendered config is the right place for `gateway.auth` and other config-bound secrets
-- provider auth is established inside each environment and persists in runtime state under `~/.openclaw` or `/opt/openclaw/state/home`
-- redeploying a container preserves provider auth only if the persistent state path or volume is preserved
-- persisted runtime state should be treated as sensitive because it may contain live provider credentials
-- runtime containers receive only rendered runtime config and writable state paths; they do not mount the whole repo config tree
-- steady-state operations should use targeted commands such as `openclaw models auth ...` and `openclaw devices ...`; avoid `onboard`/`configure` for routine container administration
-- model auth should be bootstrapped directly inside the target environment rather than copied across native-local, Docker-local, and cloud
-- for routine container administration, shell into `openclaw-gateway` and run OpenClaw commands there rather than relying on long one-off `docker compose ... run` commands
-- `boot-md` is explicitly disabled in the repo-managed templates; the allowed bundled internal hooks are `bootstrap-extra-files`, `command-logger`, and `session-memory`
-- Telegram DM pairing approvals live under `~/.openclaw/credentials/`; OpenClaw node/app device pairing approvals live under `~/.openclaw/devices/`
+### Setup scripts
 
-Email integration starter:
-- A Gmail `gog` integration skill is available at [pip-gmail-gog](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
-- A Gmail send skill is available at [pip-gmail-send](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-send/SKILL.md)
-- Gmail auth split:
-  - native local may keep using user OAuth for `pip@meador.me`
-  - Docker-local and cloud should prefer Google Workspace service-account auth for `pip@meador.me`
-- Docker-local digest testing does not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel
-- for Docker-local, treat Gmail Pub/Sub/webhook configuration as optional future work; read/send testing should use `gog gmail search` and `gog gmail send` only
-- Local-first Gmail webhook setup helper:
-  ```bash
-  bash ./scripts/gmail/setup-gog-local.sh pip@meador.me [PROJECT_ID]
-  ```
-- Manual local watcher helper (only if not using gateway-managed watcher):
-  ```bash
-  bash ./scripts/gmail/run-gog-local.sh
-  ```
-- Local send helper:
-  ```bash
-  printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh pip@meador.me sean@meador.me "Pip test" -
-  ```
-- Docker Gmail automatic bootstrap:
-  - paste the Workspace service-account JSON object into `config/secrets.local.json` under `gog.serviceAccounts["pip@meador.me"]`
-  - rerun:
-    ```bash
-    bash ./scripts/prepare-local-docker.sh
-    docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
-    ```
-  - the container installs `gog` service-account auth automatically on startup
-- Docker Gmail one-shot bootstrap helper:
-  ```bash
-  bash ./scripts/gmail/bootstrap-gog-docker-local.sh \
-    pip@meador.me \
-    /ABS/PATH/service-account.json
-  ```
-  This command starts the Docker-local gateway if needed and configures `gog` inside the container to use the Workspace service account for `pip@meador.me`.
-- Cloud Gmail bootstrap helper:
-  ```bash
-  bash ./scripts/gmail/bootstrap-gog-cloud-service-account.sh \
-    VM_NAME \
-    PROJECT_ID \
-    ZONE \
-    /ABS/PATH/service-account.json \
-    pip@meador.me
-  ```
-  This copies the service-account key to the VM, installs it into the cloud runtime state, and configures `gog` inside the cloud container to impersonate `pip@meador.me`.
-- Local HTML send helper:
-  ```bash
-  printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh \
-    pip@meador.me \
-    sean@meador.me \
-    "Pip HTML test" \
-    - \
-    /Users/sean/Repos/gcp-claw-lab/workspace/.tmp/pip-test.html
-  ```
-- Current daily digest default is 24-hour historical pull from email using sender/title/content matching; Pub/Sub/webhook ingestion is kept configured as optional context/future realtime enhancement.
-- For Docker-local specifically, keep Pub/Sub/webhook ingestion disabled by default until you intentionally revisit realtime ingestion.
-- `pip-newsletter-digest` now sends the completed digest by default as an HTML email with a plain-text fallback from `pip@meador.me` to `sean@meador.me` with subject `Pip Newsletter Digest - YYYY-MM-DD`.
+Primary scripts:
 
-Gmail + gog + Tailscale runbook (local-native):
-- Preconditions:
-  - `gcloud`, `openclaw`, `tailscale`, and `gog` are installed
-  - Google OAuth/Gmail setup is completed for `pip@meador.me`
-  - GCP project is `agent-lab-488918`
-- If org policy requires an environment tag, bind it on project `707779566246` before setup.
-- Keep gateway Tailscale mode off:
-  ```bash
-  openclaw config set gateway.tailscale.mode off
-  ```
-- Bring up Tailscale:
-  ```bash
-  tailscale up
-  tailscale status
-  ```
-- Configure Gmail webhook setup with Tailscale Funnel:
-  ```bash
-  openclaw webhooks gmail setup \
-    --account pip@meador.me \
-    --project agent-lab-488918 \
-    --tailscale funnel
-  ```
-- Run watcher when needed:
-  ```bash
-  openclaw webhooks gmail run
-  ```
+- local Docker
+  - [prepare-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/prepare-local-docker.sh)
+  - [run-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-local.sh)
+  - [reset-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh)
+  - [print-local-docker-access.sh](/Users/sean/Repos/gcp-claw-lab/scripts/print-local-docker-access.sh)
+- cloud
+  - [push-cloud-runtime-secret.sh](/Users/sean/Repos/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh)
+  - [sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
+  - [deploy-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/deploy-cloud.sh)
+  - [run-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-cloud.sh)
 
-Decisions captured:
-- Newsletter digest source of truth is Gmail API historical backfill over rolling 24 hours.
-- Pub/Sub/webhook ingestion remains configured as optional context/future realtime use.
-- Native local remains allowed to use OAuth when that is the cleaner local path.
-- Docker-local and cloud should use explicit rendered config overlays plus Gmail Workspace service-account auth rather than inheriting native-local runtime state.
-- Current newsletter digest behavior is defined in [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md).
-- Telegram pairing workflow uses:
-  - `openclaw pairing list telegram`
-  - `openclaw pairing approve telegram <CODE>`
+Supporting scripts:
 
-Reading workflow starter skills:
-- [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md) for newsletter-only daily digest (email input only)
-- Default behavior for [pip-newsletter-digest](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-newsletter-digest/SKILL.md):
-  1. generate the digest
-  2. email it to `sean@meador.me`
-  3. if send fails, still return the digest and report the delivery failure
+- Gmail service-account bootstrap
+  - [bootstrap-gog-docker-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh)
+  - [bootstrap-gog-cloud-service-account.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
+- Gmail send helper
+  - [send-gog-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/send-gog-local.sh)
+- local shutdown
+  - [security-shutdown-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/security-shutdown-local.sh)
 
-Local security shutdown helper:
-- Stop local OpenClaw runtime (Docker + native service/processes), bring Tailscale down, and quit the Tailscale app UI:
-  ```bash
-  bash ./scripts/security-shutdown-local.sh
-  ```
-- Keep the Tailscale app UI running:
-  ```bash
-  bash ./scripts/security-shutdown-local.sh --keep-tailscale-app
-  ```
+### Gmail testing
 
-Cloud operator notes:
-- OpenTofu creates the Secret Manager secret container and grants the VM service account secret accessor on that secret
-- Push a secret version with [push-cloud-runtime-secret.sh](/Users/sean/Repos/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh) before first cloud runtime start
-- Sync the app bundle to `/opt/openclaw/app` on the VM with [sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
-- [deploy-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/deploy-cloud.sh) installs Docker on the VM if needed, renders the cloud runtime config on the host, and starts the gateway container
-- Cloud runtime state persists under `/opt/openclaw/state/{home,runtime,workspace,memory}`
+Host test:
 
-Cloud secret payload shape:
-- the GCP secret should contain a JSON object shaped like [secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
-- the payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
-- that JSON is merged into [openclaw.cloud.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.cloud.json5.example) to produce `/opt/openclaw/state/runtime/openclaw.json`
+```bash
+printf 'Pip Gmail send test\n' | gog gmail send \
+  --account pip@meador.me \
+  --to sean@meador.me \
+  --subject "Pip Gmail send test" \
+  --body-file=-
+```
+
+Docker-local test:
+
+```bash
+docker compose --env-file /Users/sean/Repos/gcp-claw-lab/config/docker.build.env -f /Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
+  bash -lc 'printf "Docker gateway Gmail send test\n" | gog gmail send --account pip@meador.me --to sean@meador.me --subject "Pip Docker Gmail send test" --body-file=-'
+```
+
+Docker-local read test:
+
+```bash
+docker compose --env-file /Users/sean/Repos/gcp-claw-lab/config/docker.build.env -f /Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
+  gog gmail search "newer_than:1d" --account pip@meador.me --plain
+```

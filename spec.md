@@ -243,7 +243,7 @@ OpenClaw is treated as:
 Therefore:
 
 - Runs in isolated private VM
-- No marketplace skills initially
+- No unreviewed extension surface initially
 - No exec permissions unless explicitly enabled
 - Least privilege OAuth scopes
 - Dedicated agent email account recommended
@@ -332,12 +332,11 @@ Follow a local-first, cloud-parity workflow:
 - Develop and test OpenClaw behavior locally first
 - Keep local and cloud runtime inputs as similar as practical
 - Use Docker as the cloud deployment target
-- Keep the workspace, skills, and agent policy in the repository so local and cloud runs use the same reviewed source of truth
+- Keep the workspace and reviewed policy/configuration in the repository so local and cloud runs use the same source of truth
 
 Local development:
 - Prefer a local OpenClaw runtime for the fastest iteration loop
 - Keep the active workspace in the repository
-- Test new skills locally before deploying them to the VM
 - Keep the local gateway bound to loopback only unless there is an explicit need for remote exposure
 - Do not enable Tailscale or tailnet exposure initially
 
@@ -345,7 +344,7 @@ Cloud deployment:
 - Run OpenClaw in Docker on the VM
 - Mount the same reviewed workspace/configuration used for local development
 - Fetch secrets on the VM at startup and inject them into the container runtime
-- Keep the container image generic and keep agent behavior in mounted config and skills
+- Keep the container image generic and keep agent behavior in mounted config and workspace files
 
 Initial deployment:
 - Docker container recommended
@@ -358,7 +357,7 @@ Initial deployment:
 Do NOT:
 - Mount entire filesystem
 - Grant broad shell execution
-- Install third-party skills initially
+- Add unreviewed extensions initially
 
 ## OpenClaw Runtime Configuration
 
@@ -386,9 +385,7 @@ Secret ownership model:
 
 Version control in Git:
 - OpenClaw base configuration
-- Agent instruction files such as `AGENTS.md`
-- Tool policy files such as `TOOLS.md`
-- Approved workspace skills
+- Reviewed workspace policy and instructions
 - Container or systemd definitions
 - Bootstrap and config-rendering scripts
 
@@ -422,7 +419,6 @@ Filesystem requirements for persisted runtime state:
 Recommended repository layout:
 - `/opentofu/`
 - `/workspace/`
-- `/workspace/skills/`
 - `/config/`
 - `/docker/`
 - `/scripts/`
@@ -456,7 +452,7 @@ Container operations guidance:
   - Docker-local API-key providers should prefer env-based injection derived from the local secret overlay
   - interactive bootstrap should be reserved for auth flows that cannot be expressed as static secret input
 - Routine gateway token rotation should happen by updating the environment-specific secret payload and restarting or redeploying the gateway
-- Routine skills and hooks changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
+- Routine runtime behavior changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
 - Routine container administration should prefer shelling into the running `openclaw-gateway` container and running OpenClaw commands there, rather than relying on long one-off `docker compose ... run` invocations
 - Telegram pairing should use the explicit pairing commands for that channel, e.g. `openclaw pairing list telegram` and `openclaw pairing approve telegram <CODE>`
@@ -487,6 +483,16 @@ Recommended workflow:
 7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup.
 8. Deploy or sync configuration to the VM.
 9. Start or restart the OpenClaw service.
+
+Dependency/version workflow:
+- Repository-pinned runtime versions should live in a single checked-in manifest.
+- Docker build args for local and cloud should be rendered from that manifest rather than hardcoded ad hoc in shell scripts.
+- Node/Cloud Function dependencies should be pinned exactly and accompanied by a lockfile.
+- Routine dependency updates should follow:
+  1. edit the central version manifest
+  2. regenerate derived build files and package manifests
+  3. refresh lockfiles
+  4. rebuild/test locally
 
 Authentication guidance by environment:
 - Native local should prefer direct interactive OAuth/provider login when that is the cleanest local operator workflow.
@@ -526,85 +532,107 @@ Operational guidance:
   - for Docker-local, the local secret overlay may hold `auth.profiles.<profile>.apiKey`, which is written to `config/docker.local.env` during local bootstrap and removed from the rendered OpenClaw config
   - reserve interactive `paste-token` flows for providers or environments that cannot use static key injection cleanly
 - Treat Telegram DM approval files in `credentials/` with the same sensitivity as node/app device approval files in `devices/`
-- Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy or skill rewrites
+- Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy rewrites
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately
 
-## Skill Governance
+## Dependency Management Approach
 
-Skills must be treated as code and reviewed before use.
+The dependency model is intentionally split by ecosystem.
 
-Phase 1 policy:
-- Allow only workspace-local reviewed skills
-- Do not enable third-party marketplace or community skills
-- Do not rely on user-global skill directories such as `~/.openclaw/skills` as a primary source
-- Disable or avoid bundled skills unless explicitly approved for the lab
+Cross-ecosystem runtime versions:
+- Keep a single checked-in version manifest for:
+  - OpenClaw runtime version
+  - Gog version
+  - Docker base images
+  - Cloud Function Node runtime
+  - Cloud Function package versions
+- Render Docker build args from that manifest into an environment file consumed by local and cloud compose flows.
 
-Skill storage model:
-- Store approved skills under the workspace `skills/` directory
-- Version control each skill definition in Git
-- Keep the active skill set minimal and task-specific
+Node-managed dependencies:
+- Use exact versions plus a lockfile for the Cloud Function package.
+- Prefer `npm ci`-style reproducibility for Node packages over floating installs.
 
-Each skill should define:
-- Purpose and expected behavior
-- Allowed tools
-- Allowed filesystem paths
-- Allowed external domains or APIs
-- Required secrets or environment variables
-- Refusal conditions and safety limits
+Host-native tools:
+- Treat native-local tools such as `openclaw`, `gog`, `ripgrep`, Docker Desktop/OrbStack, `gcloud`, and `tofu` as operator-managed.
+- The repository should report required/tested versions clearly, but it does not need to own workstation package installation.
 
-Skill review checklist:
-- Verify the skill has a narrow scope
-- Verify it does not request unnecessary shell or filesystem access
-- Verify any external network access is intentional and allowlisted
-- Verify secret requirements are minimal
-- Verify the skill cannot silently broaden agent permissions
+Update flow:
+1. Edit the central version manifest.
+2. Regenerate derived Docker build env and package manifests.
+3. Refresh lockfiles where applicable.
+4. Rebuild Docker-local and cloud images.
+5. Validate local-native and Docker-local tool/runtime parity.
 
-Task model:
-- Persistent behavior and global safety constraints belong in `AGENTS.md`
-- Tool restrictions and execution policy belong in `TOOLS.md`
-- Reusable workflows belong in reviewed workspace skills
-- Ad hoc shell access should not be the default mechanism for recurring tasks
+## Authentication and Secret Management Approach
 
-Initial recommended skills:
-- `gmail-triage`
-- `calendar-brief`
-- `allowed-web-research`
-- `report-daily-summary`
-- `opentofu-readonly-review`
-- `pip-gmail-gog` (OpenClaw Gmail PubSub integration via `gog` in local-first testing)
-- `pip-gmail-send` (outbound Gmail send via `gog` for Pip's account)
-- `pip-newsletter-digest` (newsletter-only daily digest from email intake)
+Authentication is split between config-bound secrets and runtime auth state.
 
-Newsletter ingest policy (current phase):
-- Primary source of truth for daily digest is rolling 24-hour historical pull using sender/title/content matching
-- Pub/Sub/webhook ingestion is retained as optional context and future realtime enhancement, not a hard prerequisite for digest coverage
-- For Docker-local, Gmail Pub/Sub/webhook ingestion should stay disabled by default until realtime ingestion is intentionally revisited.
-- Digest jobs should remain reliable even if webhook events are delayed or missed
+Config-bound secrets:
+- Environment-specific secret overlays define:
+  - gateway auth token
+  - provider profile metadata
+  - channel tokens
+  - optional hook configuration
+- Local and cloud should use separate secret payloads with the same schema.
 
-Gmail + gog + Tailscale implementation decisions:
-- Primary setup path is local-native first, then Docker/cloud rollout after behavior is stable.
-- Native-local Gmail auth may use OAuth; Docker-local and cloud should use the Workspace service account path for `pip@meador.me`.
-- Gateway Tailscale exposure should remain `off` for this workflow; Tailscale Funnel is used for Gmail webhook ingress only.
-- Gmail webhook setup uses:
-  - `openclaw webhooks gmail setup --account pip@meador.me --project agent-lab-488918 --tailscale funnel`
-- Watcher runtime command remains available:
-  - `openclaw webhooks gmail run`
-- If organizational policy blocks project selection until tagging is complete, ensure the project has required `environment` tag binding before Gmail setup.
-- Daily digest runs are approved to use Gmail API backfill (rolling 24h) as the default operational mode.
-- Daily digest delivery is email-only by default in the current phase:
-  - from `pip@meador.me`
-  - to `sean@meador.me`
-  - subject format `Pip Newsletter Digest - YYYY-MM-DD`
-  - HTML body with inline styling for email clients, plus a plain-text fallback
-  - if send fails, digest generation still succeeds and reports the delivery failure
+Runtime auth state:
+- Runtime-issued auth artifacts stay environment-local:
+  - native local: `~/.openclaw`
+  - Docker-local: `/home/node/.openclaw`
+  - cloud: `/opt/openclaw/state/home`
+- Native-local runtime state must not be used as an implicit configuration source for Docker-local or cloud.
 
+Recommended auth model by environment:
+- Native local:
+  - interactive OAuth/provider login is acceptable when it is the cleanest operator path
+- Docker-local:
+  - prefer non-interactive auth
+  - API-key providers may be sourced from the local secret overlay and emitted into Docker env
+  - Gmail should prefer Workspace service-account auth for `pip@meador.me`
+- Cloud:
+  - prefer non-interactive auth and Secret Manager-backed config
+  - Gmail should prefer Workspace service-account auth for `pip@meador.me`
 
-Future enhancements:
-- Add skill auditing pipeline
-- Add monitoring dashboard
-- Add log-based alerts
-- Improve local developer experience with a clearer steady-state playbook and fewer commands for provider registration, token rotation, and device pairing
+Gmail approach:
+- Gmail historical pull is sufficient for digest/read workflows.
+- Pub/Sub/webhook ingestion is optional future enhancement, not a prerequisite for digest coverage.
+- Docker-local should keep Gmail Pub/Sub/webhook ingestion disabled by default unless realtime ingestion is being tested intentionally.
+
+## Setup and Bootstrap Approach
+
+Bootstrap scripts should do three things consistently:
+- render environment-specific runtime config from repo templates plus secret overlays
+- render any additional bootstrap artifacts needed by Docker or helper tools
+- start or update the runtime without depending on hidden local state
+
+Local Docker:
+- A single preparation step should:
+  - render Docker build env
+  - render Docker runtime config
+  - render Docker-local secret/bootstrap artifacts
+  - build the image
+  - initialize writable state paths
+- Docker-local should remain cloud-parity oriented, with a separate gateway port and separate runtime state from native local.
+
+Cloud:
+- Cloud deploy should:
+  - sync the repo-managed application bundle
+  - fetch the cloud secret payload from Secret Manager
+  - render runtime config on the VM host
+  - start or restart Docker services
+- Cloud deploy should preserve persisted runtime state under `/opt/openclaw/state`.
+
+Operational stance:
+- Repo-managed templates and scripts are the source of truth for reviewed behavior.
+- Secret overlays are the source of truth for config-bound secret values.
+- Runtime state is durable but environment-local and not authoritative for reviewed configuration.
+
+## Future Enhancements
+
+- Add monitoring/dashboard coverage for runtime health and cost controls
+- Tighten cloud host package version policy if distro-managed versions become too loose
+- Reduce operator steps further by consolidating more setup flows into deterministic scripts
 
 ---
 
@@ -647,4 +675,4 @@ Phase 2:
 
 Phase 3:
 - Explore autonomous coding workflows
-- Refine local and cloud operator tooling so provider registration, token rotation, skill updates, and device pairing are less clunky
+- Refine local and cloud operator tooling so provider registration, token rotation, and device pairing are less clunky
