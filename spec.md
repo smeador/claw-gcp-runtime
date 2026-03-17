@@ -494,6 +494,7 @@ Authentication guidance by environment:
 - Native-local runtime state must not be treated as an implicit config source for Docker-local or cloud.
 - Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `pip@meador.me`.
 - Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
+- Docker-local digest/read-send workflows should not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel; those remain optional future realtime enhancements.
 - OpenAI/model auth should keep the same profile names across environments.
 - Native local may use OAuth or other local runtime-managed auth when that is the cleaner operator path.
 - Docker-local may derive API-key provider secrets from the same local secret overlay used for config rendering, but the rendered config should omit the raw key and rely on the injected provider env var.
@@ -578,6 +579,7 @@ Initial recommended skills:
 Newsletter ingest policy (current phase):
 - Primary source of truth for daily digest is rolling 24-hour historical pull using sender/title/content matching
 - Pub/Sub/webhook ingestion is retained as optional context and future realtime enhancement, not a hard prerequisite for digest coverage
+- For Docker-local, Gmail Pub/Sub/webhook ingestion should stay disabled by default until realtime ingestion is intentionally revisited.
 - Digest jobs should remain reliable even if webhook events are delayed or missed
 
 Gmail + gog + Tailscale implementation decisions:
