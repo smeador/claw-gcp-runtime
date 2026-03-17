@@ -21,6 +21,8 @@ config/secrets.cloud.json
 config/docker.local.env
 config/rendered/
 docker/compose.override.yml
+.secrets/
+Gmail Delegation Claw Runtime.json
 workspace/.openclaw/
 workspace/.tmp/
 workspace/tmp/

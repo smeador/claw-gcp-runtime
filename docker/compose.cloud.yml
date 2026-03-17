@@ -9,7 +9,6 @@ services:
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
     volumes:
       - ../workspace:/workspace:ro
-      - ../config:/config:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/home:/home/node/.openclaw
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/runtime:/runtime:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/workspace:/workspace/.openclaw
@@ -33,7 +32,6 @@ services:
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
     volumes:
       - ../workspace:/workspace:ro
-      - ../config:/config:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/home:/home/node/.openclaw
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/runtime:/runtime:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/workspace:/workspace/.openclaw
