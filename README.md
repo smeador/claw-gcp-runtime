@@ -97,6 +97,7 @@ Local Docker secret source:
 - `./scripts/prepare-local-docker.sh` also renders `config/docker.local.env` from the same local secret file
 - if `gog.serviceAccounts["automation@example.com"]` is present, `./scripts/prepare-local-docker.sh` also renders `config/rendered/gog-service-account.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
+- for Docker-local, leave Gmail Pub/Sub/webhook hooks disabled unless you are explicitly testing realtime ingestion
 - if Docker-local should use the same Gmail hook settings as native local, copy them explicitly into the local secret overlay once with:
   ```bash
   node ./scripts/gmail/sync-native-gmail-hook-to-secret-overlay.mjs config/secrets.local.json
@@ -235,6 +236,8 @@ Email integration starter:
 - Gmail auth split:
   - native local may keep using user OAuth for `automation@example.com`
   - Docker-local and cloud should prefer Google Workspace service-account auth for `automation@example.com`
+- Docker-local digest testing does not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel
+- for Docker-local, treat Gmail Pub/Sub/webhook configuration as optional future work; read/send testing should use `gog gmail search` and `gog gmail send` only
 - Local-first Gmail webhook setup helper:
   ```bash
   bash ./scripts/gmail/setup-gog-local.sh automation@example.com [PROJECT_ID]
@@ -282,6 +285,7 @@ Email integration starter:
     /Users/sean/Repos/gcp-claw-lab/workspace/.tmp/pip-test.html
   ```
 - Current daily digest default is 24-hour historical pull from email using sender/title/content matching; Pub/Sub/webhook ingestion is kept configured as optional context/future realtime enhancement.
+- For Docker-local specifically, keep Pub/Sub/webhook ingestion disabled by default until you intentionally revisit realtime ingestion.
 - `pip-newsletter-digest` now sends the completed digest by default as an HTML email with a plain-text fallback from `automation@example.com` to `user@example.com` with subject `Pip Newsletter Digest - YYYY-MM-DD`.
 
 Gmail + gog + Tailscale runbook (local-native):
