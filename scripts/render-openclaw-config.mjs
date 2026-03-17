@@ -31,6 +31,25 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+function stripLocalOnlyProviderSecrets(value) {
+  if (Array.isArray(value)) {
+    return value.map(stripLocalOnlyProviderSecrets);
+  }
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  const clone = {};
+  for (const [key, child] of Object.entries(value)) {
+    clone[key] = stripLocalOnlyProviderSecrets(child);
+  }
+
+  delete clone.apiKey;
+  delete clone.apiKeyEnvVar;
+
+  return clone;
+}
+
 function mergeDeep(base, overlay) {
   if (overlay === undefined) {
     return base;
@@ -73,7 +92,8 @@ if (localSecretsPath) {
   secretOverlay = JSON.parse(gcpSecretJson);
 }
 
-const rendered = mergeDeep(template, secretOverlay);
+const rendered = stripLocalOnlyProviderSecrets(mergeDeep(template, secretOverlay));
+delete rendered.gog;
 ensureDir(outputPath);
 fs.writeFileSync(outputPath, `${JSON.stringify(rendered, null, 2)}\n`, {mode: 0o600});
 console.log(`Rendered OpenClaw config to ${outputPath}`);

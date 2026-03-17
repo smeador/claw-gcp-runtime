@@ -79,18 +79,23 @@ Authentication model:
   - Docker local: `/home/node/.openclaw` on the Docker volume
   - cloud: `${OPENCLAW_DEPLOY_ROOT}/state/home`
 - do not make Docker-local or cloud depend on native-local runtime state as an implicit config source
+- for local Docker, `gog` service-account bootstrap data may also be stored in `config/secrets.local.json` under `gog.serviceAccounts`; that branch is rendered into a separate Docker bootstrap file and not merged into `openclaw.json`
 
 Model auth split:
-- the repository secret overlays define `auth.profiles` and provider mode only
-- actual model tokens or provider sessions are environment-local runtime state, not repo-managed config
+- native local may keep using OAuth or provider-managed local auth in `~/.openclaw`
+- Docker-local may source API-key providers from the same local secret overlay file
+- when `config/secrets.local.json` includes `auth.profiles.<profile>.apiKey` for an `api_key` profile, `./scripts/prepare-local-docker.sh` emits it into `config/docker.local.env` and strips the raw token out of the rendered OpenClaw config
+- actual OAuth sessions or other runtime-managed provider auth remain environment-local runtime state, not repo-managed config
 - native local model auth should be established in `~/.openclaw`
-- Docker-local model auth should be established inside `/home/node/.openclaw` for the container runtime
+- Docker-local non-API-key model auth should be established inside `/home/node/.openclaw` for the container runtime
 - cloud model auth should be established inside `${OPENCLAW_DEPLOY_ROOT}/state/home`
 
 Local Docker secret source:
 - create `config/secrets.local.json` from [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
 - this file is ignored by Git
 - `./scripts/render-openclaw-local.sh` renders `config/rendered/openclaw.json`
+- `./scripts/prepare-local-docker.sh` also renders `config/docker.local.env` from the same local secret file
+- if `gog.serviceAccounts["pip@meador.me"]` is present, `./scripts/prepare-local-docker.sh` also renders `config/rendered/gog-service-account.json`
 - the secret payload contract is documented in [openclaw.runtime-secrets.schema.json](/Users/sean/Repos/gcp-claw-lab/config/openclaw.runtime-secrets.schema.json)
 - if Docker-local should use the same Gmail hook settings as native local, copy them explicitly into the local secret overlay once with:
   ```bash
@@ -154,10 +159,11 @@ Steady-state operator actions:
   openclaw pairing list telegram
   openclaw pairing approve telegram <CODE>
   ```
-- Bootstrap OpenAI model auth into Docker-local runtime state:
+- For Docker-local OpenAI API-key auth, set `auth.profiles.openai:default.apiKey` in `config/secrets.local.json` and rerun:
   ```bash
   cd /Users/sean/Repos/gcp-claw-lab
-  bash ./scripts/models/bootstrap-openai-docker-local.sh
+  bash ./scripts/prepare-local-docker.sh
+  docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
   ```
 - Shell into cloud for routine operations:
   ```bash
@@ -176,6 +182,10 @@ Steady-state operator actions:
   ```
 - Rotate the Docker-local gateway token:
   1. edit `config/secrets.local.json`
+  2. run `./scripts/prepare-local-docker.sh`
+  3. run `docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway`
+- Rotate the Docker-local OpenAI API key:
+  1. edit `auth.profiles.openai:default.apiKey` in `config/secrets.local.json`
   2. run `./scripts/prepare-local-docker.sh`
   3. run `docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway`
 - Rotate the cloud gateway token:
@@ -237,7 +247,15 @@ Email integration starter:
   ```bash
   printf 'This is a test from Pip.\n' | bash ./scripts/gmail/send-gog-local.sh pip@meador.me sean@meador.me "Pip test" -
   ```
-- Docker Gmail bootstrap helper:
+- Docker Gmail automatic bootstrap:
+  - paste the Workspace service-account JSON object into `config/secrets.local.json` under `gog.serviceAccounts["pip@meador.me"]`
+  - rerun:
+    ```bash
+    bash ./scripts/prepare-local-docker.sh
+    docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+    ```
+  - the container installs `gog` service-account auth automatically on startup
+- Docker Gmail one-shot bootstrap helper:
   ```bash
   bash ./scripts/gmail/bootstrap-gog-docker-local.sh \
     pip@meador.me \

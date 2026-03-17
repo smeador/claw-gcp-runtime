@@ -27,6 +27,5 @@ Next steps:
 1. bash ./scripts/prepare-local-docker.sh
 2. bash ./scripts/run-local.sh
 3. bash ./scripts/print-local-docker-access.sh
-4. Re-register provider auth with:
-   bash ./scripts/models/bootstrap-openai-docker-local.sh
+4. If Docker-local uses an API-key provider, confirm the key in config/secrets.local.json and rerun prepare-local-docker.sh
 EOF

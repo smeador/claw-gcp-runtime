@@ -3,13 +3,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-if [ ! -f config/docker.local.env ]; then
-  mkdir -p config
-  cat > config/docker.local.env <<EOF
-GOG_ACCOUNT=pip@meador.me
-EOF
-  chmod 600 config/docker.local.env
-fi
+node ./scripts/render-docker-local-env.mjs \
+  --secrets config/secrets.local.json \
+  --output config/docker.local.env
+node ./scripts/render-gog-service-account-key.mjs \
+  --secrets config/secrets.local.json \
+  --account "${GOG_ACCOUNT:-pip@meador.me}" \
+  --output config/rendered/gog-service-account.json
 
 bash ./scripts/render-openclaw-local.sh
 mkdir -p workspace/.tmp
