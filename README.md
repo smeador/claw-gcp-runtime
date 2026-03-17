@@ -80,6 +80,13 @@ Authentication model:
   - cloud: `${OPENCLAW_DEPLOY_ROOT}/state/home`
 - do not make Docker-local or cloud depend on native-local runtime state as an implicit config source
 
+Model auth split:
+- the repository secret overlays define `auth.profiles` and provider mode only
+- actual model tokens or provider sessions are environment-local runtime state, not repo-managed config
+- native local model auth should be established in `~/.openclaw`
+- Docker-local model auth should be established inside `/home/node/.openclaw` for the container runtime
+- cloud model auth should be established inside `${OPENCLAW_DEPLOY_ROOT}/state/home`
+
 Local Docker secret source:
 - create `config/secrets.local.json` from [secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
 - this file is ignored by Git
@@ -146,9 +153,11 @@ Steady-state operator actions:
   ```bash
   openclaw pairing list telegram
   openclaw pairing approve telegram <CODE>
-  openclaw models auth login --provider openai
-  # or
-  openclaw models auth paste-token --provider openai
+  ```
+- Bootstrap OpenAI model auth into Docker-local runtime state:
+  ```bash
+  cd /Users/sean/Repos/gcp-claw-lab
+  bash ./scripts/models/bootstrap-openai-docker-local.sh
   ```
 - Shell into cloud for routine operations:
   ```bash
@@ -159,9 +168,11 @@ Steady-state operator actions:
   ```bash
   openclaw pairing list telegram
   openclaw pairing approve telegram <CODE>
-  openclaw models auth login --provider openai
-  # or
-  openclaw models auth paste-token --provider openai
+  ```
+- Bootstrap OpenAI model auth into cloud runtime state:
+  ```bash
+  cd /Users/sean/Repos/gcp-claw-lab
+  bash ./scripts/models/bootstrap-openai-cloud.sh agent-lab-vm agent-lab-488918 us-central1-a
   ```
 - Rotate the Docker-local gateway token:
   1. edit `config/secrets.local.json`
@@ -203,6 +214,7 @@ Notes:
 - persisted runtime state should be treated as sensitive because it may contain live provider credentials
 - runtime containers receive only rendered runtime config and writable state paths; they do not mount the whole repo config tree
 - steady-state operations should use targeted commands such as `openclaw models auth ...` and `openclaw devices ...`; avoid `onboard`/`configure` for routine container administration
+- model auth should be bootstrapped directly inside the target environment rather than copied across native-local, Docker-local, and cloud
 - for routine container administration, shell into `openclaw-gateway` and run OpenClaw commands there rather than relying on long one-off `docker compose ... run` commands
 - `boot-md` is explicitly disabled in the repo-managed templates; the allowed bundled internal hooks are `bootstrap-extra-files`, `command-logger`, and `session-memory`
 - Telegram DM pairing approvals live under `~/.openclaw/credentials/`; OpenClaw node/app device pairing approvals live under `~/.openclaw/devices/`

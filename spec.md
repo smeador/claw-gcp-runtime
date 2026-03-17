@@ -382,6 +382,7 @@ Secret ownership model:
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
 - Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
+- `auth.profiles` in the config payload should define provider/profile metadata, not serve as a cross-environment transport for live model tokens
 
 Version control in Git:
 - OpenClaw base configuration
@@ -490,6 +491,7 @@ Authentication guidance by environment:
 - Native-local runtime state must not be treated as an implicit config source for Docker-local or cloud.
 - Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `pip@meador.me`.
 - Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
+- OpenAI/model auth should keep the same profile names across environments, but the actual token/session material should be established and stored separately inside each environment runtime state.
 
 Messaging platform guidance:
 - Start with Telegram as the first and only messaging platform for phase 1
@@ -511,6 +513,9 @@ Operational guidance:
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
 - Treat paired-device state as environment-local sensitive runtime state that survives normal redeploys when the state path is preserved
+- For OpenAI/API-key style providers, standardize on:
+  - `auth.profiles` in the rendered config declaring the profile and mode
+  - `openclaw models auth paste-token --provider openai` executed inside the target environment to store the live token in that environment only
 - Treat Telegram DM approval files in `credentials/` with the same sensitivity as node/app device approval files in `devices/`
 - Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy or skill rewrites
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging

@@ -33,10 +33,8 @@ Then run these commands inside the container:
 - Telegram pairing:
   openclaw pairing list telegram
   openclaw pairing approve telegram <CODE>
-- Update provider auth with an interactive login flow:
-  openclaw models auth login --provider openai
-- Update provider auth with an API key:
-  openclaw models auth paste-token --provider openai
+- Update OpenAI provider auth:
+  bash ./scripts/models/bootstrap-openai-docker-local.sh
 
 Steady-state operations:
 - Rotate the Docker-local gateway token:

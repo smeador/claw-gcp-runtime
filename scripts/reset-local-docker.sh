@@ -28,5 +28,5 @@ Next steps:
 2. bash ./scripts/run-local.sh
 3. bash ./scripts/print-local-docker-access.sh
 4. Re-register provider auth with:
-   docker compose -f docker/compose.local.yml run --rm openclaw-cli models auth login --provider openai
+   bash ./scripts/models/bootstrap-openai-docker-local.sh
 EOF
