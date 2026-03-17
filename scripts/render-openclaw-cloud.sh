@@ -30,6 +30,7 @@ SECRET_JSON="$(
 )"
 
 cd "$(dirname "$0")/.."
+node scripts/render-docker-build-env.mjs --output config/docker.build.env
 
 node scripts/render-openclaw-config.mjs \
   --template config/openclaw.cloud.json5.example \

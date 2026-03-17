@@ -19,4 +19,4 @@ gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  --command "cd '${REMOTE_APP_ROOT}' && docker compose -f docker/compose.cloud.yml exec openclaw-gateway openclaw models auth paste-token --provider '${PROVIDER}'"
+  --command "cd '${REMOTE_APP_ROOT}' && docker compose --env-file config/docker.build.env -f docker/compose.cloud.yml exec openclaw-gateway openclaw models auth paste-token --provider '${PROVIDER}'"

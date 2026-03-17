@@ -1,0 +1,17 @@
+{
+  "docker": {
+    "goImage": "golang:1.25-bookworm",
+    "nodeImage": "node:22-bookworm-slim"
+  },
+  "runtime": {
+    "openclawVersion": "2026.3.13",
+    "gogVersion": "v0.12.0"
+  },
+  "cloudFunction": {
+    "node": "22",
+    "dependencies": {
+      "@google-cloud/compute": "5.1.0",
+      "@google-cloud/functions-framework": "3.4.6"
+    }
+  }
+}

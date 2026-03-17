@@ -1,12 +1,16 @@
-FROM golang:1.25-bookworm AS gog-builder
-
+ARG GO_IMAGE=golang:1.25-bookworm
+ARG NODE_IMAGE=node:22-bookworm-slim
 ARG GOG_VERSION=v0.11.0
+ARG OPENCLAW_NPM_DIST_TAG=2026.2.26
+
+FROM ${GO_IMAGE} AS gog-builder
 
 RUN CGO_ENABLED=0 go install github.com/steipete/gogcli/cmd/gog@${GOG_VERSION}
 
-FROM node:22-bookworm-slim
+FROM ${NODE_IMAGE}
 
-ARG OPENCLAW_NPM_DIST_TAG=latest
+ARG GOG_VERSION
+ARG OPENCLAW_NPM_DIST_TAG
 ARG OPENCLAW_APT_PACKAGES=""
 
 ENV HOME=/home/node

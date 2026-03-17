@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
 QUIT_TAILSCALE_APP=1
 if [ "${1:-}" = "--keep-tailscale-app" ]; then
@@ -10,7 +11,7 @@ fi
 
 echo "Stopping local Docker OpenClaw services..."
 if command -v docker >/dev/null 2>&1; then
-  docker compose -f docker/compose.local.yml down --remove-orphans >/dev/null 2>&1 || true
+  docker compose --env-file config/docker.build.env -f docker/compose.local.yml down --remove-orphans >/dev/null 2>&1 || true
 fi
 
 echo "Stopping OpenClaw gateway service..."
