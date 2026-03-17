@@ -8,9 +8,9 @@ fi
 
 compose_cmd() {
   if docker compose version >/dev/null 2>&1; then
-    docker compose "$@"
+    docker compose --env-file config/docker.build.env "$@"
   else
-    docker-compose "$@"
+    docker-compose --env-file config/docker.build.env "$@"
   fi
 }
 

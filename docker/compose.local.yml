@@ -3,6 +3,11 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        GO_IMAGE: ${GO_IMAGE}
+        NODE_IMAGE: ${NODE_IMAGE}
+        GOG_VERSION: ${GOG_VERSION}
+        OPENCLAW_NPM_DIST_TAG: ${OPENCLAW_NPM_DIST_TAG}
     image: agent-lab-openclaw:local
     env_file:
       - ../config/docker.local.env
@@ -28,6 +33,11 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        GO_IMAGE: ${GO_IMAGE}
+        NODE_IMAGE: ${NODE_IMAGE}
+        GOG_VERSION: ${GOG_VERSION}
+        OPENCLAW_NPM_DIST_TAG: ${OPENCLAW_NPM_DIST_TAG}
     network_mode: "service:openclaw-gateway"
     depends_on:
       openclaw-gateway:
@@ -55,6 +65,11 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        GO_IMAGE: ${GO_IMAGE}
+        NODE_IMAGE: ${NODE_IMAGE}
+        GOG_VERSION: ${GOG_VERSION}
+        OPENCLAW_NPM_DIST_TAG: ${OPENCLAW_NPM_DIST_TAG}
     user: root
     network_mode: "service:openclaw-gateway"
     depends_on:

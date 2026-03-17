@@ -2,12 +2,13 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
 url="http://127.0.0.1:18790/overview"
 token=""
 
-if docker compose -f docker/compose.local.yml ps --status running openclaw-gateway >/dev/null 2>&1; then
-  token="$(docker compose -f docker/compose.local.yml exec -T openclaw-gateway bash -lc 'jq -r ".gateway.auth.token // empty" /home/node/.openclaw/openclaw.json' 2>/dev/null || true)"
+if docker compose --env-file config/docker.build.env -f docker/compose.local.yml ps --status running openclaw-gateway >/dev/null 2>&1; then
+  token="$(docker compose --env-file config/docker.build.env -f docker/compose.local.yml exec -T openclaw-gateway bash -lc 'jq -r ".gateway.auth.token // empty" /home/node/.openclaw/openclaw.json' 2>/dev/null || true)"
 fi
 
 if [ -z "${token}" ] && [ -f config/rendered/openclaw.json ]; then
@@ -40,13 +41,13 @@ Steady-state operations:
 - Rotate the Docker-local gateway token:
   1. Edit config/secrets.local.json
   2. bash ./scripts/prepare-local-docker.sh
-  3. docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  3. docker compose --env-file config/docker.build.env -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
 - Add or update reviewed skills:
   edit workspace/skills/ and then rerun:
   bash ./scripts/prepare-local-docker.sh
-  docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  docker compose --env-file config/docker.build.env -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
 - Add or update reviewed hooks:
   edit config/openclaw.container.json5.example or the relevant repo-managed workspace files, then rerun:
   bash ./scripts/prepare-local-docker.sh
-  docker compose -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  docker compose --env-file config/docker.build.env -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
 EOF
