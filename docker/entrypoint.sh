@@ -7,6 +7,8 @@ WORKSPACE_DIR="${OPENCLAW_WORKSPACE:-/workspace}"
 CONFIG_PATH="${STATE_DIR}/openclaw.json"
 CONFIG_SEED="${OPENCLAW_CONFIG_SEED:-}"
 CONFIG_SOURCE="${OPENCLAW_CONFIG_SOURCE:-}"
+GOG_ACCOUNT="${GOG_ACCOUNT:-}"
+GOG_SERVICE_ACCOUNT_KEY_SOURCE="${GOG_SERVICE_ACCOUNT_KEY_SOURCE:-}"
 
 mkdir -p "${STATE_DIR}" "${WORKSPACE_DIR}/.openclaw"
 
@@ -38,6 +40,11 @@ elif [ -n "${CONFIG_SEED}" ] && [ -f "${CONFIG_SEED}" ]; then
   else
     cp "${CONFIG_SEED}" "${CONFIG_PATH}"
   fi
+fi
+
+if [ -n "${GOG_ACCOUNT}" ] && [ -n "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" ] && [ -f "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" ]; then
+  mkdir -p "${HOME_DIR}/.config/gogcli"
+  gog auth service-account set "${GOG_ACCOUNT}" --key "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" >/dev/null
 fi
 
 if [ "$#" -eq 0 ]; then

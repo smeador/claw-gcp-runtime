@@ -378,11 +378,11 @@ Secret ownership model:
 - The payload contract should be documented in the repository and treated as a security-sensitive interface
 - Local and cloud environments should use separate secret payload files even when they share the same schema
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
-- External integration bootstrap secrets that are not part of OpenClaw config, such as a Gmail Workspace service-account JSON key for `gog`, should be handled separately from the OpenClaw runtime config payload
+- External integration bootstrap secrets that are not part of OpenClaw config, such as a Gmail Workspace service-account JSON key for `gog`, should be handled separately from the rendered OpenClaw runtime config payload. For local Docker ergonomics, the same ignored local secret file may carry a `gog` branch that renders to separate bootstrap artifacts.
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
 - Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
-- `auth.profiles` in the config payload should define provider/profile metadata, not serve as a cross-environment transport for live model tokens
+- `auth.profiles` in the config payload should define provider/profile metadata; for local Docker, an `api_key` profile may additionally carry a raw `apiKey` in the local secret overlay so the local bootstrap can emit a Docker env var while stripping the raw token out of the rendered config
 
 Version control in Git:
 - OpenClaw base configuration
@@ -451,7 +451,10 @@ Container runtime constraints:
 
 Container operations guidance:
 - Treat runtime onboarding as a bootstrap/recovery path, not a routine operational workflow
-- Routine provider changes should use targeted model auth commands such as `openclaw models auth login --provider openai` or `openclaw models auth paste-token --provider openai`
+- Routine provider changes should use the environment-appropriate auth path:
+  - native local may use targeted model auth commands such as `openclaw models auth login --provider openai`
+  - Docker-local API-key providers should prefer env-based injection derived from the local secret overlay
+  - interactive bootstrap should be reserved for auth flows that cannot be expressed as static secret input
 - Routine gateway token rotation should happen by updating the environment-specific secret payload and restarting or redeploying the gateway
 - Routine skills and hooks changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
@@ -491,7 +494,10 @@ Authentication guidance by environment:
 - Native-local runtime state must not be treated as an implicit config source for Docker-local or cloud.
 - Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `automation@example.com`.
 - Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
-- OpenAI/model auth should keep the same profile names across environments, but the actual token/session material should be established and stored separately inside each environment runtime state.
+- OpenAI/model auth should keep the same profile names across environments.
+- Native local may use OAuth or other local runtime-managed auth when that is the cleaner operator path.
+- Docker-local may derive API-key provider secrets from the same local secret overlay used for config rendering, but the rendered config should omit the raw key and rely on the injected provider env var.
+- Cloud should continue treating provider auth as an environment-specific concern separate from native-local state.
 
 Messaging platform guidance:
 - Start with Telegram as the first and only messaging platform for phase 1
@@ -508,6 +514,7 @@ Operational guidance:
 - The VM should hold only rendered runtime state
 - Runtime-managed config fields should persist locally or in container state, but should not replace the repo-managed template as the source of truth
 - Local Docker should use a Git-ignored local secret file for parity testing rather than storing important credentials only in container state
+- Local Docker may use that same Git-ignored local secret file to carry `gog` service-account bootstrap material for `automation@example.com`, but that material should render to a separate bootstrap file rather than appearing in `openclaw.json`
 - OpenClaw config secrets should be rendered to a private runtime file and mounted read-only into the container
 - Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
@@ -515,7 +522,8 @@ Operational guidance:
 - Treat paired-device state as environment-local sensitive runtime state that survives normal redeploys when the state path is preserved
 - For OpenAI/API-key style providers, standardize on:
   - `auth.profiles` in the rendered config declaring the profile and mode
-  - `openclaw models auth paste-token --provider openai` executed inside the target environment to store the live token in that environment only
+  - for Docker-local, the local secret overlay may hold `auth.profiles.<profile>.apiKey`, which is written to `config/docker.local.env` during local bootstrap and removed from the rendered OpenClaw config
+  - reserve interactive `paste-token` flows for providers or environments that cannot use static key injection cleanly
 - Treat Telegram DM approval files in `credentials/` with the same sensitivity as node/app device approval files in `devices/`
 - Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy or skill rewrites
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
