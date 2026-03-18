@@ -82,6 +82,34 @@ What this updates:
 
 Native-local host tools are still operator-managed. The repo does not auto-upgrade your Homebrew-installed `openclaw`, `gog`, or `ripgrep`.
 
+### Local operator environment with direnv
+
+For cloud commands, the easiest setup is `direnv`.
+
+Install it on macOS with:
+
+```bash
+brew install direnv
+```
+
+Then hook it into your shell following the `direnv` install instructions for your shell, and in this repo create a local file:
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+cp .envrc.example .envrc
+cat > .envrc.local <<'EOF'
+export VM_NAME=agent-lab-vm
+export PROJECT_ID=agent-lab-488918
+export ZONE=us-central1-a
+export OPENCLAW_SECRET_NAME=REPLACE_ME
+export CLOUD_SECRET_FILE=config/secrets.cloud.json
+export GMAIL_TEST_TO=sean@meador.me
+EOF
+direnv allow
+```
+
+`.envrc` and `.envrc.local` are Git-ignored. Use them for operator defaults such as VM/project/zone/secret name, not for runtime secret payloads. Keep runtime secrets in [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json).
+
 ### Authentication and secrets
 
 Secrets are split by environment:
@@ -113,7 +141,8 @@ Current auth model:
   - Gmail service account: store JSON object under `gog.serviceAccounts["pip@meador.me"]` in `config/secrets.local.json`
 - cloud
   - config secrets come from Secret Manager via `config/secrets.cloud.json` shape
-  - Gmail service-account bootstrap remains explicit
+  - OpenAI API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.cloud.json`
+  - Gmail service account: store JSON object under `gog.serviceAccounts["pip@meador.me"]` in `config/secrets.cloud.json`
 
 Docker-local notes:
 
@@ -123,6 +152,14 @@ Docker-local notes:
   - `config/docker.build.env`
   - `config/rendered/gog-service-account.json` when Gmail service-account data is present
 - Gmail Pub/Sub/webhook hooks should stay disabled in Docker-local unless you are explicitly testing realtime ingestion
+
+Cloud notes:
+
+- `./scripts/render-openclaw-cloud.sh` renders on the VM host:
+  - `${OPENCLAW_DEPLOY_ROOT}/state/runtime/openclaw.json`
+  - `${OPENCLAW_DEPLOY_ROOT}/state/runtime/runtime.env`
+  - `${OPENCLAW_DEPLOY_ROOT}/state/runtime/gog-service-account.json` when Gmail service-account data is present
+- the cloud host needs `node`, `npm`, Docker, `curl`, and `jq`; `deploy-cloud.sh` installs those through `scripts/install-cloud-host.sh`
 
 ### Native local
 
@@ -178,8 +215,110 @@ cp config/secrets.cloud.json.example config/secrets.cloud.json
 bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
 bash ./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
 bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
-bash ./scripts/run-cloud.sh OPENCLAW_CONFIG_SECRET_NAME
 ```
+
+`deploy-cloud.sh` is the normal operator entrypoint. It syncs the app, installs cloud host prerequisites, renders runtime artifacts on the VM, and starts the cloud gateway container.
+
+Convenience commands:
+
+Set these once in your shell for the current session, or load them automatically with `direnv` as described above:
+
+```bash
+export VM_NAME=agent-lab-vm
+export PROJECT_ID=agent-lab-488918
+export ZONE=us-central1-a
+export OPENCLAW_SECRET_NAME=REPLACE_ME
+```
+
+Then use:
+
+```bash
+npm run cloud:help
+npm run cloud:push-secret
+npm run cloud:deploy
+npm run cloud:restart
+npm run cloud:rebuild
+npm run cloud:ps
+npm run cloud:logs
+npm run cloud:shell
+npm run cloud:test:gmail:read
+npm run cloud:test:gmail:send
+npm run cloud:test:digest
+```
+
+Optional overrides:
+
+- `CLOUD_SECRET_FILE` to use a secret file other than `config/secrets.cloud.json`
+- `TAIL_LINES` for `cloud:logs`
+- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `cloud:test:gmail:send`
+- `DIGEST_MESSAGE` for `cloud:test:digest`
+
+Cloud command guidance:
+
+- `npm run cloud:deploy`
+  - normal safe default
+  - syncs app files, installs host prerequisites, renders runtime artifacts, and rebuilds with Docker cache enabled
+- `npm run cloud:restart`
+  - fastest path when only the cloud secret payload or other runtime inputs changed
+  - does not rebuild the image
+- `npm run cloud:rebuild`
+  - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
+  - forces a clean `--no-cache` image rebuild before recreating the gateway
+
+Cloud secret setup:
+
+1. Create [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json) from the example:
+
+   ```bash
+   cd /Users/sean/Repos/gcp-claw-lab
+   cp config/secrets.cloud.json.example config/secrets.cloud.json
+   ```
+
+2. Fill in the fields you need for the first cloud run:
+   - `gateway.auth.token`
+   - `auth.profiles.openai:default.apiKey`
+   - `gog.serviceAccounts["pip@meador.me"]`
+   - optional `channels.telegram.botToken`
+   - keep `hooks.enabled` set to `false` unless you are explicitly setting up cloud Gmail hooks
+
+3. Push the secret payload to Secret Manager:
+
+   ```bash
+   cd /Users/sean/Repos/gcp-claw-lab
+   bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID config/secrets.cloud.json
+   ```
+
+4. Deploy the cloud runtime:
+
+   ```bash
+   cd /Users/sean/Repos/gcp-claw-lab
+   npm run deps:sync
+   bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
+   ```
+
+5. Verify the rendered cloud runtime from inside the gateway container:
+
+   ```bash
+   bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+   ```
+
+   Then test Gmail read/send:
+
+   ```bash
+   gog gmail search "newer_than:1d" --account pip@meador.me --plain
+   ```
+
+   ```bash
+   printf 'Cloud Gmail send test\n' | gog gmail send --account pip@meador.me --to sean@meador.me --subject "Pip Cloud Gmail send test" --body-file=-
+   ```
+
+Cloud runtime artifacts rendered on the VM:
+
+- `/opt/openclaw/state/runtime/openclaw.json`
+- `/opt/openclaw/state/runtime/runtime.env`
+- `/opt/openclaw/state/runtime/gog-service-account.json` when Gmail service-account data is present
+
+For normal cloud operation, you should not need to run the manual Gmail bootstrap script if the service-account JSON is present in [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json).
 
 Shell into the cloud gateway:
 
@@ -209,6 +348,8 @@ Supporting scripts:
   - [bootstrap-gog-cloud-service-account.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
 - Gmail send helper
   - [send-gog-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/send-gog-local.sh)
+- legacy/manual model auth helper
+  - [bootstrap-openai-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/models/bootstrap-openai-cloud.sh)
 - local shutdown
   - [security-shutdown-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/security-shutdown-local.sh)
 
