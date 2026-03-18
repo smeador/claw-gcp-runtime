@@ -612,6 +612,8 @@ Cloud runtime lifecycle guidance:
   - `/opt/openclaw/app/workspace/.openclaw`
   - `/opt/openclaw/app/workspace/memory`
 - Normal cloud deploys should rebuild with cache; a separate clean rebuild path should exist for stale-image recovery and deep runtime image changes.
+- Durable automation schedules such as the morning Pip digest should be treated as deployable desired config, then reconciled into gateway runtime state idempotently.
+- Cron reconciliation should key off stable job names so repeated deploy/apply runs update existing jobs instead of creating duplicate scheduled sends.
 
 Gmail approach:
 - Gmail historical pull is sufficient for digest/read workflows.
@@ -633,6 +635,13 @@ Local Docker:
   - build the image
   - initialize writable state paths
 - Docker-local should remain cloud-parity oriented, with a separate gateway port and separate runtime state from native local.
+- Docker-local should expose the same operator lifecycle shape as cloud where practical:
+  - deploy
+  - restart without rebuild
+  - clean rebuild
+  - ps/logs/shell helpers
+  - repo-managed cron reconciliation
+- Repo-managed local cron config should default to disabled for durable jobs that are already scheduled in cloud, to avoid duplicate sends while preserving parity of tooling and config shape.
 
 Cloud:
 - Cloud deploy should:

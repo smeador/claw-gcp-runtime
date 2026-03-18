@@ -191,18 +191,58 @@ Gateway addresses:
 
 Routine operations:
 
+- local Docker command list:
+  ```bash
+  npm run local:help
+  ```
+- prepare and start the local gateway:
+  ```bash
+  npm run local:deploy
+  ```
+- restart the local gateway after secret/runtime config changes without rebuilding:
+  ```bash
+  npm run local:restart
+  ```
+- force a clean local image rebuild and recreate the gateway:
+  ```bash
+  npm run local:rebuild
+  ```
+- show local Docker status and logs:
+  ```bash
+  npm run local:ps
+  npm run local:logs
+  ```
 - shell into the Docker-local gateway:
   ```bash
-  bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-local-gateway.sh
+  npm run local:shell
   ```
 - recreate the gateway after secret/config changes:
   ```bash
-  docker compose --env-file /Users/sean/Repos/gcp-claw-lab/config/docker.build.env -f /Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  npm run local:restart
   ```
 - reset Docker-local state without touching native local:
   ```bash
   bash /Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh
   ```
+- local cron config is repo-managed in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
+  ```bash
+  npm run local:cron:apply
+  npm run local:cron:list
+  npm run local:cron:run:digest
+  ```
+- local Gmail and digest test commands:
+  ```bash
+  npm run local:test:gmail:read
+  npm run local:test:gmail:send
+  npm run local:test:digest
+  ```
+
+Optional local overrides:
+
+- `LOCAL_CRON_FILE` to use a cron config file other than `config/cron.local.json`
+- `TAIL_LINES` for `local:logs`
+- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `local:test:gmail:send`
+- `DIGEST_MESSAGE` for `local:test:digest`
 
 ### Cloud
 
@@ -241,6 +281,9 @@ npm run cloud:rebuild
 npm run cloud:ps
 npm run cloud:logs
 npm run cloud:shell
+npm run cloud:cron:apply
+npm run cloud:cron:list
+npm run cloud:cron:run:digest
 npm run cloud:test:gmail:read
 npm run cloud:test:gmail:send
 npm run cloud:test:digest
@@ -249,6 +292,7 @@ npm run cloud:test:digest
 Optional overrides:
 
 - `CLOUD_SECRET_FILE` to use a secret file other than `config/secrets.cloud.json`
+- `CLOUD_CRON_FILE` to use a cron config file other than `config/cron.cloud.json`
 - `TAIL_LINES` for `cloud:logs`
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `cloud:test:gmail:send`
 - `DIGEST_MESSAGE` for `cloud:test:digest`
@@ -264,6 +308,26 @@ Cloud command guidance:
 - `npm run cloud:rebuild`
   - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
+- `npm run cloud:cron:apply`
+  - reconcile repo-managed cloud cron jobs into the gateway by name
+  - removes duplicate jobs with the same name and updates the surviving job to match config
+
+Repo-managed cloud cron config lives in [config/cron.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/cron.cloud.json).
+
+Local Docker command guidance:
+
+- `npm run local:deploy`
+  - normal local operator entrypoint
+  - renders runtime artifacts, builds with Docker cache enabled, seeds writable state paths, starts the local gateway, and reconciles local cron config
+- `npm run local:restart`
+  - fastest path when only local secret payloads or runtime-rendered config changed
+  - does not rebuild the image
+- `npm run local:rebuild`
+  - use when the local image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
+  - forces a clean `--no-cache` image rebuild before recreating the gateway
+- `npm run local:cron:apply`
+  - reconcile repo-managed local cron jobs into the gateway by name
+  - local cron is disabled by default in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) to avoid duplicate scheduled sends
 
 Cloud secret setup:
 

@@ -19,4 +19,4 @@ gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  --command "cd '${REMOTE_APP_ROOT}' && bash ./scripts/install-cloud-host.sh && sudo OPENCLAW_APP_ROOT='${REMOTE_APP_ROOT}' OPENCLAW_DEPLOY_ROOT='${REMOTE_DEPLOY_ROOT}' bash ./scripts/run-cloud.sh '${SECRET_NAME}'"
+  --command "sudo bash -lc 'cd \"${REMOTE_APP_ROOT}\" && bash ./scripts/install-cloud-host.sh && OPENCLAW_APP_ROOT=\"${REMOTE_APP_ROOT}\" OPENCLAW_DEPLOY_ROOT=\"${REMOTE_DEPLOY_ROOT}\" bash ./scripts/run-cloud.sh \"${SECRET_NAME}\"'"
