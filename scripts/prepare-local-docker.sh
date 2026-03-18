@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env
-node ./scripts/render-docker-local-env.mjs \
+node ./scripts/render-runtime-env.mjs \
   --secrets config/secrets.local.json \
   --output config/docker.local.env
 node ./scripts/render-gog-service-account-key.mjs \

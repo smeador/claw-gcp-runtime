@@ -21,4 +21,4 @@ cd "${APP_ROOT}"
 mkdir -p "${DEPLOY_ROOT}/state/home" "${DEPLOY_ROOT}/state/runtime" "${DEPLOY_ROOT}/state/workspace" "${DEPLOY_ROOT}/state/memory"
 chown -R 1000:1000 "${DEPLOY_ROOT}/state/home" "${DEPLOY_ROOT}/state/workspace" "${DEPLOY_ROOT}/state/memory"
 bash ./scripts/render-openclaw-cloud.sh "$1"
-compose_cmd -f docker/compose.cloud.yml up -d --build openclaw-gateway
+compose_cmd -f docker/compose.cloud.yml up -d openclaw-gateway

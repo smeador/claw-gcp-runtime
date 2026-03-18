@@ -12,6 +12,8 @@ apt-get install -y --no-install-recommends \
   ca-certificates \
   curl \
   jq \
+  nodejs \
+  npm \
   docker.io \
   docker-compose
 
