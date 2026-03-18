@@ -14,4 +14,4 @@ gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  -- -t "cd /opt/openclaw/app && sudo docker-compose --env-file config/docker.build.env -f docker/compose.cloud.yml exec openclaw-gateway bash"
+  -- -t "sudo bash -lc 'cd /opt/openclaw/app && docker-compose --env-file config/docker.build.env -f docker/compose.cloud.yml exec openclaw-gateway bash'"

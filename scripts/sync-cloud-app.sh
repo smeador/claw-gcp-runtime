@@ -46,7 +46,7 @@ gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  --command "sudo install -d -o \$USER -g \$USER -m 0750 '${REMOTE_APP_ROOT}'"
+  --command "sudo install -d -m 0750 '${REMOTE_APP_ROOT}' && sudo chown \$USER:\$USER '${REMOTE_APP_ROOT}'"
 
 gcloud compute scp \
   --project "${PROJECT_ID}" \
@@ -58,4 +58,4 @@ gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  --command "set -euo pipefail; mkdir -p '${REMOTE_APP_ROOT}' && tar -xzf '${REMOTE_ARCHIVE}' -C '${REMOTE_APP_ROOT}' && rm -f '${REMOTE_ARCHIVE}' && mkdir -p '${REMOTE_APP_ROOT}/workspace/.openclaw' '${REMOTE_APP_ROOT}/workspace/memory'"
+  --command "sudo bash -lc 'set -euo pipefail; mkdir -p \"${REMOTE_APP_ROOT}\" && tar -xzf \"${REMOTE_ARCHIVE}\" -C \"${REMOTE_APP_ROOT}\" && rm -f \"${REMOTE_ARCHIVE}\" && mkdir -p \"${REMOTE_APP_ROOT}/workspace/.openclaw\" \"${REMOTE_APP_ROOT}/workspace/memory\"'"
