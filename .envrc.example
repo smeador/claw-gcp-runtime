@@ -1,0 +1,15 @@
+# Cloud operator defaults for npm run cloud:* commands.
+# Copy this file to .envrc and replace the placeholders, or keep this file as-is
+# and put the real values in .envrc.local.
+
+export VM_NAME=
+export PROJECT_ID=
+export ZONE=
+export OPENCLAW_SECRET_NAME=
+
+# Optional overrides.
+export CLOUD_SECRET_FILE=
+export GMAIL_TEST_TO=
+# export GMAIL_TEST_SUBJECT="Pip Cloud Gmail send test"
+# export DIGEST_MESSAGE="Run pip-newsletter-digest now in test mode."
+# export TAIL_LINES=200

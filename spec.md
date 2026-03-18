@@ -125,7 +125,7 @@ Secret access should be granted at the individual secret resource level, not wit
 
 Secrets include:
 - LLM API key
-- Gmail OAuth refresh token
+- Gmail Workspace service-account material for `automation@example.com`
 - Calendar token (if separate)
 - Any scraping API credentials
 
@@ -377,11 +377,11 @@ Secret ownership model:
 - The payload contract should be documented in the repository and treated as a security-sensitive interface
 - Local and cloud environments should use separate secret payload files even when they share the same schema
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
-- External integration bootstrap secrets that are not part of OpenClaw config, such as a Gmail Workspace service-account JSON key for `gog`, should be handled separately from the rendered OpenClaw runtime config payload. For local Docker ergonomics, the same ignored local secret file may carry a `gog` branch that renders to separate bootstrap artifacts.
+- The payload may include a `gog` branch for `automation@example.com`; that branch should render to separate Gmail bootstrap artifacts rather than appearing in rendered `openclaw.json`.
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
 - Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
-- `auth.profiles` in the config payload should define provider/profile metadata; for local Docker, an `api_key` profile may additionally carry a raw `apiKey` in the local secret overlay so the local bootstrap can emit a Docker env var while stripping the raw token out of the rendered config
+- `auth.profiles` in the config payload should define provider/profile metadata; for Docker-local and cloud, an `api_key` profile may additionally carry a raw `apiKey` in the environment secret overlay so bootstrap can emit a runtime env file while stripping the raw token out of the rendered config
 
 Version control in Git:
 - OpenClaw base configuration
@@ -480,7 +480,7 @@ Recommended workflow:
 4. Smoke test cloud-parity container behavior locally when needed.
 5. Render local or cloud runtime config from the repo template plus the appropriate secret source.
 6. For local Docker, use a Git-ignored local secret file with the same payload shape as cloud.
-7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup.
+7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup and render both `openclaw.json` and any required runtime env/bootstrap artifacts on the VM host.
 8. Deploy or sync configuration to the VM.
 9. Start or restart the OpenClaw service.
 
@@ -499,12 +499,13 @@ Authentication guidance by environment:
 - Docker-local and cloud should prefer non-interactive auth for server-style integrations where possible.
 - Native-local runtime state must not be treated as an implicit config source for Docker-local or cloud.
 - Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `automation@example.com`.
+- OpenAI for Docker-local and cloud should prefer env-based API-key injection rendered from the environment secret overlay rather than interactive runtime bootstrap.
 - Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
 - Docker-local digest/read-send workflows should not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel; those remain optional future realtime enhancements.
 - OpenAI/model auth should keep the same profile names across environments.
 - Native local may use OAuth or other local runtime-managed auth when that is the cleaner operator path.
 - Docker-local may derive API-key provider secrets from the same local secret overlay used for config rendering, but the rendered config should omit the raw key and rely on the injected provider env var.
-- Cloud should continue treating provider auth as an environment-specific concern separate from native-local state.
+- Cloud may derive API-key provider secrets from the cloud secret overlay into a VM-rendered runtime env file, while keeping native-local auth state separate.
 
 Messaging platform guidance:
 - Start with Telegram as the first and only messaging platform for phase 1
@@ -529,7 +530,7 @@ Operational guidance:
 - Treat paired-device state as environment-local sensitive runtime state that survives normal redeploys when the state path is preserved
 - For OpenAI/API-key style providers, standardize on:
   - `auth.profiles` in the rendered config declaring the profile and mode
-  - for Docker-local, the local secret overlay may hold `auth.profiles.<profile>.apiKey`, which is written to `config/docker.local.env` during local bootstrap and removed from the rendered OpenClaw config
+  - for Docker-local and cloud, the environment secret overlay may hold `auth.profiles.<profile>.apiKey`, which is written to a runtime env file during bootstrap and removed from the rendered OpenClaw config
   - reserve interactive `paste-token` flows for providers or environments that cannot use static key injection cleanly
 - Treat Telegram DM approval files in `credentials/` with the same sensitivity as node/app device approval files in `devices/`
 - Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy rewrites
@@ -592,7 +593,25 @@ Recommended auth model by environment:
   - Gmail should prefer Workspace service-account auth for `automation@example.com`
 - Cloud:
   - prefer non-interactive auth and Secret Manager-backed config
+  - API-key providers may be sourced from the cloud secret overlay and emitted into a VM-rendered runtime env file
   - Gmail should prefer Workspace service-account auth for `automation@example.com`
+
+Cloud runtime lifecycle guidance:
+- Cloud app-tree sync and cloud runtime state should be treated as separate concerns.
+- The synced app tree may be replaced or re-synced during deploys, while `/opt/openclaw/state` is the durable runtime boundary.
+- Cloud startup should assume the VM may restart with durable host state but without a fresh image rebuild.
+- Host-mounted state paths must be writable by the container user on every startup:
+  - `/opt/openclaw/state/home`
+  - `/opt/openclaw/state/workspace`
+  - `/opt/openclaw/state/memory`
+- Rendered runtime artifacts must also be readable by the container user:
+  - `/opt/openclaw/state/runtime/openclaw.json`
+  - `/opt/openclaw/state/runtime/runtime.env`
+  - `/opt/openclaw/state/runtime/gog-service-account.json`
+- The cloud workspace sync should create mount-point directories expected by nested writable binds:
+  - `/opt/openclaw/app/workspace/.openclaw`
+  - `/opt/openclaw/app/workspace/memory`
+- Normal cloud deploys should rebuild with cache; a separate clean rebuild path should exist for stale-image recovery and deep runtime image changes.
 
 Gmail approach:
 - Gmail historical pull is sufficient for digest/read workflows.
