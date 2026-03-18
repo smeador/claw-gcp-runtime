@@ -7,8 +7,8 @@
       "cron": "0 7 * * *",
       "tz": "America/Chicago",
       "exact": true,
-      "session": "isolated",
-      "message": "Run pip-newsletter-digest now.",
+      "session": "main",
+      "systemEvent": "Run pip-newsletter-digest now.",
       "deliver": false,
       "disabled": false
     }
