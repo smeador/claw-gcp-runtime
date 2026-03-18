@@ -1,5 +1,7 @@
 services:
   openclaw-gateway:
+    env_file:
+      - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/runtime/runtime.env
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -12,6 +14,8 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
+      GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/home:/home/node/.openclaw
@@ -24,6 +28,8 @@ services:
     restart: unless-stopped
 
   openclaw-cli:
+    env_file:
+      - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/runtime/runtime.env
     image: agent-lab-openclaw:cloud
     build:
       context: ..
@@ -40,6 +46,8 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      GOG_ACCOUNT: ${GOG_ACCOUNT:-pip@meador.me}
+      GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/home:/home/node/.openclaw

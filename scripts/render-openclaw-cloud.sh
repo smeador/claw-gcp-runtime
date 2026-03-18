@@ -31,6 +31,13 @@ SECRET_JSON="$(
 
 cd "$(dirname "$0")/.."
 node scripts/render-docker-build-env.mjs --output config/docker.build.env
+node scripts/render-runtime-env.mjs \
+  --json "${SECRET_JSON}" \
+  --output "${RUNTIME_DIR}/runtime.env"
+node scripts/render-gog-service-account-key.mjs \
+  --json "${SECRET_JSON}" \
+  --account "pip@meador.me" \
+  --output "${RUNTIME_DIR}/gog-service-account.json"
 
 node scripts/render-openclaw-config.mjs \
   --template config/openclaw.cloud.json5.example \
@@ -38,3 +45,14 @@ node scripts/render-openclaw-config.mjs \
   --gcp-secret-json "${SECRET_JSON}"
 
 chmod 600 "${RUNTIME_DIR}/openclaw.json"
+chown 1000:1000 "${RUNTIME_DIR}/openclaw.json"
+
+if [ -f "${RUNTIME_DIR}/runtime.env" ]; then
+  chmod 600 "${RUNTIME_DIR}/runtime.env"
+  chown 1000:1000 "${RUNTIME_DIR}/runtime.env"
+fi
+
+if [ -f "${RUNTIME_DIR}/gog-service-account.json" ]; then
+  chmod 600 "${RUNTIME_DIR}/gog-service-account.json"
+  chown 1000:1000 "${RUNTIME_DIR}/gog-service-account.json"
+fi

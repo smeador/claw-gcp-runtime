@@ -10,6 +10,37 @@ VM_NAME="$1"
 PROJECT_ID="$2"
 ZONE="$3"
 REMOTE_APP_ROOT="${OPENCLAW_APP_ROOT:-/opt/openclaw/app}"
+LOCAL_ARCHIVE="$(mktemp /tmp/agent-lab-cloud-sync.XXXXXX.tar.gz)"
+REMOTE_ARCHIVE="/tmp/agent-lab-cloud-sync.tar.gz"
+
+cleanup() {
+  rm -f "${LOCAL_ARCHIVE}"
+}
+
+trap cleanup EXIT
+
+cd "$(dirname "$0")/.."
+
+export COPYFILE_DISABLE=1
+
+EXCLUDES=(
+  --exclude='./workspace/.openclaw'
+  --exclude='./workspace/.tmp'
+  --exclude='./workspace/tmp'
+  --exclude='./config/secrets.local.json'
+  --exclude='./config/secrets.cloud.json'
+  --exclude='./config/docker.local.env'
+  --exclude='./config/rendered'
+  --exclude='__pycache__'
+  --exclude='*.pyc'
+  --exclude='.DS_Store'
+)
+
+tar \
+  --no-xattrs \
+  "${EXCLUDES[@]}" \
+  -czf "${LOCAL_ARCHIVE}" \
+  docker config workspace scripts versions.json package.json
 
 gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
@@ -17,8 +48,14 @@ gcloud compute ssh "${VM_NAME}" \
   --tunnel-through-iap \
   --command "sudo install -d -o \$USER -g \$USER -m 0750 '${REMOTE_APP_ROOT}'"
 
-gcloud compute scp --recurse \
+gcloud compute scp \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  docker config workspace scripts "${VM_NAME}:${REMOTE_APP_ROOT}/"
+  "${LOCAL_ARCHIVE}" "${VM_NAME}:${REMOTE_ARCHIVE}"
+
+gcloud compute ssh "${VM_NAME}" \
+  --project "${PROJECT_ID}" \
+  --zone "${ZONE}" \
+  --tunnel-through-iap \
+  --command "set -euo pipefail; mkdir -p '${REMOTE_APP_ROOT}' && tar -xzf '${REMOTE_ARCHIVE}' -C '${REMOTE_APP_ROOT}' && rm -f '${REMOTE_ARCHIVE}' && mkdir -p '${REMOTE_APP_ROOT}/workspace/.openclaw' '${REMOTE_APP_ROOT}/workspace/memory'"

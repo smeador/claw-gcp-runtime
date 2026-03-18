@@ -12,11 +12,21 @@ ZONE="$3"
 PROVIDER="${4:-openai}"
 REMOTE_APP_ROOT="${OPENCLAW_APP_ROOT:-/opt/openclaw/app}"
 
-echo "Bootstrapping ${PROVIDER} auth inside cloud runtime state..."
-echo "Paste the token when prompted. This updates cloud /home/node/.openclaw only."
+cat <<EOF
+Cloud model auth is now secret-driven.
 
-gcloud compute ssh "${VM_NAME}" \
-  --project "${PROJECT_ID}" \
-  --zone "${ZONE}" \
-  --tunnel-through-iap \
-  --command "cd '${REMOTE_APP_ROOT}' && docker compose --env-file config/docker.build.env -f docker/compose.cloud.yml exec openclaw-gateway openclaw models auth paste-token --provider '${PROVIDER}'"
+Set the API key in config/secrets.cloud.json under:
+  auth.profiles.<profile>.apiKey
+
+Then push the updated secret payload and redeploy:
+  bash ./scripts/push-cloud-runtime-secret.sh SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
+  bash ./scripts/deploy-cloud.sh ${VM_NAME} ${PROJECT_ID} ${ZONE} SECRET_NAME
+
+This keeps cloud provider auth in rendered runtime env instead of interactive
+runtime state bootstrap.
+EOF
+
+if [ "${PROVIDER}" != "openai" ]; then
+  echo
+  echo "Note: provider '${PROVIDER}' may need a provider-specific env var shape."
+fi
