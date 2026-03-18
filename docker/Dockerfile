@@ -17,6 +17,7 @@ ARG OPENCLAW_APT_PACKAGES=""
 ENV HOME=/home/node
 ENV NODE_ENV=production
 ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
+ENV OPENCLAW_BUNDLED_PLUGINS_DIR=/opt/openclaw-bundled-plugins
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends bash ca-certificates curl jq ripgrep tini \
@@ -29,8 +30,11 @@ COPY --from=gog-builder /go/bin/gog /usr/local/bin/gog
 
 COPY docker/entrypoint.sh /usr/local/bin/agent-lab-openclaw-entrypoint
 RUN chmod +x /usr/local/bin/agent-lab-openclaw-entrypoint \
-  && mkdir -p /workspace /home/node/.openclaw \
-  && chown -R node:node /workspace /home/node
+  && mkdir -p /workspace /home/node/.openclaw /opt/openclaw-bundled-plugins \
+  && for plugin in memory-core telegram device-pair phone-control talk-voice ollama sglang vllm; do \
+       ln -s "/usr/local/lib/node_modules/openclaw/extensions/${plugin}" "/opt/openclaw-bundled-plugins/${plugin}"; \
+     done \
+  && chown -R node:node /workspace /home/node /opt/openclaw-bundled-plugins
 
 USER node
 WORKDIR /workspace
