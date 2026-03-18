@@ -36,6 +36,7 @@ for ((i = 0; i < job_count; i += 1)); do
   tz="$(jq -r '.tz // empty' <<< "${job}")"
   session="$(jq -r '.session // empty' <<< "${job}")"
   message="$(jq -r '.message // empty' <<< "${job}")"
+  system_event="$(jq -r '.systemEvent // empty' <<< "${job}")"
   exact="$(jq -r '.exact // false' <<< "${job}")"
   deliver="$(jq -r '.deliver // false' <<< "${job}")"
   disabled="$(jq -r '.disabled // false' <<< "${job}")"
@@ -77,16 +78,20 @@ for ((i = 0; i < job_count; i += 1)); do
   if [ -n "${session}" ]; then
     base_args+=(--session "${session}")
   fi
-  if [ -n "${message}" ]; then
+  if [ -n "${system_event}" ]; then
+    base_args+=(--system-event "${system_event}")
+  elif [ -n "${message}" ]; then
     base_args+=(--message "${message}")
   fi
   if [ "${exact}" = "true" ]; then
     base_args+=(--exact)
   fi
-  if [ "${deliver}" = "false" ]; then
-    base_args+=(--no-deliver)
-  else
-    base_args+=(--announce)
+  if [ "${session}" = "isolated" ]; then
+    if [ "${deliver}" = "false" ]; then
+      base_args+=(--no-deliver)
+    else
+      base_args+=(--announce)
+    fi
   fi
 
   if [ -z "${primary_id}" ]; then
@@ -103,8 +108,17 @@ for ((i = 0; i < job_count; i += 1)); do
     else
       edit_args+=(--enable)
     fi
-    compose_cmd -f docker/compose.cloud.yml exec -T openclaw-gateway \
-      openclaw cron edit "${primary_id}" "${edit_args[@]}" >/dev/null
+    if ! compose_cmd -f docker/compose.cloud.yml exec -T openclaw-gateway \
+      openclaw cron edit "${primary_id}" "${edit_args[@]}" >/dev/null; then
+      compose_cmd -f docker/compose.cloud.yml exec -T openclaw-gateway \
+        openclaw cron rm "${primary_id}" >/dev/null
+      add_args=("${base_args[@]}")
+      if [ "${disabled}" = "true" ]; then
+        add_args+=(--disabled)
+      fi
+      compose_cmd -f docker/compose.cloud.yml exec -T openclaw-gateway \
+        openclaw cron add "${add_args[@]}" >/dev/null
+    fi
   fi
 done
 
