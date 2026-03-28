@@ -26,7 +26,10 @@ This keeps cloud provider auth in rendered runtime env instead of interactive
 runtime state bootstrap.
 EOF
 
-if [ "${PROVIDER}" != "openai" ]; then
+if [ "${PROVIDER}" = "openrouter" ]; then
+  echo
+  echo "For provider '${PROVIDER}', the rendered runtime env will use OPENROUTER_API_KEY."
+elif [ "${PROVIDER}" != "openai" ]; then
   echo
   echo "Note: provider '${PROVIDER}' may need a provider-specific env var shape."
 fi
