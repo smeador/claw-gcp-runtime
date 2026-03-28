@@ -4,14 +4,14 @@
     "nodeImage": "node:22-bookworm-slim"
   },
   "runtime": {
-    "openclawVersion": "2026.3.13",
+    "openclawVersion": "2026.3.24",
     "gogVersion": "v0.12.0"
   },
   "cloudFunction": {
     "node": "22",
     "dependencies": {
-      "@google-cloud/compute": "5.1.0",
-      "@google-cloud/functions-framework": "3.4.6"
+      "@google-cloud/compute": "6.9.0",
+      "@google-cloud/functions-framework": "5.0.2"
     }
   }
 }

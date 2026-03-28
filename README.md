@@ -66,6 +66,34 @@ That reports:
 - installed local `gog`
 - local Docker / Node / npm / ripgrep versions
 
+Check auto-managed latest versions without editing anything:
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+npm run deps:check
+```
+
+Auto-bump the registry-backed entries in [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json):
+
+```bash
+cd /Users/sean/Repos/gcp-claw-lab
+npm run deps:bump
+```
+
+`deps:bump` updates:
+
+- `runtime.openclawVersion`
+- `runtime.gogVersion`
+- `cloudFunction.dependencies.*`
+
+It intentionally does not auto-bump:
+
+- `docker.goImage`
+- `docker.nodeImage`
+- `cloudFunction.node`
+
+Those remain manual family pins so we do not silently jump Docker base-image tracks or Cloud Functions runtime majors.
+
 After editing [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json), regenerate derived files with:
 
 ```bash

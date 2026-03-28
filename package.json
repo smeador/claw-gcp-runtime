@@ -6,6 +6,8 @@
   },
   "scripts": {
     "deps:show": "node scripts/deps/show-versions.mjs",
+    "deps:check": "node scripts/deps/check-latest.mjs",
+    "deps:bump": "node scripts/deps/bump-latest.mjs",
     "deps:sync": "node scripts/render-docker-build-env.mjs --output config/docker.build.env && node scripts/deps/sync-cloud-function-package.mjs",
     "deps:lock:function": "npm --prefix opentofu/modules/cost_controls/function_source install --package-lock-only",
     "deps:rebuild:docker": "bash ./scripts/prepare-local-docker.sh",
