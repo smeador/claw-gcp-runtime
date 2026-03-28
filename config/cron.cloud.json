@@ -4,7 +4,7 @@
       "name": "pip-newsletter-digest-morning",
       "description": "Send the Pip newsletter digest every morning.",
       "agent": "main",
-      "cron": "0 7 * * *",
+      "cron": "30 7 * * *",
       "tz": "America/Chicago",
       "exact": true,
       "session": "main",
