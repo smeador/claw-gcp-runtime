@@ -134,15 +134,25 @@ Rules:
 Current auth model:
 
 - native local
-  - OpenAI/provider auth: local OAuth or local provider auth is fine
+  - provider auth: local OAuth or local provider auth is fine
   - Gmail: user OAuth is fine
 - Docker-local
-  - OpenAI API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.local.json`
+  - provider API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.local.json`
+  - OpenRouter is the recommended API-key provider for this repo
   - Gmail service account: store JSON object under `gog.serviceAccounts["pip@meador.me"]` in `config/secrets.local.json`
 - cloud
   - config secrets come from Secret Manager via `config/secrets.cloud.json` shape
-  - OpenAI API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.cloud.json`
+  - provider API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.cloud.json`
+  - OpenRouter is the recommended API-key provider for this repo
   - Gmail service account: store JSON object under `gog.serviceAccounts["pip@meador.me"]` in `config/secrets.cloud.json`
+
+Recommended default model/profile:
+
+- auth profile: `openrouter:default`
+- provider: `openrouter`
+- model: `openrouter/auto`
+
+The runtime env renderer will emit `OPENROUTER_API_KEY` automatically when the profile provider is `openrouter`.
 
 Docker-local notes:
 
@@ -340,7 +350,7 @@ Cloud secret setup:
 
 2. Fill in the fields you need for the first cloud run:
    - `gateway.auth.token`
-   - `auth.profiles.openai:default.apiKey`
+   - `auth.profiles.openrouter:default.apiKey`
    - `gog.serviceAccounts["pip@meador.me"]`
    - optional `channels.telegram.botToken`
    - keep `hooks.enabled` set to `false` unless you are explicitly setting up cloud Gmail hooks
