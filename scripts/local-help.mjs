@@ -1,6 +1,23 @@
 #!/usr/bin/env node
 
 const lines = [
+  "Dependency commands",
+  "",
+  "  npm run deps:show",
+  "    Show pinned repo dependency versions and detected local tool versions.",
+  "",
+  "  npm run deps:check",
+  "    Check latest available versions for auto-managed dependency entries without editing versions.json.",
+  "",
+  "  npm run deps:bump",
+  "    Update auto-managed entries in versions.json to their latest available versions.",
+  "",
+  "  npm run deps:sync",
+  "    Render derived dependency files such as config/docker.build.env and the Cloud Function package manifest.",
+  "",
+  "  npm run deps:lock:function",
+  "    Refresh the Cloud Function package-lock.json from the pinned versions.",
+  "",
   "Local Docker commands",
   "",
   "These commands operate on docker/compose.local.yml in the current repo:",
