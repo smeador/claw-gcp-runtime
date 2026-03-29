@@ -65,3 +65,5 @@ printf 'This is a test from Pip.\n' | bash scripts/gmail/send-gog-local.sh \
 - Keep the message body concise unless the user requests a longer email
 - When sending HTML, always include a plain-text fallback body
 - Distinguish clearly between the plain-text body and the HTML body; do not send HTML-looking text as the plain-text body
+- When using HTML, the value passed as the HTML body must be the actual HTML markup, not a filesystem path or temp-file path
+- A file path is only acceptable as an argument to a helper script that reads the file contents before sending; do not send the path string itself as the email body

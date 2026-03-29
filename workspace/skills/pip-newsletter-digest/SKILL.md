@@ -4,59 +4,62 @@ Use this skill to produce Pip's newsletter digest from email only.
 
 ## Core goal
 
-Write a digest that lets Sean understand each newsletter without opening it immediately.
+Write a real digest, not a quick summary.
 
 The digest should:
 
-- explain the main story clearly
-- follow the structure of the original newsletter
-- include the important secondary sections below the main story
-- preserve the same substance in plaintext and HTML
-- be notably more descriptive than a skim summary
-- err on the side of more useful detail when there is enough source material
-
-Do not write a short teaser. Write a real digest.
+- preserve the original content and intent while reducing length
+- give detail according to the section-specific rules below
+- help Sean understand each newsletter without opening it immediately
+- write directly, not with framing like `the piece says` or `the newsletter explains`
+- keep plaintext and HTML identical in substance
+- synthesize only within each newsletter section, not across the whole digest
 
 ## Invocation rules
 
-Treat these user requests as explicit commands to execute this workflow immediately, without asking what to run:
+Treat these user requests as explicit commands to execute this workflow immediately:
 
 - `Run pip-newsletter-digest now.`
 - `Run pip-newsletter-digest now in test mode.`
 - `Run the Pip newsletter digest now.`
 - `Send today's Pip newsletter digest.`
 
-When the user uses one of those phrasings, do not ask follow-up questions like:
+Do not ask follow-up questions like:
 
 - `Run what, specifically?`
 - `Which job/script do you mean?`
 
-Assume they mean this skill and execute it.
+Assume the user means this skill and execute it.
 
 ## Sources in scope
 
-Named daily newsletters:
+### Primary newsletters
 
 - `NY Times Morning`
 - `Daily Upside`
 - `AI News` (`swyx+ainews@substack.com`)
 
-Additional sections:
+### Additional sections
 
-- Substack emails from the last `2 days`
-- Stanford newsletter emails from the last `2 days`
+- Substack emails from the last `24 hours`
+- Stanford newsletter emails from the last `24 hours`
 
 Ignore GoodLinks and non-email sources.
 
-## Retrieval rules
+## Retrieval and issue selection
 
-- Default lookback: rolling `last 24 hours`
-- Always do a historical pull; do not rely only on webhook/new-mail state
-- First fetch metadata/snippets for the lookback window
-- Then fetch full bodies only for messages you are actually going to use
-- For each named daily newsletter, choose the newest valid issue in the active window
-- Prefer the newest same-day issue in `America/Chicago` when one exists
-- If the digest runs shortly after the normal send time, explicitly check whether a newer same-day issue arrived after an earlier digest run
+### Lookback window
+
+- default lookback: rolling `last 24 hours`
+- always do a historical pull; do not rely only on webhook or new-mail state
+- first fetch metadata/snippets for the lookback window
+- then fetch full bodies only for messages you are actually going to use
+
+### Selection rules
+
+- for each primary newsletter, choose the newest valid issue in the active window
+- prefer the newest same-day issue in `America/Chicago` when one exists
+- if the digest runs shortly after the normal send time, explicitly check whether a newer same-day issue arrived after an earlier digest run
 
 ### Fast-path senders
 
@@ -70,136 +73,186 @@ If a fast-path sender query returns no valid issue, fall back to broader sender/
 
 ### Daily Upside matching
 
-- Do not rely on one exact sender forever
-- If a message looks plausibly like Daily Upside but sender formatting changed, inspect it instead of excluding it
-- Treat sender variants, wrappers, and aliases as eligible when the subject/publication clearly indicate Daily Upside
+- do not rely on one exact sender forever
+- if a message looks plausibly like Daily Upside but sender formatting changed, inspect it instead of excluding it
+- treat sender variants, wrappers, and aliases as eligible when the subject or publication clearly indicate Daily Upside
 
 ## Link rules
 
-For each newsletter, distinguish between:
+For every primary newsletter and every included Substack item, find the real browser/article link.
 
-- `newsletterLink`: best link to the issue as a whole
-- `supportingLinks`: useful links to stories or roundup items inside the issue
+For the three primary newsletters in this workflow, assume there is an issue-level browser link to find and actively look for it.
 
-For the named daily newsletters in this workflow, assume there is an issue-level browser link to find.
+### What to link
 
-Pick `newsletterLink` in this order:
+- primary newsletters should link to the issue-level browser version
+- Substack items should link to the article page
+- Stanford items should link to a useful public article page when one exists, and may omit the link only when no such public link is available
 
-1. explicit `View in browser` / `Read in browser` / `Read online` / issue permalink
-2. masthead or issue-level permalink
-3. publication page for that issue
+### Preferred link patterns
 
-Do not use these as `newsletterLink` unless no better option exists:
+Look for phrases such as:
 
-- generic homepage links
-- Gmail links, mailbox links, message-view links, or thread-view links
-- unsubscribe/settings links
-- ad/sponsor links
-- image-only asset URLs
-- lead-story links that are clearly not the issue itself
+- `View in browser`
+- `Read in browser`
+- `Read online`
 
-For `supportingLinks`:
+Prefer those issue-level links over generic publication links.
 
-- include only the most useful 2-5 links
-- do not repeat `newsletterLink`
-- use descriptive link text, not raw URLs
-- do not use Gmail links, mailbox links, message-view links, or thread-view links
+### Disallowed links
 
-Daily newsletter browser-link rule:
+Never use:
 
-- `NY Times Morning`, `Daily Upside`, and `AI News` should each have an issue-level browser link in the email.
-- Actively look for phrases such as:
-  - `View in browser`
-  - `Read in browser`
-  - `Read online`
-- Prefer that browser link over internal mailbox links or generic publication links.
+- Gmail links
+- mailbox links
+- message-view links
+- thread-view links
+- unsubscribe or settings links
+- ad or sponsor links
+- image asset URLs
+
+### Formatting rules
+
+- in HTML, links must always be rendered as hyperlinks, not raw plaintext URLs
+- use human-readable linked text
+- for primary newsletters, place the issue link near the section header
+- do not include a secondary-links section
 
 ## Writing rules
 
-- Prefer synthesis over headline extraction
-- Explain what mattered, not just what appeared
-- Preserve the structure of the original newsletter when possible
-- HTML and plaintext must contain the same substantive content
-- Do not make the HTML version materially shorter than plaintext
-- The safe rule is: write the digest once at full depth, then render that same content into both formats
+- do not flatten the entire digest into one synthesis
+- keep each newsletter section separate
+- preserve the original structure and emphasis of each newsletter
+- reduce length, but do not strip out the important secondary sections
+- write with enough detail that Sean can usually decide whether to open the original
+- plaintext and HTML must contain the same content in the same order
 
-### Depth rules
+## Output structure
 
-Named daily newsletters:
+### Header
 
-- medium depth by default
-- in practice, aim for roughly twice as much detail as a brief newsletter summary
-- usually `3-5` substantive paragraphs for the main synthesis when the issue has real content
-- then section bullets for the additional meaningful sections
-- each section bullet should usually be `2-4` sentences
-- describe what happened, why it matters, and what Sean would learn by opening the original
-- do not compress meaningful sections into single-sentence blurbs
+Include:
 
-Substack and Stanford:
+- title
+- date
+- short inventory of newsletters found
 
-- keep the same recommendation model
-- go a bit deeper than a one-line blurb
-- usually `2-4` sentences each
-- explain thesis, key point, and why it may or may not be worth opening
+The inventory should be brief, for example:
 
-## Per-newsletter structure
+- which primary newsletters were found
+- which primary newsletters were missing
+- count of Substack and Stanford items included
 
-### NY Times Morning
+Do not add extra header blocks beyond those items.
 
-Typical structure:
+In particular:
 
-- one main intro story
-- several additional top stories / highlights / breaking news items below
+- do not include a separate lookback line in the email header
+- do not repeat the title in multiple stacked forms
+- keep the header compact and single-pass
 
-Digest structure:
+## Primary newsletters
 
-- write the main synthesis around the lead story and the issue's overall frame
-- then add bullets for the notable stories and breaking news below
-- those bullets should explain what happened and why it matters, not just list topics
-- when the issue has several meaningful lower sections, cover enough of them that the digest feels like a faithful short-form version of the full newsletter
+Create one section for each found primary newsletter.
+
+For each section include:
+
+- newsletter title
+- issue date
+- sender or publication
+- issue link
+- body content using the source-specific structure below
+
+Each primary newsletter section must use clear internal subsection labels so the reader can immediately see where one part ends and the next begins.
+
+### NY Times
+
+Structure:
+
+- main article summary: `2-3` paragraphs
+- bullets for the remaining important stories
+
+Rules:
+
+- use an explicit subsection label such as `Main article`
+- the main article summary should explain the lead story clearly and with real detail
+- use a second explicit subsection label such as `Other major stories`
+- the bullet section should focus on the most important remaining stories
+- each bullet should describe what happened and why it matters
 
 ### Daily Upside
 
-Typical structure:
+Structure:
 
-- one intro story
-- `3-4` other stories
-- `Other Upside` at the bottom
-- on Sunday, often one in-depth story instead
+- opening section
+- section for each of the `3` main stories
+- distinct mini section for `Extra Upside`
 
-Digest structure:
+Rules:
 
-- write the main synthesis around the opener
-- then add bullets for the other stories below it
-- if `Other Upside` exists and is meaningful, include it in bullets too
-- on Sunday, if it is a single in-depth story, summarize that one story in more depth instead of forcing the normal multi-story shape
-- for the weekday format, aim to cover the opener plus the main additional stories rather than only one or two highlights
+- use explicit subsection labels:
+  - `Opener`
+  - `Story 1`
+  - `Story 2`
+  - `Story 3`
+  - `Extra Upside`
+- summarize the opener first
+- then give one paragraph for each of the `3` main stories
+- if there are more than `3` meaningful story blocks, prioritize the main three and then use the `Extra Upside` mini section for the remaining useful item(s)
+- `Extra Upside` should be clearly labeled as its own small closing section when present
+- on Sunday, if the issue is really a single in-depth story, follow that structure instead of forcing weekday blocks
+- do not let the opener and main stories run together as unlabeled consecutive paragraphs
 
 ### AI News
 
-Typical structure:
+Structure:
 
-- one main story / opener
-- Twitter/X roundup
+- main article summary: `2-3` paragraphs
+- Twitter roundup bullets
 
-Digest structure:
+Rules:
 
-- write the main synthesis around the opener and overall takeaway
-- then add bullets for the important Twitter/X roundup items
-- each roundup bullet should be `2-3` sentences and explain why the item mattered
-- include enough descriptive context that the roundup feels informative on its own rather than just a list of names and links
+- use an explicit subsection label such as `Main article`
+- summarize the main article or opening section in `2-3` paragraphs
+- use a second explicit subsection label such as `Twitter roundup`
+- then include bullets for the most important Twitter/X roundup items
+- each roundup bullet should be `1-2` sentences
+- keep the bullets descriptive enough that Sean understands why each item mattered
+
+## Substack review
+
+Include one bullet for each included Substack item.
+
+Do not include `AI News` in this section, since it already appears in the primary newsletters section.
+
+Each bullet should contain:
+
+- newsletter or publication name
+- hyperlinked title
+- brief summary of `2-3` sentences
+
+## Stanford
+
+Include one bullet for each included Stanford email.
+
+Each bullet should contain:
+
+- hyperlinked title when a useful public link exists, otherwise plain title
+- brief summary of `1-2` sentences
 
 ## Delivery
 
-- Send by default to `user@example.com` from `automation@example.com`
-- Use `gog gmail send`, not SMTP
-- Subject format:
+- send by default to `user@example.com` from `automation@example.com`
+- use `gog gmail send`, not SMTP
+- subject format:
   - `Pip Newsletter Digest - YYYY-MM-DD`
-- Use the local date in `America/Chicago`
-- Produce both:
+- use the local date in `America/Chicago`
+- produce both:
   - `email_text`
   - `email_html`
-- Both formats must carry the same substance
+- both formats must carry the same substance
+- `email_html` must contain the actual HTML markup to send, not a filesystem path, temp-file path, or filename
+- do not place values like `/workspace/.../digest.html` into the email body; if a temp file is used during generation, read its contents and send the contents
 
 If delivery fails:
 
@@ -210,39 +263,62 @@ If delivery fails:
 
 ## HTML rendering
 
-- Keep the HTML version editorial, restrained, and email-safe
-- Do not render the digest as a centered card floating on a contrasting page background
-- Prefer a full-width reading surface with simple horizontal rhythm, like a briefing page or newspaper column
-- The body should feel like one continuous editorial document, not a stack of app cards
+Use a fixed editorial HTML style that matches the current digest pattern.
 
-Layout guidance:
+### Overall look
 
-- use the full email width for the main reading surface
-- avoid a narrow boxed card with heavy border treatment
-- use section dividers, spacing, and typography for structure instead of card chrome
-- use light borders or rules only where they help separate sections
-- keep the page background and content background close in tone so the message reads as full-width
-- preserve generous padding and readable line length, but not a boxed panel aesthetic
+- very slightly off-white page background, but neutral rather than warm
+- one centered reading column around `760px` wide
+- generous vertical spacing
+- distinctive serif masthead styling for the newsletter title
+- clean sans-serif body copy
+- muted metadata text
+- thin horizontal rules between major newsletter sections
+- no dashboard styling, no heavy cards, no shadows
 
-Visual direction:
+### Header styling
 
-- clean editorial briefing
-- light warm background
-- dark readable text
-- muted metadata and restrained accent color
-- no heavy shadows, no stacked tiles, no app-dashboard feel
+- one compact masthead block
+- title first
+- date directly below
+- one compact summary block for found/missing counts
+- do not add a separate lookback banner or duplicate title lines
+- make `Pip Newsletter Digest` notably larger than the rest of the email
+- use a custom-feeling editorial serif stack for the title, such as Georgia plus similar serif fallbacks
 
-The HTML should feel closer to:
+### Section styling
 
-- a full-width Sunday briefing
-- a newsroom digest
-- a longform editorial email
+- each major newsletter should start with a clear section heading
+- issue date and publication line should sit just below the heading in muted text
+- the issue link should sit near the top of the section
+- internal subsection labels such as `Main article`, `Other major stories`, `Opener`, `Story 1`, and `Twitter roundup` should be visually distinct from body paragraphs
+- use spacing and simple type treatment to separate subsections rather than colored boxes or card panels
+- major newsletter section headings must remain visibly larger and stronger than internal subsection labels
+- do not let mobile rendering collapse the hierarchy so that `NY Times`, `Daily Upside`, `AI News`, `Substack review`, and `Stanford` look the same size as subsection labels
+- subsection labels should be smaller than section headings and read as internal markers, not peer headers
 
-and less like:
+### Link styling
 
-- a marketing card
-- a boxed newsletter widget
-- a dashboard of separate panels
+- render links as normal inline hyperlinks
+- use human-readable link text
+- avoid raw plaintext URLs in HTML
+- do not style links as buttons
+
+### What to avoid
+
+- warm beige or cream-heavy backgrounds
+- stacked cards
+- rounded panels
+- dark mode treatment
+- marketing hero blocks
+- oversized badges or decorative UI chrome
+- overly wide left/right padding, especially on mobile
+
+### Mobile spacing
+
+- keep left/right padding tight enough that the reading column does not feel cramped on phones
+- prefer smaller horizontal padding on mobile than desktop
+- do not sacrifice readable line length by wrapping the content in an overly padded inner container
 
 ## Test mode
 
@@ -253,73 +329,11 @@ If the user says `test mode`, `rerender`, or similar:
 - still send the email
 - prioritize rendering and delivery validation
 
-## Required output shape
-
-### 1. Header
-
-- date
-- lookback window
-- which daily newsletters were found
-- which expected daily newsletters were missing
-
-### 2. Daily Newsletters
-
-For each found daily newsletter, include:
-
-- newsletter name
-- sender / publication
-- original newsletter link
-- main synthesis
-- section bullets for the important items below the main story
-- any especially useful supporting links
-- recommendation:
-  - `read fully`
-  - `skim only`
-  - `safe to skip`
-- one-line reason
-
-The daily newsletter section should feel substantially richer than the current brief format:
-
-- more narrative detail in the main synthesis
-- fuller bullets for the lower sections
-- enough descriptive content that Sean can often skip opening the original unless he wants extra depth
-
-If a named daily newsletter is missing, say so explicitly.
-
-### 3. Substack
-
-- summarize remaining Substack emails from the last `2 days`
-- exclude `AI News` from this section silently
-- for each item include sender/publication, title, link when available, `2-3` sentence synthesis, and recommendation
-
-### 4. Stanford
-
-- summarize Stanford newsletter emails from the last `2 days`
-- for each item include sender/publication, title, link when available, `2-3` sentence synthesis, and recommendation
-
-### 5. Quick Compare
-
-If more than one named daily newsletter is present, compare:
-
-- which one matters most today
-- where they overlap
-- which can be skimmed or skipped
-
-### 6. Source Coverage
-
-- processed count by source/publication
-- which expected daily newsletters were missing
-- how many Substack items were summarized
-- how many Stanford items were summarized
-
 ## Constraints
 
-- Keep output readable and scannable, but do not optimize for brevity at the expense of understanding
-- It is acceptable for the digest email to be long if that is necessary to preserve useful synthesis
-- Do not reproduce the full email body
-- Quote only short phrases when necessary
-- Do not perform delete/unsubscribe actions automatically
-- Do not include secrets or credentials in output
-- Prefer canonical article/newsletter links over tracking-heavy or redirect links when both are available
-- Never dump raw long URLs into the digest when hyperlink text can convey the destination more cleanly
-- Email output should be HTML-first with a plain-text fallback in this phase
+- keep the digest readable and useful, but do not optimize for brevity at the expense of understanding
+- do not reproduce the full email body
+- quote only short phrases when necessary
+- do not perform delete or unsubscribe actions
+- do not include secrets or credentials in output
+- prefer canonical article or newsletter links over noisy tracking-heavy links when both are available
