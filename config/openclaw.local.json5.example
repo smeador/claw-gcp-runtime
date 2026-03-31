@@ -2,7 +2,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openrouter/xiaomi/mimo-v2-pro"
+        "primary": "openrouter/openai/gpt-5.4"
       },
       "workspace": "/Users/sean/Repos/gcp-claw-lab/workspace",
       "compaction": {

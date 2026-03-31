@@ -178,7 +178,7 @@ Recommended default model/profile:
 
 - auth profile: `openrouter:default`
 - provider: `openrouter`
-- model: `openrouter/xiaomi/mimo-v2-pro`
+- model: `openrouter/openai/gpt-5.4`
 
 The runtime env renderer will emit `OPENROUTER_API_KEY` automatically when the profile provider is `openrouter`.
 
