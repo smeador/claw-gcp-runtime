@@ -33,6 +33,12 @@ Use this skill when Pip needs to send an email from Pip's Gmail account through 
 - Default format for digests: HTML with a plain-text fallback
 - If the user asks to "email me" without further detail, send to `sean@meador.me`
 
+For newsletter digests:
+
+- HTML is the primary body
+- plain text is fallback only
+- plaintext-only delivery is not a successful digest send unless the user explicitly requested plaintext-only
+
 ## Local helper
 
 ```bash
@@ -64,6 +70,7 @@ printf 'This is a test from Pip.\n' | bash scripts/gmail/send-gog-local.sh \
 - Do not print tokens, credentials, or raw OAuth material
 - Keep the message body concise unless the user requests a longer email
 - When sending HTML, always include a plain-text fallback body
+- For digest sends, use `gog gmail send` with the HTML body included; do not treat plaintext-only as success
 - Distinguish clearly between the plain-text body and the HTML body; do not send HTML-looking text as the plain-text body
 - When using HTML, the value passed as the HTML body must be the actual HTML markup, not a filesystem path or temp-file path
 - A file path is only acceptable as an argument to a helper script that reads the file contents before sending; do not send the path string itself as the email body
