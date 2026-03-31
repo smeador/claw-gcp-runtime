@@ -55,6 +55,33 @@ Ignore GoodLinks and non-email sources.
 - first fetch metadata/snippets for the lookback window
 - then fetch full bodies only for messages you are actually going to use
 
+### Gmail command pattern
+
+Use `gog` in this specific way for retrieval:
+
+- use `gog gmail messages search ... --json --no-input` to find candidate message ids
+- then use `gog gmail get MESSAGE_ID --json --no-input` to fetch the full message body for a selected message
+
+Do not improvise other read commands when fetching full bodies.
+
+In particular:
+
+- do not use `gog gmail messages get`
+- do not switch between multiple Gmail read subcommands mid-run unless the known-good `gog gmail get MESSAGE_ID --json --no-input` form has already failed and you are explicitly diagnosing a tool problem
+
+The normal retrieval flow for this skill is:
+
+1. `gog gmail messages search` to identify candidates
+2. choose the newest valid issue
+3. `gog gmail get MESSAGE_ID --json --no-input` for the full body of that chosen message
+
+If a `gog gmail get` call fails for a selected message:
+
+- treat it as a tool failure
+- report the failure clearly
+- do not silently substitute a different unsupported command shape
+- do not continue as though you successfully read the full body
+
 ### Selection rules
 
 - for each primary newsletter, choose the newest valid issue in the active window
