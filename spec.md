@@ -238,6 +238,12 @@ OpenClaw is treated as:
 
 - Tool-using autonomous runtime
 - Executes instructions derived from external content
+
+## Operational Learning
+
+- For the Pip newsletter digest, the current reliable shape is: run on the `main` agent with an isolated session and an explicit reset/fresh-run prompt.
+- A dedicated `digest` agent was attempted as a cost-control measure, but config-only registration was not enough in practice. The runtime rendered `agents.list`, but the live gateway still rejected `digest` as an unknown agent id.
+- Future enhancement: revisit dedicated digest-agent isolation using the documented `openclaw agents add ...` bootstrap path instead of relying only on config templates.
 - Holds durable delegated credentials
 
 Therefore:
