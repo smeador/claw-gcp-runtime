@@ -41,8 +41,8 @@ For newsletter digests:
 - the final HTML should also be written to a local artifact file before send
 - the final plain-text fallback should also be written to a local artifact file before send
 - the helper should create a timestamped run directory inside the provided day directory
-- prefer `agent-lab-send-gog-digest ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON` for digest sends
-- if that helper is unavailable, fall back to `bash scripts/gmail/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
+- use `bash scripts/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON` for digest sends
+- the wrapper resolves to the installed helper when available and otherwise falls back to the repo copy
 
 ## Local helper
 
@@ -80,4 +80,4 @@ printf 'This is a test from Pip.\n' | bash scripts/gmail/send-gog-local.sh \
 - When using HTML, the value passed as the HTML body must be the actual HTML markup, not a filesystem path or temp-file path
 - A file path is only acceptable as an argument to a helper script that reads the file contents before sending; do not send the path string itself as the email body
 - For digest sends, write the final HTML body to disk and write the final plain-text fallback to disk before invoking `gog gmail send`
-- For digest sends, only report success if the helper/send output includes `send_result.message_id`
+- For digest sends, only report success if the helper/send output includes a Gmail id in `send_result.message_id` or `send_result.messageId`
