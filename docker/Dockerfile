@@ -18,6 +18,7 @@ ENV HOME=/home/node
 ENV NODE_ENV=production
 ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 ENV OPENCLAW_BUNDLED_PLUGINS_DIR=/opt/openclaw-bundled-plugins
+ENV AGENT_LAB_ROOT=/opt/agent-lab
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends bash ca-certificates curl jq ripgrep tini \
@@ -27,6 +28,16 @@ RUN apt-get update \
 RUN curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard --version "${OPENCLAW_NPM_DIST_TAG}"
 
 COPY --from=gog-builder /go/bin/gog /usr/local/bin/gog
+COPY package.json package-lock.json ${AGENT_LAB_ROOT}/
+COPY scripts/email ${AGENT_LAB_ROOT}/scripts/email
+COPY scripts/gmail ${AGENT_LAB_ROOT}/scripts/gmail
+
+RUN cd "${AGENT_LAB_ROOT}" \
+  && npm ci --omit=dev --ignore-scripts \
+  && chmod +x "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" \
+  && chmod +x "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" \
+  && ln -sf "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" /usr/local/bin/agent-lab-extract-newsletter-from-gmail \
+  && ln -sf "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" /usr/local/bin/agent-lab-send-gog-digest
 
 COPY docker/entrypoint.sh /usr/local/bin/agent-lab-openclaw-entrypoint
 RUN chmod +x /usr/local/bin/agent-lab-openclaw-entrypoint \
