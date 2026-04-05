@@ -254,10 +254,6 @@ Routine operations:
   ```bash
   npm run local:shell
   ```
-- recreate the gateway after secret/config changes:
-  ```bash
-  npm run local:restart
-  ```
 - reset Docker-local state without touching native local:
   ```bash
   bash /Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh
@@ -281,6 +277,45 @@ Optional local overrides:
 - `TAIL_LINES` for `local:logs`
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `local:test:gmail:send`
 - `DIGEST_MESSAGE` for `local:test:digest`
+
+### Digest workflow notes
+
+Current Pip newsletter digest shape:
+
+- run on `main` with an isolated session and an explicit reset/fresh-run prompt
+- use `gog` for historical pull and issue selection
+- use the extractor to turn selected Gmail messages into inspectable artifacts before summarization
+- use an artifact-backed send helper for final HTML/text delivery
+
+Extractor artifacts are written per message under:
+
+- [workspace/memory/newsletters](/Users/sean/Repos/gcp-claw-lab/workspace/memory/newsletters)
+
+Each selected message id gets a directory containing:
+
+- `raw.html` when the source message has an HTML body
+- `raw.txt`
+- `clean.md`
+- `links.json`
+- `metadata.json`
+- `extracted.json`
+
+Normal digest runs should summarize from `clean.md`, `links.json`, and `metadata.json`, not from raw Gmail JSON or raw MIME/HTML payloads.
+
+Final send artifacts are written per run under:
+
+- [workspace/memory/digests](/Users/sean/Repos/gcp-claw-lab/workspace/memory/digests)
+
+Each run writes:
+
+- `email.html`
+- `email.txt`
+- `summary.json`
+- `send-result.json`
+
+Native-local note:
+
+- the digest skills call workspace-local wrappers under [workspace/scripts](/Users/sean/Repos/gcp-claw-lab/workspace/scripts) so the same workflow can find the extractor/send helper in native local, Docker-local, and cloud
 
 ### Cloud
 
@@ -318,6 +353,7 @@ npm run cloud:restart
 npm run cloud:rebuild
 npm run cloud:ps
 npm run cloud:logs
+npm run cloud:logs:download
 npm run cloud:shell
 npm run cloud:cron:apply
 npm run cloud:cron:list
@@ -346,9 +382,12 @@ Cloud command guidance:
 - `npm run cloud:rebuild`
   - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
+  - prunes stale Docker images after a successful rebuild to keep the VM disk from filling up with old build artifacts
 - `npm run cloud:cron:apply`
   - reconcile repo-managed cloud cron jobs into the gateway by name
   - removes duplicate jobs with the same name and updates the surviving job to match config
+- `npm run cloud:logs:download`
+  - downloads cloud OpenClaw session logs locally for inspection/debugging
 
 Repo-managed cloud cron config lives in [config/cron.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/cron.cloud.json).
 
