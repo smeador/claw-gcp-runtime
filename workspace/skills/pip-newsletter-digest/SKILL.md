@@ -64,13 +64,44 @@ Use `gog` in this exact retrieval flow:
 
 1. `gog gmail messages search ... --json --no-input`
 2. choose the newest valid issue
-3. `gog gmail get MESSAGE_ID --json --no-input`
+3. run the newsletter extractor for each selected message id:
+   - `agent-lab-extract-newsletter-from-gmail --account ACCOUNT --message-id MESSAGE_ID --output /workspace/memory/.tmp/NAME.json`
+4. read the extractor output, not the raw Gmail payload
+
+The extractor also writes inspectable artifacts and cache files under:
+
+- `/workspace/memory/newsletters/MESSAGE_ID/`
+
+Those artifacts include:
+
+- `raw.html` when an HTML body exists
+- `raw.txt`
+- `clean.md`
+- `links.json`
+- `metadata.json`
+- `extracted.json`
+
+If the same message id is selected again on a repeat run, prefer reusing the cached `extracted.json` instead of rebuilding it unless you explicitly need a refresh.
+
+Normal workflow rule:
+
+- use the cached artifact set as the source of truth for formatting handoff
+- read `metadata.json`, `links.json`, and `clean.md`
+- do not read `raw.html` or `raw.txt` during a normal digest run
+- do not read duplicate body fields from `extracted.json` when `clean.md` is available
+- use `raw.html` and `raw.txt` only when you are explicitly debugging extraction quality
+
+If the container/runtime does not have `agent-lab-extract-newsletter-from-gmail` on `PATH`, fall back to:
+
+- `node scripts/email/extract-newsletter-from-gmail.mjs --account ACCOUNT --message-id MESSAGE_ID --output ...`
 
 Hard rules:
 
 - do not use `gog gmail messages get`
+- do not paste raw `gog gmail get --json` output into the model conversation
+- do not read raw MIME or raw HTML blobs directly into the conversation
 - do not switch between multiple Gmail read subcommands during a normal run
-- if `gog gmail get` fails, treat that as a tool failure and report it clearly
+- if the extractor fails, treat that as a tool failure and report it clearly
 - do not silently substitute another unsupported command shape and continue
 
 ### Fast-path senders
@@ -138,7 +169,10 @@ Pass it the selected source material cleanly:
 - issue date
 - sender/publication
 - chosen public link
-- full body or the relevant extracted content needed for summarization
+- cleaned markdown from `clean.md`
+- curated links from `links.json`
+- metadata from `metadata.json`
+- only the relevant extracted content needed for summarization
 
 Do not keep discovering new emails while formatting unless a required primary newsletter is still missing.
 
@@ -159,6 +193,25 @@ The formatter owns:
 - use the local date in `America/Chicago`
 - send the digest as an HTML email with a plain-text fallback
 
+Before sending, write delivery artifacts under:
+
+- `/workspace/memory/digests/YYYY-MM-DD/`
+
+Required files:
+
+- `email.html`
+- `email.txt`
+- `summary.json`
+
+`summary.json` should include at least:
+
+- subject
+- recipient
+- sender
+- local date
+- selected message ids
+- source artifact directories
+
 Hard rules:
 
 - use `gog gmail send` in a way that includes the HTML body for the digest
@@ -166,8 +219,18 @@ Hard rules:
 - a plaintext-only send is not a successful digest send unless the user explicitly asked for plaintext-only
 - `email_html` must be actual HTML markup, not a file path
 - `email_html` is the primary digest body; `email_text` is fallback only
-- if you generate HTML in a temp file, read the contents before sending
+- use local `America/Chicago` time for the run directory name
+- write the final `email_html` markup and fallback text into a local day directory such as `/workspace/memory/digests/YYYY-MM-DD/`
+- let the digest send helper create the final ISO-like run subdirectory `YYYY-MM-DDTHH-MM-SS`
+- the helper must write `email.html`, `email.txt`, `summary.json`, and `send-result.json` into that run directory
+- use those saved files as the source material for the final send step
+- before invoking the helper, write `selected-message-ids.json` and `source-artifact-dirs.json` in the day directory
+- prefer `agent-lab-send-gog-digest ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
+- if that helper is unavailable, fall back to `bash scripts/gmail/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
 - do not send a filesystem path like `/workspace/...html` as the body
+- run one explicit helper-backed send step after the formatter returns the final bodies
+- only treat delivery as successful if the helper returns a `send_result.message_id`
+- if `message_id` is missing, treat that as a send failure even if the command printed other output
 
 If delivery fails:
 
