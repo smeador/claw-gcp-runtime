@@ -245,6 +245,10 @@ OpenClaw is treated as:
 - A dedicated `digest` agent was attempted as a cost-control measure, but config-only registration was not enough in practice. The runtime rendered `agents.list`, but the live gateway still rejected `digest` as an unknown agent id.
 - Future enhancement: revisit dedicated digest-agent isolation using the documented `openclaw agents add ...` bootstrap path instead of relying only on config templates.
 - Future enhancement: fix cloud OpenRouter attribution so cloud requests identify as `OpenClaw` instead of `Unknown App`, using a supported OpenClaw-side configuration path rather than the earlier invalid custom-provider header attempt.
+- Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
+- The extractor should be treated as the source of truth for message-body cleanup. `clean.md`, `links.json`, and `metadata.json` are the normal model-facing inputs; `raw.html` and `raw.txt` are for inspection/debugging only.
+- Native local, Docker-local, and cloud should all call the digest extractor and digest send helper through workspace-local wrapper scripts so the skill does not depend on environment-specific binary/script paths.
+- Digest send success should be code-enforced instead of instruction-enforced: the helper writes final run artifacts, executes `gog gmail send`, and only reports success when a Gmail id is returned.
 - Holds durable delegated credentials
 
 Therefore:
