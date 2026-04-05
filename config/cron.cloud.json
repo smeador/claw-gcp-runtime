@@ -10,7 +10,7 @@
       "session": "isolated",
       "message": "/reset Re-read the pip-newsletter-digest and pip-newsletter-digest-format skills from disk, then run pip-newsletter-digest now from scratch.",
       "deliver": false,
-      "disabled": true
+      "disabled": false
     }
   ]
 }
