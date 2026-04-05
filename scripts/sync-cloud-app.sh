@@ -40,7 +40,7 @@ tar \
   --no-xattrs \
   "${EXCLUDES[@]}" \
   -czf "${LOCAL_ARCHIVE}" \
-  docker config workspace scripts versions.json package.json
+  docker config workspace scripts versions.json package.json package-lock.json
 
 gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
