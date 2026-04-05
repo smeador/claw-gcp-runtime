@@ -109,8 +109,8 @@ fi
 SEND_OUTPUT="$(gog "${SEND_ARGS[@]}")"
 printf '%s\n' "${SEND_OUTPUT}" > "${RESULT_FILE}"
 
-if ! printf '%s\n' "${SEND_OUTPUT}" | jq -e '.message_id and .message_id != ""' >/dev/null 2>&1; then
-  echo "Digest send failed: gog output did not include message_id" >&2
+if ! printf '%s\n' "${SEND_OUTPUT}" | jq -e '(.message_id // .messageId) and (.message_id // .messageId) != ""' >/dev/null 2>&1; then
+  echo "Digest send failed: gog output did not include message_id/messageId" >&2
   cat "${RESULT_FILE}" >&2
   exit 1
 fi

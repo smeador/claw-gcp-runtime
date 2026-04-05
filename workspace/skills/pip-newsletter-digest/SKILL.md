@@ -65,7 +65,7 @@ Use `gog` in this exact retrieval flow:
 1. `gog gmail messages search ... --json --no-input`
 2. choose the newest valid issue
 3. run the newsletter extractor for each selected message id:
-   - `agent-lab-extract-newsletter-from-gmail --account ACCOUNT --message-id MESSAGE_ID --output /workspace/memory/.tmp/NAME.json`
+   - `bash scripts/extract-newsletter-from-gmail.sh --account ACCOUNT --message-id MESSAGE_ID --output /workspace/memory/.tmp/NAME.json`
 4. read the extractor output, not the raw Gmail payload
 
 The extractor also writes inspectable artifacts and cache files under:
@@ -91,9 +91,7 @@ Normal workflow rule:
 - do not read duplicate body fields from `extracted.json` when `clean.md` is available
 - use `raw.html` and `raw.txt` only when you are explicitly debugging extraction quality
 
-If the container/runtime does not have `agent-lab-extract-newsletter-from-gmail` on `PATH`, fall back to:
-
-- `node scripts/email/extract-newsletter-from-gmail.mjs --account ACCOUNT --message-id MESSAGE_ID --output ...`
+The wrapper resolves to the installed helper when available and otherwise falls back to the repo copy of the extractor.
 
 Hard rules:
 
@@ -225,12 +223,12 @@ Hard rules:
 - the helper must write `email.html`, `email.txt`, `summary.json`, and `send-result.json` into that run directory
 - use those saved files as the source material for the final send step
 - before invoking the helper, write `selected-message-ids.json` and `source-artifact-dirs.json` in the day directory
-- prefer `agent-lab-send-gog-digest ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
-- if that helper is unavailable, fall back to `bash scripts/gmail/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
+- use `bash scripts/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
+- the wrapper resolves to the installed helper when available and otherwise falls back to the repo copy
 - do not send a filesystem path like `/workspace/...html` as the body
 - run one explicit helper-backed send step after the formatter returns the final bodies
-- only treat delivery as successful if the helper returns a `send_result.message_id`
-- if `message_id` is missing, treat that as a send failure even if the command printed other output
+- only treat delivery as successful if the helper returns a Gmail id in either `send_result.message_id` or `send_result.messageId`
+- if both `message_id` and `messageId` are missing, treat that as a send failure even if the command printed other output
 
 If delivery fails:
 
