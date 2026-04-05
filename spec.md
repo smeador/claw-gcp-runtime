@@ -4,6 +4,8 @@
 
 This project provisions a secure, isolated experimentation environment on Google Cloud Platform (GCP) for running OpenClaw (or equivalent agent runtime) using OpenTofu.
 
+Open backlog items live in [backlog.md](/Users/sean/Repos/gcp-claw-lab/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
+
 Primary goals:
 
 1. Isolate agent runtime from personal laptop
@@ -157,13 +159,8 @@ At VM startup:
 - Starts OpenClaw
 
 Secrets are resolved on application startup.
-Restart required to pick up updated secrets (initial model).
+Restart required to pick up updated secrets.
 Old secret versions should be disabled before destruction when rotating credentials.
-
-Future improvement:
-- TTL-based refresh
-- Version alias switching
-- Automated rotation
 
 ---
 
@@ -225,9 +222,6 @@ Limit:
 
 VM should be stopped when not actively experimenting.
 
-Optional future enhancement:
-- Scheduled shutdown via Cloud Scheduler
-
 ---
 
 # Security Posture
@@ -243,8 +237,6 @@ OpenClaw is treated as:
 
 - For the Pip newsletter digest, the current reliable shape is: run on the `main` agent with an isolated session and an explicit reset/fresh-run prompt.
 - A dedicated `digest` agent was attempted as a cost-control measure, but config-only registration was not enough in practice. The runtime rendered `agents.list`, but the live gateway still rejected `digest` as an unknown agent id.
-- Future enhancement: revisit dedicated digest-agent isolation using the documented `openclaw agents add ...` bootstrap path instead of relying only on config templates.
-- Future enhancement: fix cloud OpenRouter attribution so cloud requests identify as `OpenClaw` instead of `Unknown App`, using a supported OpenClaw-side configuration path rather than the earlier invalid custom-provider header attempt.
 - Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
 - The extractor should be treated as the source of truth for message-body cleanup. `clean.md`, `links.json`, and `metadata.json` are the normal model-facing inputs; `raw.html` and `raw.txt` are for inspection/debugging only.
 - Native local, Docker-local, and cloud should all call the digest extractor and digest send helper through workspace-local wrapper scripts so the skill does not depend on environment-specific binary/script paths.
@@ -512,7 +504,7 @@ Authentication guidance by environment:
 - Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `automation@example.com`.
 - OpenAI for Docker-local and cloud should prefer env-based API-key injection rendered from the environment secret overlay rather than interactive runtime bootstrap.
 - Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
-- Docker-local digest/read-send workflows should not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel; those remain optional future realtime enhancements.
+- Docker-local digest/read-send workflows should not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel.
 - OpenAI/model auth should keep the same profile names across environments.
 - Native local may use OAuth or other local runtime-managed auth when that is the cleaner operator path.
 - Docker-local may derive API-key provider secrets from the same local secret overlay used for config rendering, but the rendered config should omit the raw key and rely on the injected provider env var.
@@ -628,7 +620,7 @@ Cloud runtime lifecycle guidance:
 
 Gmail approach:
 - Gmail historical pull is sufficient for digest/read workflows.
-- Pub/Sub/webhook ingestion is optional future enhancement, not a prerequisite for digest coverage.
+- Pub/Sub/webhook ingestion is not a prerequisite for digest coverage.
 - Docker-local should keep Gmail Pub/Sub/webhook ingestion disabled by default unless realtime ingestion is being tested intentionally.
 
 ## Setup and Bootstrap Approach
@@ -667,13 +659,26 @@ Operational stance:
 - Secret overlays are the source of truth for config-bound secret values.
 - Runtime state is durable but environment-local and not authoritative for reviewed configuration.
 
-## Future Enhancements
+## Digest Design Direction
 
-- Add monitoring/dashboard coverage for runtime health and cost controls
-- Tighten cloud host package version policy if distro-managed versions become too loose
-- Reduce operator steps further by consolidating more setup flows into deterministic scripts
+- Keep retrieval, extraction, artifact staging, and final delivery code-owned wherever practical.
+- Keep skills focused on source-selection rules, synthesis rules, and output shape rather than filesystem choreography.
+- The preferred digest pipeline is:
+  1. select messages with `gog`
+  2. extract each selected message into inspectable artifacts
+  3. summarize from cleaned artifacts rather than raw Gmail payloads
+  4. write final delivery artifacts
+  5. send through a helper-backed `gog gmail send` path
 
----
+Bounded synthesis direction:
+- If the digest moves to parallel synthesis later, use bounded per-newsletter workers rather than delegating the whole workflow.
+- Each worker should receive only cleaned, source-specific artifacts such as:
+  - `metadata.json`
+  - `links.json`
+  - `clean.md`
+- Each worker should return only a structured section result for its assigned source.
+- Message selection, extraction, run-directory creation, artifact staging, and final send should remain centralized and deterministic.
+- Subagent-style parallelism should be treated as a synthesis optimization only after the deterministic runner path exists, not as a substitute for code-owned orchestration.
 
 # Non-Goals (For Now)
 
@@ -703,15 +708,3 @@ Environment is considered correctly provisioned when:
 - OpenClaw starts and can access scoped integrations
 
 ---
-
-# Future Phases
-
-Phase 2:
-- Add monitoring dashboards
-- Add structured log export
-- Introduce secret rotation schedule
-- Smooth the cloud operator flow further so first deploy, secret push, and app sync require fewer manual steps
-
-Phase 3:
-- Explore autonomous coding workflows
-- Refine local and cloud operator tooling so provider registration, token rotation, and device pairing are less clunky
