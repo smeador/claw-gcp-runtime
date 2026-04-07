@@ -174,6 +174,73 @@ function decodeBase64Url(data) {
   return Buffer.from(normalized + padding, "base64").toString("utf8");
 }
 
+function stripTrackingParams(url) {
+  try {
+    const parsed = new URL(url);
+    for (const key of [...parsed.searchParams.keys()]) {
+      if (
+        key.startsWith("utm_") ||
+        key === "isFreemail" ||
+        key === "token" ||
+        key === "r" ||
+        key === "j" ||
+        key === "redirect"
+      ) {
+        parsed.searchParams.delete(key);
+      }
+    }
+    const next = parsed.toString();
+    return next.endsWith("?") ? next.slice(0, -1) : next;
+  } catch {
+    return url;
+  }
+}
+
+function normalizeSubstackUrl(url) {
+  const trimmed = String(url ?? "").trim().replace(/&amp;/g, "&");
+
+  try {
+    const parsed = new URL(trimmed);
+
+    if (parsed.hostname === "substack.com" && parsed.pathname.startsWith("/redirect/2/")) {
+      const token = parsed.pathname.slice("/redirect/2/".length).split(".")[0];
+      const decoded = decodeBase64Url(token);
+      const payload = JSON.parse(decoded);
+      if (typeof payload?.e === "string" && payload.e) {
+        const target = new URL(payload.e);
+        const next = target.searchParams.get("next");
+        if (next) {
+          return stripTrackingParams(next);
+        }
+        return stripTrackingParams(payload.e);
+      }
+    }
+
+    if (parsed.hostname === "substack.com" && parsed.pathname.startsWith("/app-link/post")) {
+      return "";
+    }
+
+    if (parsed.hostname === "open.substack.com") {
+      return stripTrackingParams(trimmed);
+    }
+
+    return trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
+function normalizeCandidateUrl(url) {
+  const trimmed = String(url ?? "").trim().replace(/&amp;/g, "&");
+  if (!trimmed) return "";
+
+  if (trimmed.includes("substack.com")) {
+    return normalizeSubstackUrl(trimmed);
+  }
+
+  return trimmed;
+}
+
 function flattenParts(part, output = []) {
   if (!part) return output;
   output.push(part);
@@ -357,12 +424,20 @@ function scoreLink(url, text) {
   const normalizedText = text.toLowerCase();
   const normalizedUrl = url.toLowerCase();
   let score = 0;
+  const isOpenSubstackArticle =
+    normalizedUrl.includes("open.substack.com/pub/") && normalizedUrl.includes("/p/");
 
   if (normalizedText.includes("view in browser")) score += 120;
   if (normalizedText.includes("read in browser")) score += 120;
   if (normalizedText.includes("read online")) score += 110;
+  if (normalizedText.includes("view this post on the web")) score += 130;
+  if (normalizedText.includes("issue link")) score += 100;
+  if (normalizedText.includes("read in app") && isOpenSubstackArticle) score += 180;
+  if (normalizedText.includes("open in app") && isOpenSubstackArticle) score += 180;
   if (normalizedText.includes("listen now")) score += 30;
-  if (normalizedUrl.includes("substack.com/redirect")) score += 20;
+  if (normalizedUrl.includes("open.substack.com/pub/")) score += 110;
+  if (/https?:\/\/[^/]+\/p\//.test(normalizedUrl)) score += 80;
+  if (normalizedUrl.includes("substack.com/redirect")) score -= 60;
   if (normalizedUrl.includes("substack.com")) score += 10;
   if (/^https?:\/\//.test(normalizedUrl)) score += 5;
   if (text.length >= 4 && text.length <= 120) score += 10;
@@ -375,7 +450,7 @@ function extractCuratedLinks($, maxLinks) {
   const links = [];
 
   $("a[href]").each((_, element) => {
-    const href = String($(element).attr("href") ?? "").trim();
+    const href = normalizeCandidateUrl($(element).attr("href") ?? "");
     const text = cleanWhitespace($(element).text());
     if (!href || shouldRejectLink(href, text)) {
       return;
@@ -422,7 +497,37 @@ function extractCuratedLinksFromText(text, maxLinks) {
   }
 
   links.sort((a, b) => b.score - a.score || a.url.localeCompare(b.url));
+
+  const linePattern = /(view this post on the web at|view in browser|read in browser|read online)\s+\(?\s*(https?:\/\/[^\s)]+)\s*\)?/gi;
+  for (const match of text.matchAll(linePattern)) {
+    const label = cleanWhitespace(match[1] ?? "");
+    const url = normalizeCandidateUrl(match[2] ?? "");
+    if (!url || shouldRejectLink(url, label) || seen.has(url)) {
+      continue;
+    }
+    seen.add(url);
+    links.push({
+      url,
+      text: normalizeLinkText(label, url),
+      score: scoreLink(url, label),
+    });
+  }
+
+  links.sort((a, b) => b.score - a.score || a.url.localeCompare(b.url));
   return links.slice(0, maxLinks);
+}
+
+function mergeCuratedLinks(linkLists, maxLinks) {
+  const best = new Map();
+  for (const list of linkLists) {
+    for (const link of list) {
+      const existing = best.get(link.url);
+      if (!existing || link.score > existing.score) {
+        best.set(link.url, link);
+      }
+    }
+  }
+  return [...best.values()].sort((a, b) => b.score - a.score || a.url.localeCompare(b.url)).slice(0, maxLinks);
 }
 
 function stripJunkHtml(html) {
@@ -507,14 +612,22 @@ function buildExtraction(prepared, options) {
   let cleanedHtml = "";
   let markdown = text;
   let curatedLinks = [];
+  let htmlCuratedLinks = [];
 
   if (sourceBody === "gog-body") {
-    curatedLinks = extractCuratedLinksFromText(rawTopLevelBody, options.maxLinks);
-  } else if (html) {
+    curatedLinks = extractCuratedLinksFromText(rawTopLevelBody || rawText, options.maxLinks);
+  }
+
+  if (html) {
     const cleaned = stripJunkHtml(html);
     cleanedHtml = cleaned.cleanedHtml;
-    curatedLinks = cleaned.curatedLinks.slice(0, options.maxLinks);
-    markdown = htmlToMarkdown(cleaned.cleanedHtml);
+    htmlCuratedLinks = cleaned.curatedLinks.slice(0, options.maxLinks);
+    if (sourceBody !== "gog-body") {
+      markdown = htmlToMarkdown(cleaned.cleanedHtml);
+      curatedLinks = htmlCuratedLinks;
+    } else {
+      curatedLinks = mergeCuratedLinks([curatedLinks, htmlCuratedLinks], options.maxLinks);
+    }
   }
 
   return {
