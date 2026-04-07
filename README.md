@@ -48,6 +48,12 @@ This repo has three operating modes:
 - Docker-local: local cloud-parity runtime
 - cloud: Docker on the GCP VM
 
+## Guides
+
+- [OpenClaw Agent Guide](/Users/sean/Repos/gcp-claw-lab/docs/openclaw-agent-guide.md): general lessons and best practices for building reliable agent workflows in OpenClaw
+- [Project Spec](/Users/sean/Repos/gcp-claw-lab/docs/spec.md): current architecture, operating model, and constraints for this lab
+- [Backlog](/Users/sean/Repos/gcp-claw-lab/docs/backlog.md): prioritized open work and follow-up improvements
+
 ### Dependency management
 
 Pinned runtime versions live in [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json).

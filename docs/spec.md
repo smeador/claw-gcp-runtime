@@ -4,7 +4,7 @@
 
 This project provisions a secure, isolated experimentation environment on Google Cloud Platform (GCP) for running OpenClaw (or equivalent agent runtime) using OpenTofu.
 
-Open backlog items live in [backlog.md](/Users/sean/Repos/gcp-claw-lab/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
+Open backlog items live in [backlog.md](/Users/sean/Repos/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
 Primary goals:
 
