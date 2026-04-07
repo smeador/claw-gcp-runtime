@@ -12,7 +12,9 @@ Hard rules:
 
 - preserve the original content and intent while reducing length
 - give detail according to the section-specific rules below
-- write directly, not with framing like `the piece says` or `the newsletter explains`
+- present the substance as a direct briefing, not commentary about a source document
+- avoid source-framing language such as `the article says`, `the piece argues`, `the post mentions`, `the newsletter notes`, or `the author explains`
+- prefer direct constructions like `OpenAI released...`, `Congress is considering...`, or `the company reported...`
 - keep plaintext and HTML identical in substance and order
 - synthesize only within each newsletter section, not across the whole digest
 - do not flatten the whole digest into one narrative
