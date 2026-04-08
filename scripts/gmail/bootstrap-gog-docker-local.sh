@@ -52,4 +52,4 @@ echo
 echo "Docker Gmail service-account bootstrap complete for ${ACCOUNT_EMAIL}."
 echo "Next tests:"
 echo "docker compose --env-file config/docker.build.env -f ${COMPOSE_FILE} exec openclaw-gateway gog gmail search 'newer_than:1d' --account ${ACCOUNT_EMAIL}"
-echo "docker compose --env-file config/docker.build.env -f ${COMPOSE_FILE} exec openclaw-gateway openclaw agent --agent main --message '/reset Re-read the pip-newsletter-digest and pip-newsletter-digest-format skills from disk, then run pip-newsletter-digest now in test mode from scratch.'"
+echo "docker compose --env-file config/docker.build.env -f ${COMPOSE_FILE} exec openclaw-gateway openclaw agent --agent main --message 'Run pip-newsletter-digest now in test mode.'"
