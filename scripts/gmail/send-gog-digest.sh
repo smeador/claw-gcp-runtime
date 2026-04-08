@@ -1,20 +1,102 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ $# -lt 6 ]; then
-  echo "Usage: $0 ACCOUNT_EMAIL TO_EMAIL SUBJECT TEXT_FILE HTML_FILE DAY_DIR [FROM_EMAIL] [MESSAGE_IDS_JSON] [SOURCE_ARTIFACTS_JSON]" >&2
+usage() {
+  cat >&2 <<'EOF'
+Usage:
+  send-gog-digest.sh \
+    --account ACCOUNT_EMAIL \
+    --to TO_EMAIL \
+    --subject SUBJECT \
+    --text-file TEXT_FILE \
+    --html-file HTML_FILE \
+    --day-dir DAY_DIR \
+    [--from FROM_EMAIL] \
+    [--message-ids-json MESSAGE_IDS_JSON] \
+    [--source-artifacts-json SOURCE_ARTIFACTS_JSON]
+
+Legacy positional form is also accepted temporarily:
+  send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR [FROM_EMAIL] [MESSAGE_IDS_JSON] [SOURCE_ARTIFACTS_JSON]
+EOF
   exit 1
+}
+
+ACCOUNT_EMAIL=""
+TO_EMAIL=""
+SUBJECT=""
+TEXT_FILE=""
+HTML_FILE=""
+DAY_DIR=""
+FROM_EMAIL=""
+MESSAGE_IDS_JSON=""
+SOURCE_ARTIFACTS_JSON=""
+
+if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
+  if [ $# -lt 6 ]; then
+    usage
+  fi
+  ACCOUNT_EMAIL="$1"
+  TO_EMAIL="$2"
+  SUBJECT="$3"
+  TEXT_FILE="$4"
+  HTML_FILE="$5"
+  DAY_DIR="$6"
+  FROM_EMAIL="${7:-}"
+  MESSAGE_IDS_JSON="${8:-}"
+  SOURCE_ARTIFACTS_JSON="${9:-}"
+else
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --account)
+        ACCOUNT_EMAIL="${2:-}"
+        shift 2
+        ;;
+      --to)
+        TO_EMAIL="${2:-}"
+        shift 2
+        ;;
+      --subject)
+        SUBJECT="${2:-}"
+        shift 2
+        ;;
+      --text-file)
+        TEXT_FILE="${2:-}"
+        shift 2
+        ;;
+      --html-file)
+        HTML_FILE="${2:-}"
+        shift 2
+        ;;
+      --day-dir)
+        DAY_DIR="${2:-}"
+        shift 2
+        ;;
+      --from)
+        FROM_EMAIL="${2:-}"
+        shift 2
+        ;;
+      --message-ids-json)
+        MESSAGE_IDS_JSON="${2:-}"
+        shift 2
+        ;;
+      --source-artifacts-json)
+        SOURCE_ARTIFACTS_JSON="${2:-}"
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        ;;
+      *)
+        echo "Unknown argument: $1" >&2
+        usage
+        ;;
+    esac
+  done
 fi
 
-ACCOUNT_EMAIL="$1"
-TO_EMAIL="$2"
-SUBJECT="$3"
-TEXT_FILE="$4"
-HTML_FILE="$5"
-DAY_DIR="$6"
-FROM_EMAIL="${7:-}"
-MESSAGE_IDS_JSON="${8:-}"
-SOURCE_ARTIFACTS_JSON="${9:-}"
+if [ -z "${ACCOUNT_EMAIL}" ] || [ -z "${TO_EMAIL}" ] || [ -z "${SUBJECT}" ] || [ -z "${TEXT_FILE}" ] || [ -z "${HTML_FILE}" ] || [ -z "${DAY_DIR}" ]; then
+  usage
+fi
 
 if ! command -v gog >/dev/null 2>&1; then
   echo "gog CLI not found on PATH." >&2

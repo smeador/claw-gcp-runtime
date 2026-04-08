@@ -41,7 +41,7 @@ For newsletter digests:
 - the final HTML should also be written to a local artifact file before send
 - the final plain-text fallback should also be written to a local artifact file before send
 - the helper should create a timestamped run directory inside the provided day directory
-- use `bash scripts/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON` for digest sends
+- use `bash scripts/send-gog-digest.sh --account ACCOUNT --to TO --subject SUBJECT --text-file TEXT_FILE --html-file HTML_FILE --day-dir DAY_DIR --from FROM --message-ids-json MESSAGE_IDS_JSON --source-artifacts-json SOURCE_ARTIFACTS_JSON` for digest sends
 - the wrapper resolves to the installed helper when available and otherwise falls back to the repo copy
 
 ## Local helper
