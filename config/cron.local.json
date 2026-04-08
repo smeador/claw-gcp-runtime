@@ -8,7 +8,7 @@
       "tz": "America/Chicago",
       "exact": true,
       "session": "isolated",
-      "message": "/reset Use /workspace/skills/pip-newsletter-digest/SKILL.md directly and run pip-newsletter-digest now from scratch. Do not scan the workspace for other skills before starting.",
+      "message": "Run pip-newsletter-digest now.",
       "deliver": false,
       "disabled": true
     }
