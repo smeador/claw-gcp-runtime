@@ -225,7 +225,7 @@ Hard rules:
 - the helper must write `email.html`, `email.txt`, `summary.json`, and `send-result.json` into that run directory
 - use those saved files as the source material for the final send step
 - before invoking the helper, write `selected-message-ids.json` and `source-artifact-dirs.json` in the day directory
-- use `bash scripts/send-gog-digest.sh ACCOUNT TO SUBJECT TEXT_FILE HTML_FILE DAY_DIR FROM MESSAGE_IDS_JSON SOURCE_ARTIFACTS_JSON`
+- use `bash scripts/send-gog-digest.sh --account ACCOUNT --to TO --subject SUBJECT --text-file TEXT_FILE --html-file HTML_FILE --day-dir DAY_DIR --from FROM --message-ids-json MESSAGE_IDS_JSON --source-artifacts-json SOURCE_ARTIFACTS_JSON`
 - the wrapper resolves to the installed helper when available and otherwise falls back to the repo copy
 - do not send a filesystem path like `/workspace/...html` as the body
 - run one explicit helper-backed send step after the formatter returns the final bodies
