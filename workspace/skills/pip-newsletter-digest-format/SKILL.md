@@ -128,10 +128,17 @@ Each bullet must contain:
 - HTML and plaintext must contain the same content in the same order
 - links in HTML must be hyperlinks, not raw URLs
 - keep the current restrained editorial layout
+- do not rely on browser-like default heading rendering for hierarchy
+- prefer email-safe styled block elements with explicit inline typography over plain `h1`/`h2`/`h3` defaults
 - primary section headers must remain visually stronger than subsection headers, including on mobile
+- make section and subsection hierarchy survive clients that flatten heading styles or ignore custom fonts
 - keep horizontal mobile padding tight enough that the reading column does not become too narrow
 - use a very slightly off-white neutral background, not a warm beige tone
 - keep the title `Pip Newsletter Digest` large and in a distinctive editorial serif stack
+- keep the title noticeably larger than section headers
+- make section headers materially larger than subsection labels
+- give subsection labels a distinct utility treatment, such as smaller size, sans-serif styling, muted color, and optional letter spacing
+- use `-webkit-text-size-adjust:100%` and `-ms-text-size-adjust:100%` in email-safe inline/container styling where appropriate
 
 ## Pre-send checklist
 

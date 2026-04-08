@@ -32,7 +32,9 @@ Do not ask:
 
 Execute the workflow.
 
-Before running, re-read this skill and the formatter skill from disk.
+Start execution immediately.
+
+Do not spend the first step on workspace orientation or generic environment checking unless a real failure forces you to diagnose it.
 
 ## Sources in scope
 
