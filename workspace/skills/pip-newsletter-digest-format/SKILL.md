@@ -134,7 +134,7 @@ Each bullet must contain:
 - make section and subsection hierarchy survive clients that flatten heading styles or ignore custom fonts
 - keep horizontal mobile padding tight enough that the reading column does not become too narrow
 - use a very slightly off-white neutral background, not a warm beige tone
-- keep the title `Pip Newsletter Digest` large and in a distinctive editorial serif stack
+- keep the title `Pip Newsletter Digest` large and set in `Georgia`
 - keep the title noticeably larger than section headers
 - make section headers materially larger than subsection labels
 - give subsection labels a distinct utility treatment, such as smaller size, sans-serif styling, muted color, and optional letter spacing
