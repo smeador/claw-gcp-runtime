@@ -64,7 +64,7 @@ Ignore GoodLinks and non-email sources.
 
 Use `gog` in this exact retrieval flow:
 
-1. `gog gmail messages search ... --json --no-input`
+1. `gog gmail search ... --json --no-input`
 2. choose the newest valid issue
 3. run the newsletter extractor for each selected message id:
    - `bash scripts/extract-newsletter-from-gmail.sh --account ACCOUNT --message-id MESSAGE_ID --output /workspace/memory/.tmp/NAME.json`
