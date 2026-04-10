@@ -8,6 +8,7 @@ Usage:
     --account ACCOUNT_EMAIL \
     --to TO_EMAIL \
     --subject SUBJECT \
+    [--digest-json DIGEST_JSON] \
     --text-file TEXT_FILE \
     --html-file HTML_FILE \
     --day-dir DAY_DIR \
@@ -24,6 +25,7 @@ EOF
 ACCOUNT_EMAIL=""
 TO_EMAIL=""
 SUBJECT=""
+DIGEST_JSON=""
 TEXT_FILE=""
 HTML_FILE=""
 DAY_DIR=""
@@ -57,6 +59,10 @@ else
         ;;
       --subject)
         SUBJECT="${2:-}"
+        shift 2
+        ;;
+      --digest-json)
+        DIGEST_JSON="${2:-}"
         shift 2
         ;;
       --text-file)
@@ -103,6 +109,11 @@ if ! command -v gog >/dev/null 2>&1; then
   exit 1
 fi
 
+if [ -n "${DIGEST_JSON}" ] && [ ! -f "${DIGEST_JSON}" ]; then
+  echo "Digest JSON file not found: ${DIGEST_JSON}" >&2
+  exit 1
+fi
+
 if [ ! -f "${TEXT_FILE}" ]; then
   echo "Text body file not found: ${TEXT_FILE}" >&2
   exit 1
@@ -129,6 +140,9 @@ fi
 
 mkdir -p "${RUN_DIR}"
 
+if [ -n "${DIGEST_JSON}" ]; then
+  cp "${DIGEST_JSON}" "${RUN_DIR}/digest.json"
+fi
 cp "${TEXT_FILE}" "${RUN_DIR}/email.txt"
 cp "${HTML_FILE}" "${RUN_DIR}/email.html"
 
@@ -162,6 +176,7 @@ cat > "${SUMMARY_FILE}" <<EOF
   "recipient": $(jq -Rn --arg v "${TO_EMAIL}" '$v'),
   "sender": $(jq -Rn --arg v "${FROM_EMAIL:-${ACCOUNT_EMAIL}}" '$v'),
   "account": $(jq -Rn --arg v "${ACCOUNT_EMAIL}" '$v'),
+  "digestJson": $(jq -Rn --arg v "${DIGEST_JSON:+${RUN_DIR}/digest.json}" '$v'),
   "localDate": $(jq -Rn --arg v "${LOCAL_DATE}" '$v'),
   "runTimestamp": $(jq -Rn --arg v "${LOCAL_TIME}" '$v'),
   "runDir": $(jq -Rn --arg v "${RUN_DIR}" '$v'),

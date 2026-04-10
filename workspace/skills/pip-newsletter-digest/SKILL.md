@@ -174,6 +174,8 @@ Pass it the selected source material cleanly:
 - metadata from `metadata.json`
 - only the relevant extracted content needed for summarization
 
+The formatter must return structured digest JSON that matches its schema and is ready for the renderer. It must not return raw HTML.
+
 Do not keep discovering new emails while formatting unless a required primary newsletter is still missing.
 
 The formatter owns:
@@ -181,8 +183,7 @@ The formatter owns:
 - digest structure
 - depth
 - section labels
-- plaintext/HTML parity
-- pre-send output checks
+- JSON output checks
 
 ## Delivery
 
@@ -199,6 +200,7 @@ Before sending, write delivery artifacts under:
 
 Required files:
 
+- `digest.json`
 - `email.html`
 - `email.txt`
 - `summary.json`
@@ -214,21 +216,25 @@ Required files:
 
 Hard rules:
 
+- the formatter must return one valid `digest.json` object, not HTML
+- write the formatter output to `digest.json` in the day directory before rendering
+- render final email bodies with:
+  - `bash scripts/render-newsletter-digest.sh --input DIGEST_JSON --html-out HTML_FILE --text-out TEXT_FILE`
 - use `gog gmail send` in a way that includes the HTML body for the digest
 - include a plain-text fallback body for email compatibility
 - a plaintext-only send is not a successful digest send unless the user explicitly asked for plaintext-only
-- `email_html` must be actual HTML markup, not a file path
-- `email_html` is the primary digest body; `email_text` is fallback only
+- `digest.json` is the source of truth for final content
 - use local `America/Chicago` time for the run directory name
-- write the final `email_html` markup and fallback text into a local day directory such as `/workspace/memory/digests/YYYY-MM-DD/`
+- write `digest.json`, `email.html`, and `email.txt` into a local day directory such as `/workspace/memory/digests/YYYY-MM-DD/`
 - let the digest send helper create the final ISO-like run subdirectory `YYYY-MM-DDTHH-MM-SS`
-- the helper must write `email.html`, `email.txt`, `summary.json`, and `send-result.json` into that run directory
+- the helper must write `digest.json`, `email.html`, `email.txt`, `summary.json`, and `send-result.json` into that run directory
 - use those saved files as the source material for the final send step
 - before invoking the helper, write `selected-message-ids.json` and `source-artifact-dirs.json` in the day directory
-- use `bash scripts/send-gog-digest.sh --account ACCOUNT --to TO --subject SUBJECT --text-file TEXT_FILE --html-file HTML_FILE --day-dir DAY_DIR --from FROM --message-ids-json MESSAGE_IDS_JSON --source-artifacts-json SOURCE_ARTIFACTS_JSON`
+- use `bash scripts/send-gog-digest.sh --account ACCOUNT --to TO --subject SUBJECT --digest-json DIGEST_JSON --text-file TEXT_FILE --html-file HTML_FILE --day-dir DAY_DIR --from FROM --message-ids-json MESSAGE_IDS_JSON --source-artifacts-json SOURCE_ARTIFACTS_JSON`
 - the wrapper resolves to the installed helper when available and otherwise falls back to the repo copy
 - do not send a filesystem path like `/workspace/...html` as the body
-- run one explicit helper-backed send step after the formatter returns the final bodies
+- run one explicit renderer step after the formatter returns `digest.json`
+- run one explicit helper-backed send step after rendering the final bodies
 - only treat delivery as successful if the helper returns a Gmail id in either `send_result.message_id` or `send_result.messageId`
 - if both `message_id` and `messageId` are missing, treat that as a send failure even if the command printed other output
 

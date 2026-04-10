@@ -2,7 +2,7 @@
 
 Use this skill to turn the already-selected newsletter source material into the final Pip newsletter digest.
 
-This skill does not own inbox discovery. Do not do mailbox search or tool discovery here unless the caller explicitly says the source set is incomplete.
+This skill does not own inbox discovery or email rendering. Do not do mailbox search, tool discovery, or hand-authored HTML generation here unless the caller explicitly says the source set is incomplete.
 
 ## Core writing contract
 
@@ -15,11 +15,68 @@ Hard rules:
 - present the substance as a direct briefing, not commentary about a source document
 - avoid source-framing language such as `the article says`, `the piece argues`, `the post mentions`, `the newsletter notes`, or `the author explains`
 - prefer direct constructions like `OpenAI released...`, `Congress is considering...`, or `the company reported...`
-- keep plaintext and HTML identical in substance and order
+- return structured JSON only
 - synthesize only within each newsletter section, not across the whole digest
 - do not flatten the whole digest into one narrative
+- do not return HTML
+- do not return Markdown outside JSON string fields
+- do not wrap the JSON in code fences
 
 ## Output structure
+
+Return one valid JSON object with this shape:
+
+```json
+{
+  "title": "Pip Newsletter Digest",
+  "date": "April 10, 2026",
+  "localDate": "2026-04-10",
+  "inventory": {
+    "foundPrimary": ["NY Times Morning", "Daily Upside", "AI News"],
+    "missingPrimary": [],
+    "substackCount": 3,
+    "stanfordCount": 0
+  },
+  "sections": [
+    {
+      "type": "primary",
+      "key": "nyt",
+      "title": "NY Times Morning",
+      "issueDate": "April 10, 2026",
+      "sender": "The New York Times",
+      "issueLink": "https://...",
+      "groups": [
+        {
+          "title": "Main article",
+          "kind": "paragraphs",
+          "content": "First paragraph.\\n\\nSecond paragraph."
+        },
+        {
+          "title": "Other major stories",
+          "kind": "bullets",
+          "content": ["Bullet one.", "Bullet two."]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Shape rules:
+
+- `title`, `date`, and `localDate` must be strings
+- `inventory.foundPrimary` and `inventory.missingPrimary` must be arrays of strings
+- `sections` must be an ordered array
+- `primary` sections must use `groups`
+- each group must include:
+  - optional `title`
+  - `kind`
+  - `content`
+- if `kind` is `paragraphs`, `content` must be one string with paragraphs separated by blank lines
+- if `kind` is `bullets`, `content` must be an array of strings
+- `substack_review` and `stanford` sections must use `items`
+- each `items` entry must stay plain text except for the link field
+- all text values must be plain text, not HTML
 
 ### Header
 
@@ -59,15 +116,15 @@ Each section must use clear internal subsection labels.
 
 Required structure:
 
-- `Main article`
-- `Other major stories`
+- one `groups` entry titled `Main article`
+- one `groups` entry titled `Other major stories`
 
 Hard rules:
 
 - `Main article` must be `2-3` paragraphs
 - do not collapse it into one paragraph
 - explain the lead story clearly and with real detail
-- `Other major stories` must be bullets
+- `Other major stories` must be `kind: "bullets"`
 - each bullet must describe what happened and why it matters
 - do not use headline fragments as bullets
 
@@ -75,9 +132,9 @@ Hard rules:
 
 Required structure:
 
-- `Opener`
-- one section for each of the `3` main stories using the actual article titles as the subsection headers
-- `Extra Upside` as a distinct mini section when present
+- one `groups` entry titled `Opener`
+- one `groups` entry for each of the `3` main stories using the actual article titles as the group titles
+- one `groups` entry titled `Extra Upside` when present
 
 Hard rules:
 
@@ -91,14 +148,14 @@ Hard rules:
 
 Required structure:
 
-- `Main article`
-- `Twitter roundup`
+- one `groups` entry titled `Main article`
+- one `groups` entry titled `Twitter roundup`
 
 Hard rules:
 
 - `Main article` must be `2-3` paragraphs
 - do not collapse it into one paragraph
-- `Twitter roundup` must be bullets
+- `Twitter roundup` must be `kind: "bullets"`
 - each roundup bullet must be `1-2` descriptive sentences
 - choose the most important items rather than trying to include everything
 
@@ -111,8 +168,9 @@ Do not include `AI News` here.
 Each bullet must contain:
 
 - newsletter or publication name first
-- hyperlinked title
-- `2-3` sentence summary
+- title
+- link in a separate `link` field when available
+- `2-3` sentence summary in a plain-text `summary` field
 
 ## Stanford
 
@@ -120,38 +178,30 @@ Include one bullet per included item.
 
 Each bullet must contain:
 
-- hyperlinked title when a useful public link exists, otherwise plain title
-- `1-2` sentence summary
+- title
+- link in a separate `link` field when a useful public link exists
+- `1-2` sentence summary in a plain-text `summary` field
 
-## HTML rules
+## Rendering boundary
 
-- HTML and plaintext must contain the same content in the same order
-- links in HTML must be hyperlinks, not raw URLs
-- keep the current restrained editorial layout
-- do not rely on browser-like default heading rendering for hierarchy
-- prefer email-safe styled block elements with explicit inline typography over plain `h1`/`h2`/`h3` defaults
-- primary section headers must remain visually stronger than subsection headers, including on mobile
-- make section and subsection hierarchy survive clients that flatten heading styles or ignore custom fonts
-- keep horizontal mobile padding tight enough that the reading column does not become too narrow
-- use a very slightly off-white neutral background, not a warm beige tone
-- keep the title `Pip Newsletter Digest` large and set in `Georgia`
-- keep the title noticeably larger than section headers
-- make section headers materially larger than subsection labels
-- give subsection labels a distinct utility treatment, such as smaller size, sans-serif styling, muted color, and optional letter spacing
-- use `-webkit-text-size-adjust:100%` and `-ms-text-size-adjust:100%` in email-safe inline/container styling where appropriate
+The renderer script owns HTML and plaintext formatting:
+
+- `/workspace/scripts/render-newsletter-digest.sh`
+
+Your job here is to provide stable structured content so the renderer can generate deterministic HTML and plaintext from the same JSON.
 
 ## Pre-send checklist
 
 Before finalizing, verify every item below:
 
 1. every found primary newsletter has a visible issue link near its header
-2. `NY Times` has a `Main article` section with at least `2` paragraphs
+2. `NY Times` has a `Main article` group with at least `2` paragraphs
 3. `NY Times` `Other major stories` bullets explain significance, not just headlines
-4. `Daily Upside` has `Opener`, three titled story sections, and `Extra Upside` when present
-5. `AI News` has a `Main article` section with at least `2` paragraphs
+4. `Daily Upside` has `Opener`, three titled story groups, and `Extra Upside` when present
+5. `AI News` has a `Main article` group with at least `2` paragraphs
 6. `AI News` roundup bullets are `1-2` descriptive sentences each
-7. Substack bullets start with the publication name, then the hyperlinked title
-8. plaintext and HTML contain the same sections and same substantive content
+7. Substack items start with the publication name and use a separate `link` field when available
+8. the JSON is valid and contains no prose outside the JSON object
 
 If any item fails, revise the digest before handing it back for send.
 
