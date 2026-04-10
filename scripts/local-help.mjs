@@ -35,7 +35,7 @@ const lines = [
   "    Re-render local runtime artifacts and restart the local gateway without rebuilding the image.",
   "",
   "  npm run local:rebuild",
-  "    Re-render local runtime artifacts, force a clean no-cache rebuild, and recreate the local gateway.",
+  "    Re-render local runtime artifacts, force a clean no-cache rebuild, recreate the local gateway, and prune stale Docker images.",
   "",
   "  npm run local:ps",
   "    Show local Docker container status.",
