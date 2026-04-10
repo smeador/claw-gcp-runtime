@@ -291,7 +291,8 @@ Current Pip newsletter digest shape:
 - run on `main` with an isolated session and an explicit reset/fresh-run prompt
 - use `gog` for historical pull and issue selection
 - use the extractor to turn selected Gmail messages into inspectable artifacts before summarization
-- use an artifact-backed send helper for final HTML/text delivery
+- use a deterministic JSON-to-email renderer before send
+- use an artifact-backed send helper for final delivery
 
 Extractor artifacts are written per message under:
 
@@ -314,10 +315,13 @@ Final send artifacts are written per run under:
 
 Each run writes:
 
+- `digest.json`
 - `email.html`
 - `email.txt`
 - `summary.json`
 - `send-result.json`
+
+`digest.json` is now the structured source of truth for the final digest content. The renderer generates `email.html` and `email.txt` deterministically from that JSON so HTML and plaintext stay aligned.
 
 Native-local note:
 
@@ -361,6 +365,7 @@ npm run cloud:ps
 npm run cloud:logs
 npm run cloud:logs:download
 npm run cloud:shell
+npm run cloud:tunnel
 npm run cloud:cron:apply
 npm run cloud:cron:list
 npm run cloud:cron:run:digest
@@ -389,6 +394,8 @@ Cloud command guidance:
   - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
   - prunes stale Docker images after a successful rebuild to keep the VM disk from filling up with old build artifacts
+- `npm run cloud:tunnel`
+  - opens a local tunnel to the remote gateway so you can use the browser UI at `http://127.0.0.1:18789/overview`
 - `npm run cloud:cron:apply`
   - reconcile repo-managed cloud cron jobs into the gateway by name
   - removes duplicate jobs with the same name and updates the surviving job to match config
@@ -408,6 +415,7 @@ Local Docker command guidance:
 - `npm run local:rebuild`
   - use when the local image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
+  - prunes stale Docker images after a successful rebuild to keep local Docker storage from filling up with old build artifacts
 - `npm run local:cron:apply`
   - reconcile repo-managed local cron jobs into the gateway by name
   - local cron is disabled by default in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) to avoid duplicate scheduled sends

@@ -238,6 +238,7 @@ OpenClaw is treated as:
 - For the Pip newsletter digest, the current reliable shape is: run on the `main` agent with an isolated session and an explicit reset/fresh-run prompt.
 - A dedicated `digest` agent was attempted as a cost-control measure, but config-only registration was not enough in practice. The runtime rendered `agents.list`, but the live gateway still rejected `digest` as an unknown agent id.
 - Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
+- Digest rendering is now split from digest synthesis: the formatter returns structured `digest.json`, and a deterministic renderer generates `email.html` and `email.txt` from that JSON before send.
 - The extractor should be treated as the source of truth for message-body cleanup. `clean.md`, `links.json`, and `metadata.json` are the normal model-facing inputs; `raw.html` and `raw.txt` are for inspection/debugging only.
 - Native local, Docker-local, and cloud should all call the digest extractor and digest send helper through workspace-local wrapper scripts so the skill does not depend on environment-specific binary/script paths.
 - Digest send success should be code-enforced instead of instruction-enforced: the helper writes final run artifacts, executes `gog gmail send`, and only reports success when a Gmail id is returned.
