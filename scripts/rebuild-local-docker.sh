@@ -31,3 +31,6 @@ compose_cmd -f docker/compose.local.yml run --rm --no-deps --user root --entrypo
 '
 compose_cmd -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
 OPENCLAW_APP_ROOT="$(pwd)" bash ./scripts/apply-local-cron.sh "${LOCAL_CRON_FILE:-config/cron.local.json}"
+
+echo "Pruning unused Docker images after successful rebuild..."
+docker image prune -af >/dev/null || true
