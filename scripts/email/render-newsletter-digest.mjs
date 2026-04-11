@@ -76,6 +76,43 @@ function assertArray(value, label) {
   return value;
 }
 
+const INVALID_TEXT_PATTERNS = [
+  { pattern: /\[[^\]]+\]\((https?:\/\/|mailto:)[^)]+\)/i, message: "contains Markdown link syntax" },
+  { pattern: /\[\]\((https?:\/\/|mailto:)[^)]+\)/i, message: "contains empty Markdown link tokens" },
+  { pattern: /\bview in browser\b/i, message: "contains browser-link scaffolding" },
+  { pattern: /\bread online\b/i, message: "contains browser-link scaffolding" },
+  { pattern: /\bsponsor message\b/i, message: "contains sponsor/newsletter chrome" },
+  { pattern: /\bthis section covers\b/i, message: "contains placeholder writing" },
+  { pattern: /\benough (financial|strategic) context to show\b/i, message: "contains placeholder writing" },
+  { pattern: /\bwho benefits, who is exposed\b/i, message: "contains placeholder writing" },
+];
+
+function validateTextContent(value, label) {
+  const text = assertString(value, label);
+  for (const rule of INVALID_TEXT_PATTERNS) {
+    if (rule.pattern.test(text)) {
+      throw new Error(`Invalid ${label}: ${rule.message}`);
+    }
+  }
+  return text;
+}
+
+function sanitizeTextContent(value) {
+  return String(value)
+    .replace(/\[\]\((https?:\/\/|mailto:)[^)]+\)/gi, "")
+    .replace(/\[([^\]]+)\]\((https?:\/\/|mailto:)[^)]+\)/gi, "$1")
+    .replace(/^\s*(view in browser|read online|read in browser)\s*$/gim, "")
+    .replace(/^(view in browser|read online|read in browser)\s*[:\-]?\s*/gim, "")
+    .replace(/\s+\|\s+/g, " ")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function normalizeTextContent(value, label) {
+  return validateTextContent(sanitizeTextContent(value), label);
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -118,12 +155,12 @@ function renderGroupHtml(group) {
   let body = "";
 
   if (kind === "paragraphs") {
-    body = renderParagraphBlockHtml(assertString(group.content, "group.content"));
+    body = renderParagraphBlockHtml(normalizeTextContent(group.content, "group.content"));
   } else if (kind === "bullets") {
     const items = assertArray(group.content, "group.content");
     body = [
       '        <ul style="margin:0 0 24px 22px;padding:0;font-size:16px;line-height:1.75;">',
-      ...items.map((item) => `          <li style="margin:0 0 10px;">${escapeHtml(assertString(item, "bullet"))}</li>`),
+      ...items.map((item) => `          <li style="margin:0 0 10px;">${escapeHtml(normalizeTextContent(item, "bullet"))}</li>`),
       "        </ul>",
     ].join("\n");
   } else {
@@ -145,7 +182,7 @@ function renderGroupText(group) {
   const kind = assertString(group.kind, "group.kind");
 
   if (kind === "paragraphs") {
-    const body = renderParagraphBlockText(assertString(group.content, "group.content"));
+    const body = renderParagraphBlockText(normalizeTextContent(group.content, "group.content"));
     return [title, body].filter(Boolean).join("\n");
   }
 
@@ -153,7 +190,7 @@ function renderGroupText(group) {
     const items = assertArray(group.content, "group.content");
     return [
       title,
-      ...items.map((item) => `- ${assertString(item, "bullet")}`),
+      ...items.map((item) => `- ${normalizeTextContent(item, "bullet")}`),
     ]
       .filter(Boolean)
       .join("\n");
@@ -165,7 +202,7 @@ function renderGroupText(group) {
 function renderPrimarySectionHtml(section) {
   const groups = assertArray(section.groups, "section.groups");
   return [
-    `      <div style="font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
+    `      <div style="font-family:Georgia,serif;font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
     `      <div style="font-size:14px;line-height:1.7;color:#6b7280;margin:0 0 16px;">Issue date: ${escapeHtml(assertString(section.issueDate, "section.issueDate"))} · Sender: ${escapeHtml(assertString(section.sender, "section.sender"))} · ${renderLink(assertString(section.issueLink, "section.issueLink"), "Issue link")}</div>`,
     groups.map(renderGroupHtml).join("\n\n"),
     "",
@@ -195,14 +232,14 @@ function renderSubstackHtml(section) {
             const publication = assertString(item.publication, "substack.publication");
             const title = assertString(item.title, "substack.title");
             const link = optionalString(item.link);
-            const summary = assertString(item.summary, "substack.summary");
+            const summary = normalizeTextContent(item.summary, "substack.summary");
             return `          <li style="margin:0 0 12px;"><strong>${escapeHtml(publication)}</strong> — ${renderLink(link, title)}. ${escapeHtml(summary)}</li>`;
           }),
           "        </ul>",
         ].join("\n");
 
   return [
-    `      <div style="font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
+    `      <div style="font-family:Georgia,serif;font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
     itemHtml,
     "",
   ].join("\n");
@@ -219,7 +256,7 @@ function renderSubstackText(section) {
             const publication = assertString(item.publication, "substack.publication");
             const title = assertString(item.title, "substack.title");
             const link = optionalString(item.link);
-            const summary = assertString(item.summary, "substack.summary");
+            const summary = normalizeTextContent(item.summary, "substack.summary");
             return `${publication} — ${title}${link ? ` (${link})` : ""}. ${summary}`;
           })
           .map((line) => `- ${line}`)
@@ -237,14 +274,14 @@ function renderStanfordHtml(section) {
           ...items.map((item) => {
             const title = assertString(item.title, "stanford.title");
             const link = optionalString(item.link);
-            const summary = assertString(item.summary, "stanford.summary");
+            const summary = normalizeTextContent(item.summary, "stanford.summary");
             return `          <li style="margin:0 0 12px;">${link ? renderLink(link, title) : escapeHtml(title)}. ${escapeHtml(summary)}</li>`;
           }),
           "        </ul>",
         ].join("\n");
 
   return [
-    `      <div style="font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
+    `      <div style="font-family:Georgia,serif;font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
     itemHtml,
     "",
   ].join("\n");
@@ -260,7 +297,7 @@ function renderStanfordText(section) {
           .map((item) => {
             const title = assertString(item.title, "stanford.title");
             const link = optionalString(item.link);
-            const summary = assertString(item.summary, "stanford.summary");
+            const summary = normalizeTextContent(item.summary, "stanford.summary");
             return `${title}${link ? ` (${link})` : ""}. ${summary}`;
           })
           .map((line) => `- ${line}`)
