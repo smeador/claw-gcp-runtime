@@ -21,6 +21,12 @@ Hard rules:
 - do not return HTML
 - do not return Markdown outside JSON string fields
 - do not wrap the JSON in code fences
+- do not include Markdown link syntax like `[text](url)` anywhere in text fields
+- do not copy browser-link labels, CTA text, or newsletter chrome into content fields
+- do not use filler or placeholder writing such as `this section covers`, `enough context to show`, `who benefits, who is exposed`, or other generic template prose
+- if a source section is too messy to summarize cleanly, omit it or reduce it; do not pad with generic stand-in language
+- before returning the JSON, inspect every `content` and `summary` field and rewrite any markdown remnants into plain prose
+- never "fix up" a bad section by leaving source artifacts in place; replace them with a real summary or drop the section
 
 ## Output structure
 
@@ -77,6 +83,7 @@ Shape rules:
 - `substack_review` and `stanford` sections must use `items`
 - each `items` entry must stay plain text except for the link field
 - all text values must be plain text, not HTML
+- prose fields must read like a finished digest, not notes about what the section should do
 
 ### Header
 
@@ -189,6 +196,34 @@ The renderer script owns HTML and plaintext formatting:
 - `/workspace/scripts/render-newsletter-digest.sh`
 
 Your job here is to provide stable structured content so the renderer can generate deterministic HTML and plaintext from the same JSON.
+
+## Content hygiene
+
+Every prose-bearing field must already be publication-ready.
+
+Never place any of the following inside `content` or `summary` fields:
+
+- Markdown links such as `[View in browser](...)`
+- raw source scaffolding like `View in browser`, `Read online`, `Presented by`, `Sponsor message`, or empty link tokens like `[](...)`
+- instructions to yourself
+- generic placeholder language
+- commentary about what a section is supposed to accomplish
+
+Good:
+
+- `The Justice Department is examining whether the NFL's streaming deals are making games more expensive and harder to access for viewers.`
+
+Bad:
+
+- `This section covers a meaningful business development with enough financial and strategic context to show who benefits, who is exposed, and why it matters now.`
+
+- `[View in browser](https://...)`
+
+- `Meta released a new model. [Read online](https://...)`
+
+Final reminder:
+
+- every prose field should be something you would be comfortable emailing directly if the renderer printed it exactly as written
 
 ## Pre-send checklist
 
