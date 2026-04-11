@@ -42,8 +42,7 @@ For newsletter digests:
 - the final HTML should also be written to a local artifact file before send
 - the final plain-text fallback should also be written to a local artifact file before send
 - the helper should create a timestamped run directory inside the provided day directory
-- use `bash scripts/render-newsletter-digest.sh --input DIGEST_JSON --html-out HTML_FILE --text-out TEXT_FILE` before digest send
-- use `bash scripts/send-gog-digest.sh --account ACCOUNT --to TO --subject SUBJECT --digest-json DIGEST_JSON --text-file TEXT_FILE --html-file HTML_FILE --day-dir DAY_DIR --from FROM --message-ids-json MESSAGE_IDS_JSON --source-artifacts-json SOURCE_ARTIFACTS_JSON` for digest sends
+- use `bash scripts/finalize-newsletter-digest.sh --digest-json DIGEST_JSON --day-dir DAY_DIR --account ACCOUNT --to TO --subject SUBJECT --from FROM --message-ids-json MESSAGE_IDS_JSON --source-artifacts-json SOURCE_ARTIFACTS_JSON` for digest sends
 - the wrapper resolves to the installed helper when available and otherwise falls back to the repo copy
 
 ## Local helper
@@ -81,6 +80,5 @@ printf 'This is a test from Pip.\n' | bash scripts/gmail/send-gog-local.sh \
 - Distinguish clearly between the plain-text body and the HTML body; do not send HTML-looking text as the plain-text body
 - When using HTML, the value passed as the HTML body must be the actual HTML markup, not a filesystem path or temp-file path
 - A file path is only acceptable as an argument to a helper script that reads the file contents before sending; do not send the path string itself as the email body
-- For digest sends, write the final HTML body to disk and write the final plain-text fallback to disk before invoking `gog gmail send`
-- For digest sends, write the structured `digest.json` artifact to disk before rendering and sending
+- For digest sends, write the structured `digest.json` artifact to disk before calling the finalizer
 - For digest sends, only report success if the helper/send output includes a Gmail id in `send_result.message_id` or `send_result.messageId`

@@ -35,8 +35,10 @@ COPY scripts/gmail ${AGENT_LAB_ROOT}/scripts/gmail
 RUN cd "${AGENT_LAB_ROOT}" \
   && npm ci --omit=dev --ignore-scripts \
   && chmod +x "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" \
+  && chmod +x "${AGENT_LAB_ROOT}/scripts/email/finalize-newsletter-digest.sh" \
   && chmod +x "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" \
   && ln -sf "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" /usr/local/bin/agent-lab-extract-newsletter-from-gmail \
+  && ln -sf "${AGENT_LAB_ROOT}/scripts/email/finalize-newsletter-digest.sh" /usr/local/bin/agent-lab-finalize-newsletter-digest \
   && ln -sf "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" /usr/local/bin/agent-lab-send-gog-digest
 
 COPY docker/entrypoint.sh /usr/local/bin/agent-lab-openclaw-entrypoint
