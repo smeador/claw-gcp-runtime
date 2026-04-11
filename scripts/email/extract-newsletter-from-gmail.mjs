@@ -7,6 +7,8 @@ import process from "node:process";
 import * as cheerio from "cheerio";
 import TurndownService from "turndown";
 
+const EXTRACTOR_VERSION = "2026-04-10-1";
+
 function parseArgs(argv) {
   const options = {
     account: "",
@@ -631,6 +633,7 @@ function buildExtraction(prepared, options) {
   }
 
   return {
+    extractorVersion: EXTRACTOR_VERSION,
     metadata: {
       messageId: gmailMessage.id ?? "",
       threadId: gmailMessage.threadId ?? "",
@@ -697,7 +700,12 @@ function readCachedExtraction(artifactDir) {
     return null;
   }
 
-  return JSON.parse(readFileSync(extractedPath, "utf8"));
+  const extracted = JSON.parse(readFileSync(extractedPath, "utf8"));
+  if (extracted?.extractorVersion !== EXTRACTOR_VERSION) {
+    return null;
+  }
+
+  return extracted;
 }
 
 function printSummary(extracted, outputPath, artifactDir) {
