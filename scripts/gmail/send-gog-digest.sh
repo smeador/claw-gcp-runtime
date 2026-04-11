@@ -148,6 +148,7 @@ cp "${HTML_FILE}" "${RUN_DIR}/email.html"
 
 SUMMARY_FILE="${RUN_DIR}/summary.json"
 RESULT_FILE="${RUN_DIR}/send-result.json"
+MAX_GOG_HTML_BYTES="${MAX_GOG_HTML_BYTES:-200000}"
 
 if [ -n "${MESSAGE_IDS_JSON}" ] && [ ! -f "${MESSAGE_IDS_JSON}" ]; then
   echo "Message ids file not found: ${MESSAGE_IDS_JSON}" >&2
@@ -185,7 +186,16 @@ cat > "${SUMMARY_FILE}" <<EOF
 }
 EOF
 
-BODY_HTML="$(cat "${RUN_DIR}/email.html")"
+BODY_HTML="$(
+  tr '\r\n\t' '   ' < "${RUN_DIR}/email.html" \
+    | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//'
+)"
+BODY_HTML_BYTES="$(printf '%s' "${BODY_HTML}" | wc -c | tr -d ' ')"
+
+if [ "${BODY_HTML_BYTES}" -gt "${MAX_GOG_HTML_BYTES}" ]; then
+  echo "Digest send failed: HTML body is ${BODY_HTML_BYTES} bytes, above MAX_GOG_HTML_BYTES=${MAX_GOG_HTML_BYTES} for gog inline --body-html delivery" >&2
+  exit 1
+fi
 
 SEND_ARGS=(
   gmail send
