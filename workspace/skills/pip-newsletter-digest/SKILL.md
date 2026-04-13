@@ -36,6 +36,20 @@ Start execution immediately.
 
 Do not spend the first step on workspace orientation or generic environment checking unless a real failure forces you to diagnose it.
 
+When using the `exec` tool for shell commands, assume the command may run under `sh`, not `bash`.
+
+Hard rule:
+
+- do not use bash-only shell syntax in raw `exec` commands unless you explicitly wrap it in `bash -lc '...'`
+
+Examples of bash-only syntax to avoid in raw `exec` commands:
+
+- `set -o pipefail`
+- here-strings
+- bash arrays
+- `[[ ... ]]`
+- process substitution
+
 ## Sources in scope
 
 ### Primary newsletters
@@ -98,11 +112,18 @@ The wrapper resolves to the installed helper when available and otherwise falls 
 Hard rules:
 
 - do not use `gog gmail messages get`
+- do not use `gog gmail messages search`
 - do not paste raw `gog gmail get --json` output into the model conversation
 - do not read raw MIME or raw HTML blobs directly into the conversation
 - do not switch between multiple Gmail read subcommands during a normal run
 - if the extractor fails, treat that as a tool failure and report it clearly
 - do not silently substitute another unsupported command shape and continue
+
+Treat `gog gmail search` as the only valid Gmail search command in this workflow.
+
+Additional hard rule:
+
+- if you need individual message ids, derive them from `gog gmail search ... --json --no-input` results and then use the extractor; do not switch to `gog gmail messages search`
 
 ### Fast-path senders
 
@@ -126,6 +147,8 @@ If no valid issue is found, fall back to broader sender, subject, publication, a
 - do not rely on one exact sender forever
 - if a message plausibly looks like Daily Upside but sender formatting changed, inspect it
 - treat sender variants, wrappers, and aliases as eligible when the subject or publication clearly indicate Daily Upside
+- be aware that the Sunday edition may be a long-form single-feature format rather than the usual multi-story weekday structure
+- when handing a Sunday long-form edition to the formatter, preserve that fact so it is summarized as one main article instead of being forced into weekday sections
 
 ## Link extraction rules
 
