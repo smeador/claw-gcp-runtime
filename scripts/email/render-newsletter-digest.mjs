@@ -159,7 +159,7 @@ function renderGroupHtml(group) {
   } else if (kind === "bullets") {
     const items = assertArray(group.content, "group.content");
     body = [
-      '        <ul style="margin:0 0 24px 22px;padding:0;font-size:16px;line-height:1.75;">',
+      '        <ul style="margin:0 0 24px 22px;padding:0;font-size:15px;line-height:1.75;">',
       ...items.map((item) => `          <li style="margin:0 0 10px;">${escapeHtml(normalizeTextContent(item, "bullet"))}</li>`),
       "        </ul>",
     ].join("\n");
