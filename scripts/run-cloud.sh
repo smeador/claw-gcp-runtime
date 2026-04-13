@@ -23,3 +23,4 @@ chown -R 1000:1000 "${DEPLOY_ROOT}/state/home" "${DEPLOY_ROOT}/state/workspace" 
 bash ./scripts/render-openclaw-cloud.sh "$1"
 compose_cmd -f docker/compose.cloud.yml up -d --build openclaw-gateway
 bash ./scripts/apply-cloud-cron.sh "${CLOUD_CRON_FILE:-config/cron.cloud.json}"
+bash ./scripts/prune-unused-docker-images.sh
