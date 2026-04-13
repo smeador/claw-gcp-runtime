@@ -143,6 +143,13 @@ Required structure:
 - one `groups` entry for each of the `3` main stories using the actual article titles as the group titles
 - one `groups` entry titled `Extra Upside` when present
 
+Sunday long-form exception:
+
+- if the selected `Daily Upside` issue is the Sunday long-form edition and it is clearly built around one main feature rather than the usual opener-plus-multiple-story format, do not force the weekday structure
+- in that case, create exactly one `groups` entry titled `Main article`
+- `Main article` should be `2-4` paragraphs, depending on how much substance the feature contains
+- do not fabricate an `Opener`, fake story titles, or an `Extra Upside` section when the source does not actually have them
+
 Hard rules:
 
 - do not use generic labels like `Story 1` if the article title is clear
@@ -150,6 +157,7 @@ Hard rules:
 - the three main stories must each get one paragraph
 - if more than three meaningful story blocks exist, keep the main three and place the remaining useful material in `Extra Upside`
 - do not let the opener and the main stories run together as unlabeled paragraphs
+- for the Sunday long-form edition, the exception above overrides the normal weekday structure
 
 ### AI News
 
@@ -232,7 +240,7 @@ Before finalizing, verify every item below:
 1. every found primary newsletter has a visible issue link near its header
 2. `NY Times` has a `Main article` group with at least `2` paragraphs
 3. `NY Times` `Other major stories` bullets explain significance, not just headlines
-4. `Daily Upside` has `Opener`, three titled story groups, and `Extra Upside` when present
+4. `Daily Upside` has `Opener`, three titled story groups, and `Extra Upside` when present, unless it is the Sunday long-form edition, in which case it has one `Main article` group
 5. `AI News` has a `Main article` group with at least `2` paragraphs
 6. `AI News` roundup bullets are `1-2` descriptive sentences each
 7. Substack items start with the publication name and use a separate `link` field when available

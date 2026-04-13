@@ -140,7 +140,7 @@ function renderParagraphBlockHtml(text) {
   return splitParagraphs(text)
     .map(
       (paragraph) =>
-        `        <p style="font-size:16px;line-height:1.75;margin:0 0 16px;">${escapeHtml(paragraph)}</p>`,
+        `        <p style="margin:0 0 14px 0;font-size:15px;font-weight:400;">${escapeHtml(paragraph)}</p>`,
     )
     .join("\n");
 }
@@ -169,7 +169,7 @@ function renderGroupHtml(group) {
 
   return [
     title
-      ? `        <div style="font-size:12px;line-height:1.5;color:#6b7280;text-transform:uppercase;letter-spacing:1.2px;font-family:Arial, Helvetica, sans-serif;margin:0 0 8px;">${escapeHtml(title)}</div>`
+      ? `        <div style="font-size:17px;line-height:1.25;letter-spacing:0.9px;text-transform:uppercase;color:#3e3e39;font-weight:700;margin:18px 0 10px 0">${escapeHtml(title)}</div>`
       : "",
     body,
   ]
@@ -202,10 +202,11 @@ function renderGroupText(group) {
 function renderPrimarySectionHtml(section) {
   const groups = assertArray(section.groups, "section.groups");
   return [
-    `      <div style="font-family:Georgia,serif;font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
-    `      <div style="font-size:14px;line-height:1.7;color:#6b7280;margin:0 0 16px;">Issue date: ${escapeHtml(assertString(section.issueDate, "section.issueDate"))} · Sender: ${escapeHtml(assertString(section.sender, "section.sender"))} · ${renderLink(assertString(section.issueLink, "section.issueLink"), "Issue link")}</div>`,
+    '          <div style="margin:28px 0 0 0;padding-top:24px;border-top:1px solid #ece9e2">',
+    `            <div style="font-size:28px;line-height:1.2;font-weight:700;margin:0 0 6px 0">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
+    `            <div style="font-size:15px;color:#5d5d57;margin:0 0 10px 0">${escapeHtml(assertString(section.issueDate, "section.issueDate"))} · ${escapeHtml(assertString(section.sender, "section.sender"))} · ${renderLink(assertString(section.issueLink, "section.issueLink"), "Issue link")}</div>`,
     groups.map(renderGroupHtml).join("\n\n"),
-    "",
+    "          </div>",
   ].join("\n");
 }
 
@@ -225,23 +226,24 @@ function renderSubstackHtml(section) {
   const items = assertArray(section.items, "section.items");
   const itemHtml =
     items.length === 0
-      ? '        <ul style="margin:0 0 24px 22px;padding:0;font-size:16px;line-height:1.75;"><li style="margin:0;">No Substack items included today.</li></ul>'
+      ? '        <ul style="margin:0 0 24px 22px;padding:0;font-size:15px;line-height:1.75;"><li style="margin:0;">No Substack items included today.</li></ul>'
       : [
-          '        <ul style="margin:0 0 24px 22px;padding:0;font-size:16px;line-height:1.75;">',
+          '            <ul style="margin:0 0 0 20px;padding:0;font-size:15px;line-height:1.75;">',
           ...items.map((item) => {
             const publication = assertString(item.publication, "substack.publication");
             const title = assertString(item.title, "substack.title");
             const link = optionalString(item.link);
             const summary = normalizeTextContent(item.summary, "substack.summary");
-            return `          <li style="margin:0 0 12px;"><strong>${escapeHtml(publication)}</strong> — ${renderLink(link, title)}. ${escapeHtml(summary)}</li>`;
+            return `              <li style="margin:0 0 12px 0"><strong>${escapeHtml(publication)}</strong> — ${renderLink(link, title)}: ${escapeHtml(summary)}</li>`;
           }),
-          "        </ul>",
+          "            </ul>",
         ].join("\n");
 
   return [
-    `      <div style="font-family:Georgia,serif;font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
+    '          <div style="margin:28px 0 0 0;padding-top:24px;border-top:1px solid #ece9e2">',
+    `            <div style="font-size:28px;line-height:1.2;font-weight:700;margin:0 0 10px 0">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
     itemHtml,
-    "",
+    "          </div>",
   ].join("\n");
 }
 
@@ -268,22 +270,23 @@ function renderStanfordHtml(section) {
   const items = assertArray(section.items, "section.items");
   const itemHtml =
     items.length === 0
-      ? `        <ul style="margin:0 0 8px 22px;padding:0;font-size:16px;line-height:1.75;"><li style="margin:0;">${escapeHtml(optionalString(section.emptyText) || "No Stanford items included today.")}</li></ul>`
+      ? `        <ul style="margin:0 0 8px 22px;padding:0;font-size:15px;line-height:1.75;"><li style="margin:0;">${escapeHtml(optionalString(section.emptyText) || "No Stanford items included today.")}</li></ul>`
       : [
-          '        <ul style="margin:0 0 8px 22px;padding:0;font-size:16px;line-height:1.75;">',
+          '            <ul style="margin:0 0 8px 22px;padding:0;font-size:15px;line-height:1.75;">',
           ...items.map((item) => {
             const title = assertString(item.title, "stanford.title");
             const link = optionalString(item.link);
             const summary = normalizeTextContent(item.summary, "stanford.summary");
-            return `          <li style="margin:0 0 12px;">${link ? renderLink(link, title) : escapeHtml(title)}. ${escapeHtml(summary)}</li>`;
+            return `              <li style="margin:0 0 12px;">${link ? renderLink(link, title) : escapeHtml(title)}. ${escapeHtml(summary)}</li>`;
           }),
-          "        </ul>",
+          "            </ul>",
         ].join("\n");
 
   return [
-    `      <div style="font-family:Georgia,serif;font-size:27px;line-height:1.25;font-weight:700;color:#111827;margin:28px 0 12px;">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
+    '          <div style="margin:28px 0 0 0;padding-top:24px;border-top:1px solid #ece9e2">',
+    `            <div style="font-size:28px;line-height:1.2;font-weight:700;margin:0 0 10px 0">${escapeHtml(assertString(section.title, "section.title"))}</div>`,
     itemHtml,
-    "",
+    "          </div>",
   ].join("\n");
 }
 
@@ -346,13 +349,15 @@ function renderHtml(digest) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(assertString(digest.title, "title"))}</title>
 </head>
-<body style="margin:0;padding:0;background:#f7f7f4;color:#1f2328;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <div style="max-width:760px;margin:0 auto;padding:24px 18px 40px;line-height:1.6;">
-    <div style="font-family:Georgia,serif;font-size:38px;line-height:1.1;font-weight:700;margin:0 0 8px;color:#111827;">${escapeHtml(assertString(digest.title, "title"))}</div>
-    <div style="margin:0 0 18px;font-size:16px;color:#4a5560;">${escapeHtml(assertString(digest.date, "date"))}</div>
-    <div style="margin:0 0 26px;font-size:15px;line-height:1.7;">${renderInventoryHtml(digest.inventory ?? {})}</div>
+<body style="margin:0;padding:0;background:#ffffff;color:#1f2328;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <div style="max-width:980px;margin:0 auto;background:#ffffff;border:1px solid #ffffff;overflow:hidden">
+    <div style="padding:28px 0 22px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#1e1e1b;line-height:1.6">
+      <div style="font-family:'American Typewriter','American Typewriter Condensed','Courier New',serif;font-size:38px;line-height:1.05;font-weight:700;margin:0 0 8px 0">${escapeHtml(assertString(digest.title, "title"))}</div>
+      <div style="font-size:15px;color:#5d5d57;margin:0 0 14px 0">${escapeHtml(assertString(digest.date, "date"))}</div>
+      <div style="font-size:15px;color:#3e3e39;margin:0">${renderInventoryHtml(digest.inventory ?? {})}</div>
 
 ${sections.map(renderSectionHtml).join("\n")}
+    </div>
   </div>
 </body>
 </html>`;
