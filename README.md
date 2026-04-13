@@ -255,6 +255,7 @@ Routine operations:
   ```bash
   npm run local:ps
   npm run local:logs
+  npm run local:agent:logs
   ```
 - shell into the Docker-local gateway:
   ```bash
@@ -281,6 +282,9 @@ Optional local overrides:
 
 - `LOCAL_CRON_FILE` to use a cron config file other than `config/cron.local.json`
 - `TAIL_LINES` for `local:logs`
+- `AGENT_NAME` for `local:agent:logs`
+- `LOG_VIEW` for `local:agent:logs` with `messages`, `replies`, `errors`, or `full`
+- `SHOW_RUNTIME_LOG=1` for `local:agent:logs` to append the raw runtime log tail
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `local:test:gmail:send`
 - `DIGEST_MESSAGE` for `local:test:digest`
 
@@ -363,6 +367,7 @@ npm run cloud:restart
 npm run cloud:rebuild
 npm run cloud:ps
 npm run cloud:logs
+npm run cloud:agent:logs
 npm run cloud:logs:download
 npm run cloud:shell
 npm run cloud:tunnel
@@ -379,6 +384,9 @@ Optional overrides:
 - `CLOUD_SECRET_FILE` to use a secret file other than `config/secrets.cloud.json`
 - `CLOUD_CRON_FILE` to use a cron config file other than `config/cron.cloud.json`
 - `TAIL_LINES` for `cloud:logs`
+- `AGENT_NAME` for `cloud:agent:logs`
+- `LOG_VIEW` for `cloud:agent:logs` with `messages`, `replies`, `errors`, or `full`
+- `SHOW_RUNTIME_LOG=1` for `cloud:agent:logs` to append the raw runtime log tail
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `cloud:test:gmail:send`
 - `DIGEST_MESSAGE` for `cloud:test:digest`
 

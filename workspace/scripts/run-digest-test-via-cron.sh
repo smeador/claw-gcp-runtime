@@ -13,8 +13,7 @@ job_json="$(
     --agent main \
     --session isolated \
     --message "${MESSAGE}" \
-    --at +10m \
-    --delete-after-run \
+    --at 10m \
     --no-deliver
 )"
 
@@ -31,5 +30,8 @@ cleanup() {
 }
 
 trap cleanup EXIT
+
+printf 'Created temp cron job %s\n' "${job_id}" >&2
+printf 'Running isolated digest test and waiting for final output...\n' >&2
 
 openclaw cron run "${job_id}" --expect-final --timeout "${TIMEOUT_MS}"
