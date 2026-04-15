@@ -78,11 +78,26 @@ Ignore GoodLinks and non-email sources.
 
 Use `gog` in this exact retrieval flow:
 
-1. `gog gmail search ... --json --no-input`
+1. `gog gmail search QUERY --account pip@meador.me --json --results-only --no-input`
 2. choose the newest valid issue
 3. run the newsletter extractor for each selected message id:
-   - `bash scripts/extract-newsletter-from-gmail.sh --account ACCOUNT --message-id MESSAGE_ID --output /workspace/memory/.tmp/NAME.json`
+   - `bash scripts/extract-newsletter-from-gmail.sh --account pip@meador.me --message-id MESSAGE_ID --output /workspace/memory/.tmp/NAME.json`
 4. read the extractor output, not the raw Gmail payload
+
+Command-shape rules:
+
+- the Gmail search query is a positional argument, not a `--query` flag
+- valid example:
+  - `gog gmail search "from:nytdirect@nytimes.com newer_than:2d -label:sent" --account pip@meador.me --json --results-only --no-input`
+- invalid example:
+  - `gog gmail search --query "from:nytdirect@nytimes.com newer_than:2d -label:sent" --account pip@meador.me --json --no-input`
+
+Account rules:
+
+- all Gmail retrieval and send commands in this workflow must use the configured workflow account `pip@meador.me`
+- do not substitute the recipient email, the current human user email, or an inferred account name
+- `sean@meador.me` is the default digest recipient, not the Gmail API account for this workflow
+- if a Gmail command fails because of an unknown flag or command-shape mismatch, inspect `gog gmail search --help` or the relevant `gog` help output before retrying
 
 The extractor also writes inspectable artifacts and cache files under:
 
@@ -113,11 +128,13 @@ Hard rules:
 
 - do not use `gog gmail messages get`
 - do not use `gog gmail messages search`
+- do not use `--query` with `gog gmail search`
 - do not paste raw `gog gmail get --json` output into the model conversation
 - do not read raw MIME or raw HTML blobs directly into the conversation
 - do not switch between multiple Gmail read subcommands during a normal run
 - if the extractor fails, treat that as a tool failure and report it clearly
 - do not silently substitute another unsupported command shape and continue
+- do not use any Gmail account other than `pip@meador.me` for this workflow unless the user explicitly changes the workflow account
 
 Treat `gog gmail search` as the only valid Gmail search command in this workflow.
 
