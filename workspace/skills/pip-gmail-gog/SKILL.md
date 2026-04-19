@@ -12,7 +12,6 @@ Use this skill for Pip's Gmail integration through OpenClaw's `gog` webhook flow
 ## Allowed actions
 
 - Configure Gmail webhook integration for Pip's mailbox
-- Approve Telegram pairing and route Gmail summaries to Telegram
 - Read logs and status for Gmail watch/webhook health
 
 ## Not allowed

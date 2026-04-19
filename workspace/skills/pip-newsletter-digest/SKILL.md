@@ -103,6 +103,12 @@ The extractor also writes inspectable artifacts and cache files under:
 
 - `/workspace/memory/newsletters/MESSAGE_ID/`
 
+Scratch-file rule:
+
+- when you need temporary files for this workflow, write them under `/workspace/memory/.tmp/`
+- do not write scratch files under `/workspace/.tmp/`
+- in Docker-local and cloud, `/workspace` is intentionally read-only except for explicitly mounted subpaths such as `/workspace/memory/` and `/workspace/.openclaw/`
+
 Those artifacts include:
 
 - `raw.html` when an HTML body exists

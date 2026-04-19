@@ -31,9 +31,6 @@ Shell into the Docker-local gateway container:
   bash ./scripts/shell-local-gateway.sh
 
 Then run these commands inside the container:
-- Telegram pairing:
-  openclaw pairing list telegram
-  openclaw pairing approve telegram <CODE>
 - Inspect Docker-local provider env wiring:
   env | rg 'OPENAI_API_KEY|GOG_ACCOUNT'
 
