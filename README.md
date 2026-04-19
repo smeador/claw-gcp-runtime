@@ -441,7 +441,6 @@ Cloud secret setup:
    - `gateway.auth.token`
    - `auth.profiles.openrouter:default.apiKey`
    - `gog.serviceAccounts["pip@meador.me"]`
-   - optional `channels.telegram.botToken`
    - keep `hooks.enabled` set to `false` unless you are explicitly setting up cloud Gmail hooks
 
 3. Push the secret payload to Secret Manager:

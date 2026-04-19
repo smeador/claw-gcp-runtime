@@ -459,7 +459,6 @@ Container operations guidance:
 - Routine runtime behavior changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
 - Routine container administration should prefer shelling into the running `openclaw-gateway` container and running OpenClaw commands there, rather than relying on long one-off `docker compose ... run` invocations
-- Telegram pairing should use the explicit pairing commands for that channel, e.g. `openclaw pairing list telegram` and `openclaw pairing approve telegram <CODE>`
 - `boot-md` should be explicitly disabled in repo-managed templates unless there is a reviewed startup-automation need for it
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
 - Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
@@ -511,15 +510,6 @@ Authentication guidance by environment:
 - Docker-local may derive API-key provider secrets from the same local secret overlay used for config rendering, but the rendered config should omit the raw key and rely on the injected provider env var.
 - Cloud may derive API-key provider secrets from the cloud secret overlay into a VM-rendered runtime env file, while keeping native-local auth state separate.
 
-Messaging platform guidance:
-- Start with Telegram as the first and only messaging platform for phase 1
-- Use a token-based Telegram bot instead of a QR-paired channel for the initial rollout
-- Keep Telegram limited to DM pairing first and leave group access disabled
-- Keep channel-driven config writes disabled so the live instance cannot mutate reviewed repository behavior through the messaging surface
-- Add the bot token through the environment-specific secret payload under `channels.telegram.botToken`
-- Treat Telegram DM pairing state under `~/.openclaw/credentials/` as distinct from node device pairing state under `~/.openclaw/devices/`
-- Persist both pairing stores with the rest of `~/.openclaw` across normal container redeploys
-
 Operational guidance:
 - Git is the source of truth for non-secret configuration
 - Secret Manager is the source of truth for secret material
@@ -536,7 +526,6 @@ Operational guidance:
   - `auth.profiles` in the rendered config declaring the profile and mode
   - for Docker-local and cloud, the environment secret overlay may hold `auth.profiles.<profile>.apiKey`, which is written to a runtime env file during bootstrap and removed from the rendered OpenClaw config
   - reserve interactive `paste-token` flows for providers or environments that cannot use static key injection cleanly
-- Treat Telegram DM approval files in `credentials/` with the same sensitivity as node/app device approval files in `devices/`
 - Keep source-of-truth workspace files harder to mutate than runtime state so compromise of the runtime does not automatically allow persistent policy rewrites
 - Avoid hand-editing live configuration on the VM except for short-lived break-glass debugging
 - Any emergency VM-side config change must be back-ported into Git immediately

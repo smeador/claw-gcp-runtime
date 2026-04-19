@@ -1,7 +1,7 @@
 ARG GO_IMAGE=golang:1.25-bookworm
 ARG NODE_IMAGE=node:22-bookworm-slim
 ARG GOG_VERSION=v0.12.0
-ARG OPENCLAW_NPM_DIST_TAG=2026.4.12
+ARG OPENCLAW_NPM_DIST_TAG=2026.4.15
 
 FROM ${GO_IMAGE} AS gog-builder
 ARG GOG_VERSION
@@ -11,13 +11,13 @@ RUN CGO_ENABLED=0 go install github.com/steipete/gogcli/cmd/gog@${GOG_VERSION}
 FROM ${NODE_IMAGE}
 
 ARG GOG_VERSION=v0.12.0
-ARG OPENCLAW_NPM_DIST_TAG=2026.4.12
+ARG OPENCLAW_NPM_DIST_TAG=2026.4.15
 ARG OPENCLAW_APT_PACKAGES=""
 
 ENV HOME=/home/node
 ENV NODE_ENV=production
 ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
-ENV OPENCLAW_BUNDLED_PLUGINS_DIR=/opt/openclaw-bundled-plugins
+ENV OPENCLAW_BUNDLED_PLUGINS_DIR=/usr/local/lib/node_modules/openclaw/dist/extensions
 ENV AGENT_LAB_ROOT=/opt/agent-lab
 
 RUN apt-get update \
@@ -43,11 +43,8 @@ RUN cd "${AGENT_LAB_ROOT}" \
 
 COPY docker/entrypoint.sh /usr/local/bin/agent-lab-openclaw-entrypoint
 RUN chmod +x /usr/local/bin/agent-lab-openclaw-entrypoint \
-  && mkdir -p /workspace /home/node/.openclaw /opt/openclaw-bundled-plugins \
-  && for plugin in memory-core telegram device-pair phone-control talk-voice ollama sglang vllm; do \
-       ln -s "/usr/local/lib/node_modules/openclaw/extensions/${plugin}" "/opt/openclaw-bundled-plugins/${plugin}"; \
-     done \
-  && chown -R node:node /workspace /home/node /opt/openclaw-bundled-plugins
+  && mkdir -p /workspace /home/node/.openclaw \
+  && chown -R node:node /workspace /home/node
 
 USER node
 WORKDIR /workspace
