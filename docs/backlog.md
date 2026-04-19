@@ -25,6 +25,14 @@ Source of truth for open backlog items in this repository.
     - hand one cleaned artifact bundle per source to a bounded worker/subagent
     - have each worker return only a structured section result
     - assemble the final digest from those bounded section outputs
+13. Validate native-local OpenClaw against the current repo-managed workflow/runtime assumptions:
+    - confirm the Pip digest still runs cleanly outside Docker
+    - verify version parity expectations after the `2026.4.15` bump
+    - identify any native-only auth, path, or state differences that still need explicit handling
+14. Restore a clean connection-channel story after the current cloud/runtime recovery:
+    - re-evaluate Telegram once plugin/channel discovery is reliable again
+    - decide whether connection channels should remain config-bootstrapped, be split by environment, or move behind a more explicit bootstrap flow
+    - document the supported path for future channel additions so local Docker, native local, and cloud stay aligned
 
 ## Additional
 
