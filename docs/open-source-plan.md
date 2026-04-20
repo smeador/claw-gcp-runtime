@@ -1,409 +1,505 @@
 # Open Source Plan
 
-## Goal
+## Decision
 
-Work toward open-sourcing this project by separating it into reusable, cleaner public surfaces instead of publishing the current repo as-is.
+We are standardizing on a two-repo split:
 
-The likely shape is:
+1. this repo becomes the OpenClaw runtime / GCP infra / local-cloud operating model repo
+2. a new repo will contain the newsletter and digest system
 
-1. an email/digest package that is useful beyond this specific repo and beyond OpenClaw
-2. an OpenClaw runtime/setup package for consistent native-local, Docker-local, and cloud usage on GCP
+This is intentionally not a split between "infra" and "app" in the abstract. It is a split between:
 
-The current repo remains valuable as the proving ground and reference implementation, but it is doing too many jobs at once to open-source cleanly without refactoring.
+- a reusable OpenClaw runtime/distribution layer
+- a reusable email-to-digest workflow layer
 
-## Proposed initiatives
+The live Pip workflow remains the proving ground, but the code should evolve toward these public surfaces.
 
-### 1. Agent Email Digest
+Important transition note:
 
-Purpose:
+- keep the live Pip workflow working during the split
+- do not let Pip-specific personality or framing become part of the long-term public identity of the runtime repo
+- over time, Pip should become an example implementation or compatibility layer rather than the conceptual center of the runtime repo
 
-- general-purpose email ingestion
-- newsletter extraction
-- selection logic
-- summarization handoff
-- deterministic rendering
-- delivery helpers
+## Repo shape
 
-Audience:
+### Repo A: current repo
 
-- any agent framework
-- any user who wants a structured email-to-digest pipeline
+Recommended future identity:
 
-Important design direction:
-
-- the core should not be OpenClaw-specific
-- OpenClaw skills should exist as one adapter path, not as the core abstraction
-
-### 2. OpenClaw Runtime on GCP
+- `openclaw-runtime-gcp`
 
 Purpose:
 
-- provide a reproducible OpenClaw operating model across:
-  - native local
-  - Docker local
-  - cloud
-- package the operational patterns for:
-  - state layout
-  - deploy/rebuild behavior
-  - secret rendering
-  - cron/job execution
-  - gateway access
-  - logging and debugging
+- reproducible OpenClaw setup across native local, Docker local, and GCP cloud
+- deterministic config rendering
+- deterministic state layout
+- deploy/rebuild/restart/test ergonomics
+- tunnel, logs, cron, and operational helpers
 
-Audience:
+This repo should answer:
 
-- people who want an opinionated, reproducible OpenClaw setup
-- especially people working across local and cloud environments
+- how do I run OpenClaw locally and on GCP with the same operational model?
+- how do I manage state, secrets, Docker, cron jobs, and cloud rollouts safely?
+
+### Repo B: new repo
+
+Recommended future identity:
+
+- `agent-email-digest`
+
+Purpose:
+
+- ingest newsletter/email sources
+- extract cleaned artifacts
+- select issues
+- synthesize digest content
+- render deterministic email output
+- send through pluggable transports
+
+This repo should answer:
+
+- how do I turn emails into a structured digest workflow that can plug into different agent frameworks?
 
 ## Core principle
 
-The main lesson from this repo should become a public design principle:
+The public design principle should stay the same:
 
 - code owns deterministic mechanics
 - agent instructions own judgment
 
 That means:
 
-- extraction artifacts should be deterministic
-- output schemas should be deterministic
-- rendering should be deterministic
-- send helpers should be deterministic
-- agent skills/prompts should focus on selection and synthesis, not operational choreography
+- retrieval and extraction should be code-owned
+- schemas should be explicit and versioned
+- rendering and send should be code-owned
+- prompts/skills should focus on selection, synthesis, and adaptation
 
-## Recommended repo boundaries
+## What stays in this repo
 
-### Repo 1: `agent-email-digest`
+This repo should keep everything that is primarily about running OpenClaw as an environment.
 
-This should contain:
+### Runtime and infra
 
-- core extraction pipeline
-- source artifact generation
-- digest output schema
+- `docker/`
+- `opentofu/`
+- runtime-oriented `config/`
+- version pinning and sync logic
+- cloud host bootstrap and deploy scripts
+- local Docker lifecycle scripts
+- tunnel, log, cron, and state inspection helpers
+
+### Recommended examples of code that stay here
+
+- `docker/Dockerfile`
+- `docker/compose.local.yml`
+- `docker/compose.cloud.yml`
+- `docker/entrypoint.sh`
+- `scripts/run-cloud.sh`
+- `scripts/rebuild-cloud.sh`
+- `scripts/restart-cloud.sh`
+- `scripts/run-local.sh`
+- `scripts/rebuild-local-docker.sh`
+- `scripts/prepare-local-docker.sh`
+- `scripts/tunnel-cloud-gateway.sh`
+- `scripts/show-local-agent-logs.sh`
+- `scripts/show-cloud-agent-logs.sh`
+- `scripts/render-openclaw-config.mjs`
+- `scripts/push-cloud-runtime-secret.sh`
+- `scripts/prune-unused-docker-images.sh`
+- `config/openclaw.*`
+- `config/secrets.*.example`
+- `config/docker.*`
+- `versions.json`
+
+### Docs that stay here
+
+- runtime docs
+- local/cloud operational docs
+- infra architecture docs
+- deployment notes
+- state layout docs
+- compatibility matrix docs
+
+Examples:
+
+- `README.md`
+- `docs/spec.md`
+- `docs/backlog.md`
+- `docs/openclaw-agent-guide.md`
+
+## What moves to the new newsletter repo
+
+The new repo should own the digest workflow itself.
+
+### Deterministic workflow code
+
+- email extraction logic
+- digest finalization logic
 - deterministic renderer
-- delivery helpers
-- provider adapters
-- framework adapters
-- tests and fixtures
+- digest send helper
+- schema definitions
+- fixture tests
 
-Suggested internal split:
+### OpenClaw adapter layer
 
-- `core/`
-- `providers/`
-- `renderers/`
-- `transports/`
-- `adapters/openclaw/`
+- OpenClaw-facing skills for the digest workflow
+- OpenClaw-specific wrappers that call the core library
 
-### Repo 2: `openclaw-runtime-gcp`
+### Recommended examples of code that move
 
-This should contain:
+- `scripts/email/`
+- `scripts/gmail/send-gog-digest.sh`
+- `workspace/scripts/extract-newsletter-from-gmail.sh`
+- `workspace/scripts/render-newsletter-digest.sh`
+- `workspace/scripts/finalize-newsletter-digest.sh`
+- `workspace/scripts/send-gog-digest.sh`
+- `workspace/skills/pip-newsletter-digest/`
+- `workspace/skills/pip-newsletter-digest-format/`
+- `workspace/skills/pip-gmail-send/`
+- likely most of `workspace/skills/pip-gmail-gog/` after it is generalized
 
-- Docker local setup
-- cloud deploy and rebuild flows
-- GCP VM/container setup
-- state layout rules
-- secret rendering
-- cron/job tooling
-- gateway/tunnel access helpers
-- logs/debug commands
-- version and dependency management patterns
+### Data model and fixtures that move
 
-### Optional example app
+- sanitized newsletter fixtures
+- regression tests for extraction/render/send
+- digest schema docs
+- adapter docs
 
-Even if it does not become its own repo immediately, keep an example implementation somewhere visible.
+## What should not stay app-specific in this repo
 
-It should demonstrate:
+This repo should stop being the long-term home for:
 
-- how to combine the runtime with the digest package
-- a real digest configuration
-- an end-to-end workflow
+- Pip-specific digest orchestration
+- digest-specific renderer/theme choices
+- newsletter-specific extraction heuristics
+- email send semantics specific to the digest product
 
-This matters because otherwise the public packages risk becoming too abstract.
+Those belong in the newsletter repo, even if this repo continues to consume them.
 
-## Public API / contract design
+## Shape of the new newsletter repo
 
-Before splitting repos, define the stable contracts.
+The new repo can still be a monorepo internally. That is probably the cleanest way to expose both reusable code and framework adapters without fragmenting too early.
 
-### Source artifact contract
+Recommended structure:
 
-For example:
+```text
+agent-email-digest/
+  packages/
+    core/
+    provider-gmail/
+    transport-gmail-gog/
+    renderer-email/
+    adapter-openclaw/
+  skills/
+    openclaw/
+  fixtures/
+  examples/
+    pip-digest/
+  docs/
+```
+
+### `packages/core`
+
+Owns:
+
+- source artifact contract
+- digest JSON contract
+- shared validation
+- common interfaces
+
+### `packages/provider-gmail`
+
+Owns:
+
+- Gmail search/fetch integration
+- extraction helpers
+- normalized output artifacts
+
+### `packages/transport-gmail-gog`
+
+Owns:
+
+- Gmail delivery through `gog`
+- `send-result.json` contract
+
+### `packages/renderer-email`
+
+Owns:
+
+- deterministic `digest.json -> email.html + email.txt`
+- themes/templates
+- validation/sanitization
+
+### `packages/adapter-openclaw`
+
+Owns:
+
+- OpenClaw wrapper scripts
+- OpenClaw skill text
+- OpenClaw-specific contracts and install story
+
+## Stable contract surface
+
+Before physically splitting files, treat these as the public contract that the new repo will own.
+
+### Source artifacts
 
 - `metadata.json`
 - `links.json`
 - `clean.md`
 - `extracted.json`
 
-### Digest contract
-
-For example:
+### Digest artifacts
 
 - `digest.json`
-
-This should be the source of truth for rendering and send flows.
-
-### Renderer contract
-
-For example:
-
-- `digest.json -> email.html + email.txt`
-
-### Delivery contract
-
-For example:
-
-- helper inputs
-- helper outputs
+- `email.html`
+- `email.txt`
+- `summary.json`
 - `send-result.json`
 
-If these contracts are clean and versioned, the package can support:
+### Contract rules
 
-- OpenClaw
-- future agent frameworks
-- direct CLI workflows
-- non-agent use cases later
+- `digest.json` is the source of truth for final content
+- rendering is deterministic from `digest.json`
+- send helpers archive machine-readable results
+- caches are versioned
 
-## Framework-specific logic should be adapters
+## How this repo should consume the newsletter repo later
 
-If the goal is model/framework agnosticism, skills cannot be the core abstraction.
+Long term, this repo should not vendor the newsletter workflow manually.
 
-Better structure:
+Preferred order of maturity:
 
-- core library owns extraction, schemas, rendering, helpers
-- adapters own framework-specific prompting and orchestration
+1. split code into the new repo while this repo still references it via local checkout or subtree during development
+2. make the newsletter repo publishable as one or more npm packages plus OpenClaw skill assets
+3. have this repo consume a released version of the newsletter repo
 
-Examples of adapter layers:
+Practical near-term options:
 
-- OpenClaw skills
-- future prompt packs for other frameworks
-- direct CLI wrappers
+- git subtree while interfaces are still unstable
+- local path dependency during development
+- released npm packages once interfaces settle
+
+Recommendation:
+
+- use a local path / manual sync phase first
+- do not optimize for package publishing until the contracts are stable
+
+## Migration plan
+
+### Phase 1: boundary cleanup inside this repo
+
+Goal:
+
+- make the split obvious before actually extracting files
+
+Tasks:
+
+- separate runtime docs from digest docs more clearly
+- reduce cross-coupling between runtime scripts and digest scripts
+- keep moving digest orchestration into code-owned runner/finalizer layers
+- keep local/cloud behavior aligned
+
+### Phase 2: freeze contracts
+
+Goal:
+
+- define what the newsletter repo will export
+
+Tasks:
+
+- document source artifact schema
+- document digest JSON schema
+- document renderer inputs/outputs
+- document send helper inputs/outputs
+- version cache format and schema format
+
+### Phase 3: extract deterministic newsletter code
+
+Goal:
+
+- move workflow code before prompts
+
+Tasks:
+
+- move `scripts/email/*`
+- move digest send helper
+- move renderer
+- move fixture tests and sanitized data
+
+### Phase 4: extract OpenClaw adapter
+
+Goal:
+
+- move framework-specific wrapper layer
+
+Tasks:
+
+- move digest skills
+- move wrapper scripts under `workspace/scripts`
+- generalize names away from Pip where appropriate
+
+### Phase 5: make this repo a consumer
+
+Goal:
+
+- this repo becomes an integrator of the newsletter repo, not its long-term home
+
+Tasks:
+
+- update local/cloud images to consume released newsletter artifacts
+- keep an example Pip implementation here only if it helps demonstrate integration
+
+## File-by-file first-pass move map
+
+This is the first-pass extraction map, not the final package boundary.
+
+### Move to newsletter repo
+
+- `scripts/email/extract-newsletter-from-gmail.mjs`
+- `scripts/email/render-newsletter-digest.mjs`
+- `scripts/email/finalize-newsletter-digest.sh`
+- `scripts/gmail/send-gog-digest.sh`
+- `workspace/scripts/extract-newsletter-from-gmail.sh`
+- `workspace/scripts/render-newsletter-digest.sh`
+- `workspace/scripts/finalize-newsletter-digest.sh`
+- `workspace/scripts/send-gog-digest.sh`
+- `workspace/skills/pip-newsletter-digest/SKILL.md`
+- `workspace/skills/pip-newsletter-digest-format/SKILL.md`
+- `workspace/skills/pip-gmail-send/SKILL.md`
+
+### Keep in runtime repo
+
+- `docker/*`
+- `config/openclaw.*`
+- `config/secrets.*.example`
+- `scripts/run-cloud.sh`
+- `scripts/rebuild-cloud.sh`
+- `scripts/restart-cloud.sh`
+- `scripts/run-local.sh`
+- `scripts/rebuild-local-docker.sh`
+- `scripts/prepare-local-docker.sh`
+- `scripts/deploy-cloud.sh`
+- `scripts/install-cloud-host.sh`
+- `scripts/tunnel-cloud-gateway.sh`
+- `scripts/show-local-agent-logs.sh`
+- `scripts/show-cloud-agent-logs.sh`
+- `scripts/render-openclaw-config.mjs`
+- `scripts/push-cloud-runtime-secret.sh`
+- `scripts/apply-cloud-cron.sh`
+- `scripts/apply-local-cron.sh`
+- `scripts/print-local-docker-access.sh`
+- `opentofu/**`
+
+### Needs review before deciding
+
+- `workspace/skills/pip-gmail-gog/SKILL.md`
+  - if it stays digest-specific, move it
+  - if it becomes a generic Gmail/OpenClaw operations skill, keep it here or extract to a more generic adapter package
+- `workspace/skills/allowed-web-research/`
+  - likely runtime/workspace policy, so probably stays
 
 ## Security and privacy review
 
-This needs to be broader than just secret scanning.
+Before any public extraction, scrub more than just secrets.
 
-### Remove or scrub:
+### Remove or sanitize
 
 - personal email addresses
-- domains
-- hostnames
-- VM names
 - project IDs
-- local filesystem paths
-- session logs
-- gateway auth tokens
-- runtime config render paths
-- cached newsletter artifacts
-- screenshots containing private inbox content
+- VM names
+- hostnames
+- local absolute paths
+- screenshots from real inboxes
+- session transcripts with private content
+- real newsletter artifacts under `workspace/memory`
+- secret names that are too specific to the private deployment
 
-### Review operational scripts for:
-
-- assumptions about your specific accounts
-- assumptions about your exact directory layout
-- assumptions about your secret names
-- anything that could be copied and used against you directly
-
-## Legal / copyright / content concerns
-
-If the digest package processes newsletters, avoid shipping real content unless you are certain that is okay.
-
-Preferred open-source posture:
+### Replace with
 
 - synthetic fixtures
-- neutral example newsletters
-- sanitized examples
+- neutral example users
+- generic project naming
+- documented env var shapes
 
-Avoid publishing:
+## Generalization targets for the newsletter repo
 
-- full real newsletter bodies
-- real cached source artifacts
-- long copied excerpts from proprietary newsletters
+The new repo should not stay forever tied to Pip.
 
-## Configuration model
+High-value generalizations:
 
-The public version should move more behavior into config and less into repo-specific conventions.
+- configurable source definitions
+- configurable section order
+- configurable rendering theme
+- transport abstraction beyond `gog`
+- optional non-OpenClaw execution path
 
-Good candidates for config:
+What should remain opinionated:
 
-- source definitions
-  - sender matching
-  - subject matching
-  - extraction hints
-- section definitions
-  - order
-  - required vs optional
-  - empty-state handling
-- rendering/theme definitions
-- delivery definitions
-- framework adapter settings
+- artifact-backed workflow
+- deterministic renderer
+- schema-first handoffs
+- explicit cache invalidation/versioning
 
-If config is clean, the package becomes reusable rather than just portable.
+## Ergonomics targets for the runtime repo
 
-## Rendering and theming
+This repo should evolve into a good operator experience for OpenClaw on GCP and local Docker.
 
-The digest renderer should not be locked forever to one style.
+High-value improvements:
 
-Recommended direction:
+- clearer command naming
+- lighter config-only rollout path
+- stronger smoke checks after deploy
+- native-local parity checks
+- better compatibility docs between runtime and app packages
+- less quoting-heavy cloud command execution
 
-- deterministic renderer core
-- theme configuration
-- a small number of built-in email-safe themes
-
-This reduces the need for downstream forks just to change typography or layout.
-
-## Provider abstraction
-
-Separate these concerns explicitly:
-
-- inbox provider
-  - Gmail first
-  - IMAP later if needed
-- delivery provider
-  - Gmail send first
-  - SMTP later if needed
-- agent framework
-  - OpenClaw first
-  - others later
-
-Important seams:
-
-- search
-- fetch/extract
-- render
-- send
-
-## Testing strategy
-
-Open source needs stronger regression protection than an internal proving-ground repo.
-
-Recommended coverage:
-
-- extractor fixture tests
-- renderer snapshot tests
-- helper CLI tests
-- end-to-end dry-run tests
-- regression fixtures for known bad cases
-
-Known special cases worth protecting:
-
-- Substack app links
-- redirect links
-- Daily Upside Sunday long-form editions
-- empty sections
-- malformed HTML
-- sources with heavy newsletter chrome
-
-## Release and versioning strategy
-
-### Digest package
-
-Version:
-
-- output schema
-- extractor cache format
-- renderer theme behavior if needed
+## Dependency strategy
 
 ### Runtime repo
 
-Version:
+Should own:
 
-- Docker/runtime defaults
-- operational commands
-- compatibility expectations
+- OpenClaw version pin
+- `gog` installation and provisioning
+- Docker base image pins
+- cloud host package policy
+- infra module versions
 
-Recommended compatibility story:
+### Newsletter repo
 
-- runtime version X works with digest package version Y
+Should own:
 
-Without this, updates will become harder to reason about over time.
+- extraction/render/send package versions
+- schema versions
+- fixture and regression coverage
+- adapter logic that knows how to use runtime-provided capabilities such as `gog`, without provisioning those capabilities itself
 
-## Opinionated vs configurable
+### Compatibility story
 
-The project should stay opinionated in the right places.
+Eventually publish a simple matrix:
 
-Good places to stay opinionated:
+- runtime repo version X supports newsletter repo version Y
 
-- artifact structure
-- state layout
-- helper outputs
-- error handling
-- version pinning strategy
+Without that, upgrades will become guesswork.
 
-Good places to stay configurable:
+## Recommended immediate next steps
 
-- source matching
-- digest section composition
-- rendering theme
-- delivery destination
-- scheduling
+1. create a concrete extraction checklist from the move map above
+2. prepare the new newsletter repo skeleton and package layout
+3. move deterministic newsletter code first
+4. leave this repo as the runtime proving ground until the new repo contracts settle
 
-## Operational ergonomics for the runtime repo
+## Short version
 
-The OpenClaw runtime repo should feel easy to run confidently.
+The split is:
 
-Important areas to improve:
+- this repo = OpenClaw runtime + GCP/local infra + config + operational tooling
+- new repo = newsletter ingestion/extraction/digest/render/send system
 
-- command naming consistency
-- deploy vs rebuild clarity
-- tunnel/gateway access
-- session/activity log commands
-- cron test ergonomics
-- state inspection commands
-- cleanup/prune commands
-- health checks and smoke tests
+That is the cleanest way to:
 
-## Support boundary
-
-Define what is supported versus experimental.
-
-Example:
-
-- supported:
-  - OpenClaw
-  - Gmail
-  - Docker local
-  - GCP VM/cloud runtime
-- experimental:
-  - other clouds
-  - other inbox providers
-  - other agent frameworks
-
-This will help avoid accidental maintenance commitments.
-
-## Dependency management
-
-Dependency management is a key part of the eventual open-source story.
-
-Recommended principles:
-
-- pin important runtime versions explicitly
-- keep generated dependency/config files derived from a small source of truth
-- version compatibility between runtime and digest layers
-- keep lockfiles intentional and current
-- document what is manually pinned vs auto-bumped
-
-## Readiness checklist
-
-Before splitting into public repos:
-
-1. inventory all sensitive material
-2. define the core contracts and boundaries
-3. move repo-specific assumptions into config
-4. separate deterministic code from framework-specific prompt logic
-5. replace real examples with sanitized fixtures
-6. add regression tests for the ugliest known cases
-7. document support boundaries and compatibility expectations
-8. decide license, contribution, and maintenance model
-
-## Recommended next step
-
-Do not start with repo extraction yet.
-
-Start with one design phase inside this repo:
-
-- define what belongs in the digest package
-- define what belongs in the runtime repo
-- define the core contracts
-- define adapter boundaries
-- define the security scrub checklist
-- define the release/versioning model
-
-Once those boundaries are clear, splitting into separate repos will be much cleaner.
+- open-source useful parts sooner
+- keep security review manageable
+- improve ergonomics independently on each side
+- evolve the newsletter system toward broader reuse without entangling it with the GCP/OpenClaw runtime story
