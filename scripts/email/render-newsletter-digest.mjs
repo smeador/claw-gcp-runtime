@@ -9,7 +9,7 @@ import process from "node:process";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
 const COMPAT_SCRIPT = resolve(REPO_ROOT, "compat/newsletter/scripts/email/render-newsletter-digest.mjs");
-const DEFAULT_DIGEST_ROOT = resolve(REPO_ROOT, "..", "agent-email-digest");
+const DEFAULT_DIGEST_ROOT = resolve(REPO_ROOT, "..", "agent-newsletter-digest");
 
 function run(command, args) {
   try {
@@ -25,8 +25,10 @@ function run(command, args) {
 
 const args = process.argv.slice(2);
 
-if (process.env.AGENT_EMAIL_DIGEST_ROOT) {
-  const envScript = resolve(process.env.AGENT_EMAIL_DIGEST_ROOT, "scripts/email/render-newsletter-digest.mjs");
+const explicitDigestRoot = process.env.AGENT_NEWSLETTER_DIGEST_ROOT || process.env.AGENT_EMAIL_DIGEST_ROOT || "";
+
+if (explicitDigestRoot) {
+  const envScript = resolve(explicitDigestRoot, "scripts/email/render-newsletter-digest.mjs");
   if (existsSync(envScript)) {
     run(process.execPath, [envScript, ...args]);
   }

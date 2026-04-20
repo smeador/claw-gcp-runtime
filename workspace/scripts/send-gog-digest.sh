@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+if command -v agent-newsletter-digest-send >/dev/null 2>&1; then
+  exec agent-newsletter-digest-send "$@"
+fi
+
 if command -v agent-email-digest-send >/dev/null 2>&1; then
   exec agent-email-digest-send "$@"
 fi

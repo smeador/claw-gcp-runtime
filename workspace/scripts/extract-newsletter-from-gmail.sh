@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+if command -v agent-newsletter-digest-extract >/dev/null 2>&1; then
+  exec agent-newsletter-digest-extract "$@"
+fi
+
 if command -v agent-email-digest-extract >/dev/null 2>&1; then
   exec agent-email-digest-extract "$@"
 fi
