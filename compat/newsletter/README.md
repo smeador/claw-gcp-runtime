@@ -4,14 +4,14 @@ This directory holds the temporary compatibility copy of the extracted newslette
 
 Current split shape:
 
-- the extracted source of truth now lives in the sibling `agent-email-digest` repo
+- the extracted source of truth now lives in the sibling `agent-newsletter-digest` repo
 - this runtime repo keeps these copies so local Docker and cloud deploys do not break during the transition
 - the runtime-facing entry points under `scripts/email/` and `scripts/gmail/` now act as compatibility shims
 
 Resolution order for those entry points:
 
-1. explicit `AGENT_EMAIL_DIGEST_ROOT`
-2. default sibling checkout at `../agent-email-digest` when that checkout has its own `node_modules/`
+1. explicit `AGENT_NEWSLETTER_DIGEST_ROOT` or legacy `AGENT_EMAIL_DIGEST_ROOT`
+2. default sibling checkout at `../agent-newsletter-digest` when that checkout has its own `node_modules/`
 3. this compatibility copy
 
 This directory should shrink over time as the runtime repo switches to consuming the newsletter repo directly.

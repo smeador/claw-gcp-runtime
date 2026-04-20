@@ -46,7 +46,7 @@ This repo should answer:
 
 Recommended future identity:
 
-- `agent-email-digest`
+- `agent-newsletter-digest`
 
 Purpose:
 
@@ -185,7 +185,7 @@ The new repo can still be a monorepo internally. That is probably the cleanest w
 Recommended structure:
 
 ```text
-agent-email-digest/
+agent-newsletter-digest/
   packages/
     core/
     provider-gmail/
