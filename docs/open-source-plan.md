@@ -242,6 +242,13 @@ Owns:
 
 Before physically splitting files, treat these as the public contract that the new repo will own.
 
+Concrete first-pass docs live at:
+
+- [docs/contracts/source-artifact-contract.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/source-artifact-contract.md)
+- [docs/contracts/digest-json-contract.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/digest-json-contract.md)
+- [docs/contracts/render-send-contract.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/render-send-contract.md)
+- [docs/contracts/openclaw-runtime-expectations.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/openclaw-runtime-expectations.md)
+
 ### Source artifacts
 
 - `metadata.json`

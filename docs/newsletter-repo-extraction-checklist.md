@@ -38,18 +38,22 @@ Goal:
 
 Tasks:
 
-- [ ] write a source-artifact contract doc for:
+- [x] write a source-artifact contract doc for:
   - `metadata.json`
   - `links.json`
   - `clean.md`
   - `extracted.json`
-- [ ] write a digest contract doc for:
+- [x] write a digest contract doc for:
   - `digest.json`
-- [ ] write a render/send contract doc for:
+- [x] write a render/send contract doc for:
   - `email.html`
   - `email.txt`
   - `summary.json`
   - `send-result.json`
+- [x] write OpenClaw adapter runtime expectations for:
+  - `gog`
+  - writable workspace paths
+  - helper availability
 - [ ] document extractor cache versioning and invalidation rules
 - [ ] document the expected provider/transport interfaces at a high level
 
