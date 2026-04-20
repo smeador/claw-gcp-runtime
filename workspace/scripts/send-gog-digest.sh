@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+if command -v agent-email-digest-send >/dev/null 2>&1; then
+  exec agent-email-digest-send "$@"
+fi
+
 if command -v agent-lab-send-gog-digest >/dev/null 2>&1; then
   exec agent-lab-send-gog-digest "$@"
 fi
@@ -9,11 +13,11 @@ WORKSPACE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 REPO_ROOT="$(cd "${WORKSPACE_DIR}/.." && pwd)"
 
 if [ -f "/opt/agent-lab/scripts/gmail/send-gog-digest.sh" ]; then
-  exec bash /opt/agent-lab/scripts/gmail/send-gog-digest.sh "$@"
+  exec /opt/agent-lab/scripts/gmail/send-gog-digest.sh "$@"
 fi
 
 if [ -f "${REPO_ROOT}/scripts/gmail/send-gog-digest.sh" ]; then
-  exec bash "${REPO_ROOT}/scripts/gmail/send-gog-digest.sh" "$@"
+  exec "${REPO_ROOT}/scripts/gmail/send-gog-digest.sh" "$@"
 fi
 
 echo "send-gog-digest.sh not found in installed helper or repo checkout" >&2

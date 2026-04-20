@@ -19,6 +19,7 @@ Important transition note:
 - keep the live Pip workflow working during the split
 - do not let Pip-specific personality or framing become part of the long-term public identity of the runtime repo
 - over time, Pip should become an example implementation or compatibility layer rather than the conceptual center of the runtime repo
+- during the first extraction phase, this repo may keep compatibility copies under `compat/newsletter/` while the new repo becomes the extracted source of truth
 
 ## Repo shape
 
@@ -110,6 +111,7 @@ This repo should keep everything that is primarily about running OpenClaw as an 
 - `config/secrets.*.example`
 - `config/docker.*`
 - `versions.json`
+- temporary compatibility shims under `scripts/email/`, `scripts/gmail/`, and `compat/newsletter/` until this repo consumes the extracted repo directly
 
 ### Docs that stay here
 
