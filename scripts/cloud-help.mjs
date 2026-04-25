@@ -79,9 +79,6 @@ const lines = [
   "  agent-runtime cloud test gmail-send",
   "    Send a Gmail test message from automation@example.com from the cloud gateway container.",
   "",
-  "  agent-runtime cloud test digest",
-  "    Run the Pip newsletter digest from the cloud gateway container.",
-  "",
   "  agent-runtime cloud test skill SKILL_NAME",
   "    Run a skill-owned cloud test entrypoint through the generic runtime dispatcher.",
   "",
@@ -98,9 +95,7 @@ const lines = [
   "  GMAIL_TEST_TO       Recipient for agent-runtime cloud test gmail-send",
   "  GMAIL_TEST_SUBJECT  Subject for agent-runtime cloud test gmail-send",
   "  SKILL_TEST_MESSAGE  Generic message override for agent-runtime cloud test skill",
-  "  SKILL_TEST_TIMEOUT_MS  Generic timeout override for agent-runtime cloud test skill",
-  "  DIGEST_MESSAGE      Custom agent prompt for agent-runtime cloud test digest",
-  "  DIGEST_TEST_TIMEOUT_MS  Timeout override for agent-runtime cloud test skill pip-newsletter-digest"
+  "  SKILL_TEST_TIMEOUT_MS  Generic timeout override for agent-runtime cloud test skill"
 ];
 
 console.log(lines.join("\n"));

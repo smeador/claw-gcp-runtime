@@ -5,7 +5,7 @@ import path from "node:path";
 import os from "node:os";
 
 const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
-const templatePath = path.join(repoRoot, "config", "openclaw.local.json5.example");
+const templatePath = path.join(repoRoot, "config", "openclaw.local.example.json5");
 const livePath = path.join(os.homedir(), ".openclaw", "openclaw.json");
 
 function readJson(filePath) {

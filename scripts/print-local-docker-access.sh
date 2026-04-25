@@ -42,6 +42,6 @@ Steady-state operations:
   edit workspace/skills/ and then rerun:
   agent-runtime local restart
 - Add or update reviewed hooks:
-  edit config/openclaw.container.json5.example or the relevant repo-managed workspace files, then rerun:
+  edit config/openclaw.container.example.json5 or the relevant repo-managed workspace files, then rerun:
   agent-runtime local restart
 EOF

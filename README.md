@@ -160,8 +160,8 @@ Secrets are split by environment:
 
 Start from:
 
-- [config/secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
-- [config/secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
+- [config/secrets.local.example.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.example.json)
+- [config/secrets.cloud.example.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.example.json)
 
 Rules:
 
@@ -214,7 +214,7 @@ Cloud notes:
 
 ### Native local
 
-Use [config/openclaw.local.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.json5.example) as the basis for `~/.openclaw/openclaw.json`.
+Use [config/openclaw.local.example.json5](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.example.json5) as the basis for `~/.openclaw/openclaw.json`.
 
 Recommended prerequisite:
 
@@ -229,7 +229,7 @@ Initial setup:
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
 npm run deps:sync
-cp config/secrets.local.json.example config/secrets.local.json
+cp config/secrets.local.example.json config/secrets.local.json
 agent-runtime local prepare
 agent-runtime local deploy
 bash ./scripts/print-local-docker-access.sh
@@ -360,7 +360,7 @@ Cloud container flow:
 ```bash
 cd /Users/sean/Repos/gcp-claw-lab
 npm run deps:sync
-cp config/secrets.cloud.json.example config/secrets.cloud.json
+cp config/secrets.cloud.example.json config/secrets.cloud.json
 bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
 bash ./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
 bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
@@ -395,7 +395,6 @@ agent-runtime cloud cron list
 agent-runtime cloud cron run-digest
 agent-runtime cloud test gmail-read
 agent-runtime cloud test gmail-send
-agent-runtime cloud test digest
 agent-runtime cloud test skill pip-newsletter-digest
 ```
 
@@ -419,7 +418,6 @@ agent-runtime cloud cron list
 agent-runtime cloud cron run-digest
 agent-runtime cloud test gmail-read
 agent-runtime cloud test gmail-send
-agent-runtime cloud test digest
 ```
 
 Optional overrides:
@@ -431,7 +429,6 @@ Optional overrides:
 - `LOG_VIEW` for `agent-runtime cloud agent-logs` with `messages`, `replies`, `errors`, or `full`
 - `SHOW_RUNTIME_LOG=1` for `agent-runtime cloud agent-logs` to append the raw runtime log tail
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime cloud test gmail-send`
-- `DIGEST_MESSAGE` for `agent-runtime cloud test digest`
 
 Cloud command guidance:
 
@@ -477,7 +474,7 @@ Cloud secret setup:
 
    ```bash
    cd /Users/sean/Repos/gcp-claw-lab
-   cp config/secrets.cloud.json.example config/secrets.cloud.json
+   cp config/secrets.cloud.example.json config/secrets.cloud.json
    ```
 
 2. Fill in the fields you need for the first cloud run:
