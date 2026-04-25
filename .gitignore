@@ -37,6 +37,7 @@ workspace/tmp/
 workspace/memory/
 .runtime/*
 !.runtime/integrations/
+.runtime/integrations/*
 !.runtime/integrations/.gitkeep
 node_modules/
 __pycache__/
