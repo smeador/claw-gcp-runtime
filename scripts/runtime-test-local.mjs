@@ -138,10 +138,11 @@ function runIntegration() {
     [
       "-lc",
       [
+        "test -f ./.runtime/integrations/agent-newsletter-digest/integration.json",
         "test -f ./.runtime/integrations/agent-newsletter-digest/package.json",
         "test -f ./.runtime/integrations/agent-newsletter-digest/scripts/email/extract-newsletter-from-gmail.mjs",
         "test -f ./.runtime/integrations/agent-newsletter-digest/scripts/email/render-newsletter-digest.mjs",
-        "test -f ./.runtime/integrations/agent-newsletter-digest/workspace/skills/pip-newsletter-digest/SKILL.md",
+        "test -f ./.runtime/integrations/agent-newsletter-digest/adapter/openclaw/skills/pip-newsletter-digest/SKILL.md",
         "echo staged-integration-present",
       ].join(" && "),
     ],

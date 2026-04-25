@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import process from "node:process";
 
 const REPO_ROOT = resolve(dirname(new URL(import.meta.url).pathname), "..");
@@ -40,9 +40,23 @@ function ensureDirExists(targetPath) {
   }
 }
 
+function readStateFile() {
+  if (!existsSync(STATE_FILE)) {
+    return null;
+  }
+  return readJson(STATE_FILE);
+}
+
 function cleanGeneratedSkillsRoot() {
   ensureDirExists(WORKSPACE_SKILLS_ROOT);
-  for (const entry of ["pip-gmail-send", "pip-newsletter-digest", "pip-newsletter-digest-format"]) {
+  const previousState = readStateFile();
+  const previousSkills = new Set(
+    Array.isArray(previousState?.integrations)
+      ? previousState.integrations.flatMap((integration) => integration.skills ?? [])
+      : [],
+  );
+
+  for (const entry of previousSkills) {
     removeIfExists(resolve(WORKSPACE_SKILLS_ROOT, entry));
   }
 }
@@ -81,6 +95,41 @@ function copyWorkspaceTree(sourcePath, destPath) {
   });
 }
 
+function loadIntegrationManifest(sourceRoot, integrationName) {
+  const manifestPath = resolve(sourceRoot, "integration.json");
+  if (!existsSync(manifestPath)) {
+    throw new Error(`Integration ${integrationName} is missing integration.json.`);
+  }
+
+  const manifest = readJson(manifestPath);
+  if (!manifest || typeof manifest !== "object") {
+    throw new Error(`Integration ${integrationName} has an invalid integration.json.`);
+  }
+
+  const adapter = manifest.adapter;
+  if (!adapter || typeof adapter !== "object" || adapter.type !== "openclaw") {
+    throw new Error(`Integration ${integrationName} must declare an OpenClaw adapter.`);
+  }
+
+  if (typeof adapter.skillsRoot !== "string" || adapter.skillsRoot.length === 0) {
+    throw new Error(`Integration ${integrationName} is missing adapter.skillsRoot.`);
+  }
+
+  return manifest;
+}
+
+function discoverSkillDirs(sourceRoot, integrationName, manifest) {
+  const skillsRoot = resolve(sourceRoot, manifest.adapter.skillsRoot);
+  if (!existsSync(skillsRoot)) {
+    throw new Error(`Integration ${integrationName} skills root not found: ${skillsRoot}`);
+  }
+
+  return readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+}
+
 function main() {
   if (!existsSync(MANIFEST_PATH)) {
     usage(`Integration manifest not found: ${MANIFEST_PATH}`);
@@ -111,11 +160,12 @@ function main() {
       throw new Error(`Integration root not found for ${integration.name}: ${sourceRoot}`);
     }
 
+    const integrationManifest = loadIntegrationManifest(sourceRoot, integration.name);
     const destRoot = resolve(STAGED_ROOT, integration.name);
     copyIntegration(sourceRoot, destRoot);
 
-    const skillDirs = Array.isArray(integration.skillDirs) ? integration.skillDirs : [];
-    const stagedSkillsRoot = resolve(destRoot, "workspace/skills");
+    const skillDirs = discoverSkillDirs(sourceRoot, integration.name, integrationManifest);
+    const stagedSkillsRoot = resolve(destRoot, integrationManifest.adapter.skillsRoot);
 
     for (const skillName of skillDirs) {
       const stagedSkillDir = resolve(stagedSkillsRoot, skillName);
@@ -131,9 +181,14 @@ function main() {
 
     staged.push({
       name: integration.name,
-      sourceRoot,
-      destRoot,
-      skillDirs,
+      sourceRoot: relative(REPO_ROOT, sourceRoot),
+      stagedRoot: relative(REPO_ROOT, destRoot),
+      adapter: {
+        type: integrationManifest.adapter.type,
+        skillsRoot: integrationManifest.adapter.skillsRoot,
+        skillTestRunner: integrationManifest.adapter.skillTestRunner ?? "",
+      },
+      skills: skillDirs,
     });
   }
 

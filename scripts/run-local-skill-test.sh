@@ -9,6 +9,7 @@ if [ -z "${SKILL_NAME}" ]; then
 fi
 
 cd "$(dirname "$0")/.."
+RUNNER_PATH="$(node ./scripts/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
 
 compose_args=(
   --env-file config/docker.build.env
@@ -28,7 +29,7 @@ compose_args+=(
   openclaw-gateway
   bash
   -lc
-  "bash /workspace/skills/$(printf '%q' "${SKILL_NAME}")/TEST.sh"
+  "bash /workspace/${RUNNER_PATH} $(printf '%q' "${SKILL_NAME}")"
 )
 
 docker compose "${compose_args[@]}"

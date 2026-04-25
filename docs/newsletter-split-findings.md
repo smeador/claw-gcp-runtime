@@ -51,7 +51,9 @@ The current shape is:
 
 - runtime command:
   - `agent-runtime local test skill <skill>`
-- skill-owned entrypoint:
+- integration-owned test runner:
+  - declared through `integration.json`
+- reviewed workspace still exposes:
   - `workspace/skills/<skill>/TEST.sh`
 
 That keeps runtime logic generic while allowing workflow-specific test behavior.
