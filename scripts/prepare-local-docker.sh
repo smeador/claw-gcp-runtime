@@ -3,6 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+node ./scripts/stage-workspace-integrations.mjs
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env
 node ./scripts/render-runtime-env.mjs \
   --secrets config/secrets.local.json \

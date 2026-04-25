@@ -250,6 +250,7 @@ Routine operations:
   agent-runtime local test basic
   agent-runtime local test core
   agent-runtime local test integration
+  agent-runtime local test skill pip-newsletter-digest
   ```
 - direct-path fallback:
   ```bash
@@ -288,6 +289,7 @@ Routine operations:
   agent-runtime local test basic
   agent-runtime local test core
   agent-runtime local test integration
+  agent-runtime local test skill pip-newsletter-digest
   ```
 - legacy smoke alias:
   ```bash
@@ -363,9 +365,13 @@ Each run writes:
 
 `digest.json` is now the structured source of truth for the final digest content. The renderer generates `email.html` and `email.txt` deterministically from that JSON so HTML and plaintext stay aligned.
 
-Native-local note:
+Integration note:
 
-- the digest skills call workspace-local wrappers under [workspace/scripts](/Users/sean/Repos/gcp-claw-lab/workspace/scripts) so the same workflow can find the extractor/send helper in native local, Docker-local, and cloud
+- this runtime repo no longer owns the newsletter implementation scripts
+- the newsletter logic now lives in the sibling repo at [`/Users/sean/Repos/agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest)
+- this repo stages declared integrations from [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json) into a composed runtime view under `.runtime/integrations`
+- the reviewed workspace then exposes only the composed skill surface under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
+- runtime-specific code should stay generic; workflow-specific commands should come from the integration package itself
 
 ### Cloud
 
@@ -410,6 +416,7 @@ agent-runtime cloud cron run-digest
 agent-runtime cloud test gmail-read
 agent-runtime cloud test gmail-send
 agent-runtime cloud test digest
+agent-runtime cloud test skill pip-newsletter-digest
 ```
 
 Fallback npm commands:

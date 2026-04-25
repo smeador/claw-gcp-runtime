@@ -1,0 +1,14 @@
+{
+  "integrations": [
+    {
+      "name": "agent-newsletter-digest",
+      "root": "../agent-newsletter-digest",
+      "rootEnv": "AGENT_NEWSLETTER_DIGEST_ROOT",
+      "skillDirs": [
+        "pip-gmail-send",
+        "pip-newsletter-digest",
+        "pip-newsletter-digest-format"
+      ]
+    }
+  ]
+}

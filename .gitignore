@@ -28,9 +28,16 @@ docker/compose.override.yml
 .secrets/
 Gmail Delegation Claw Runtime.json
 workspace/.openclaw/
+workspace/integrations
+workspace/skills/pip-gmail-send
+workspace/skills/pip-newsletter-digest
+workspace/skills/pip-newsletter-digest-format
 workspace/.tmp/
 workspace/tmp/
 workspace/memory/
+.runtime/*
+!.runtime/integrations/
+!.runtime/integrations/.gitkeep
 node_modules/
 __pycache__/
 **/__pycache__/

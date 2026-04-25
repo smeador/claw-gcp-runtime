@@ -1,66 +1,73 @@
 # Newsletter Split Findings
 
-## Current transition shape
+## Current structure
 
-- the extracted newsletter repo is now bootstrapped as a sibling checkout:
-  - `/Users/sean/Repos/agent-newsletter-digest`
-- this runtime repo still carries a compatibility copy of the deterministic newsletter implementation under:
-  - `/Users/sean/Repos/gcp-claw-lab/compat/newsletter`
-- runtime-facing entry points in `scripts/email/` and `scripts/gmail/` now resolve to:
-  1. `AGENT_NEWSLETTER_DIGEST_ROOT`
-  2. sibling `agent-newsletter-digest` checkout
-  3. local compatibility copy
+- the newsletter implementation now lives in the sibling repo:
+  - [`/Users/sean/Repos/agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest)
+- this runtime repo stages declared integrations from [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json)
+- staged integrations are copied into:
+  - [`.runtime/integrations`](/Users/sean/Repos/gcp-claw-lab/.runtime/integrations)
+- the reviewed workspace exposes the composed skill surface by copying staged skills into:
+  - [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
 
-## Why the compatibility copy still exists
+This is intentionally different from the older transition model. The runtime repo no longer carries `compat/newsletter` or repo-root newsletter wrapper scripts.
 
-Today the runtime repo still deploys a single reviewed workspace tree into Docker-local and cloud.
+## Boundary that worked best
 
-That means a clean repo split needs a transition period where:
+The cleanest split is:
 
-- the new repo can become the extracted source of truth
-- this repo can continue to deploy without immediately depending on a second checkout or a packaging step
+- runtime repo:
+  - generic local/cloud/GCP/OpenClaw runtime
+  - capability provisioning
+  - integration staging
+  - generic runtime validation
+- newsletter repo:
+  - newsletter extraction/render/send logic
+  - OpenClaw adapter commands
+  - skill-owned test entrypoints
+- workspace:
+  - the concrete composed view of runtime + integrations
+  - minimal context-specific glue only
 
-Keeping compatibility copies here lets us make the boundary real now without breaking the live workflow.
+The main correction from the earlier plan is that `workspace/` should not quietly become a second home for newsletter implementation logic.
 
-## Notable integration findings
+## Integration findings
 
-### `.mjs` compatibility entry points should stay Node wrappers
+### Generic staging beats compatibility shims
 
-The original extract and render entry points lived at `.mjs` paths and some wrappers still expected JavaScript there.
+The earlier compatibility-wrapper model kept the runtime working, but it blurred ownership and made it too easy for newsletter logic to drift back into the runtime repo.
 
-Using shell shims at those paths was possible but confusing. The better transition shape is:
+The better model is:
 
-- keep `.mjs` entry points as Node wrappers
-- keep `.sh` entry points as shell wrappers
-- execute repo fallback scripts via their shebangs in workspace wrappers
+- runtime repo stages integrations generically
+- integration packages provide their own commands and skill assets
+- the reviewed workspace exposes copied skill assets without becoming the source of truth for them
 
-### Automatic sibling-repo switchover should only happen when the extracted repo is actually runnable
+### Skills need their own test entrypoint
 
-Once the sibling `agent-newsletter-digest` checkout exists, the runtime repo can find it even before its dependencies are installed.
+`agent-runtime` can stay general if it only dispatches to skill-provided tests.
 
-That created a bad transition mode where the runtime repo would prefer the sibling checkout even though `cheerio` and `turndown` were not present yet.
+The current shape is:
 
-The runtime-side shims now only auto-switch to the sibling repo when its `node_modules/` directory exists.
+- runtime command:
+  - `agent-runtime local test skill <skill>`
+- skill-owned entrypoint:
+  - `workspace/skills/<skill>/TEST.sh`
 
-The explicit override remains:
+That keeps runtime logic generic while allowing workflow-specific test behavior.
 
-- `AGENT_NEWSLETTER_DIGEST_ROOT=/path/to/agent-newsletter-digest`
-- legacy fallback:
-  - `AGENT_EMAIL_DIGEST_ROOT=/path/to/agent-newsletter-digest`
+### `gog` still belongs on the runtime side
 
-### `gog` remains a runtime capability
-
-The extracted newsletter repo can own `gog`-based adapter logic, but this repo should keep owning:
+The newsletter repo can depend on `gog` as an adapter capability, but this runtime repo should keep owning:
 
 - `gog` installation
 - auth provisioning
-- runtime availability on `PATH`
+- availability on `PATH`
 
-That boundary still feels right after the first extraction pass.
+That boundary still feels correct after the refactor.
 
-## Next migration steps
+## Remaining follow-up
 
-1. add provider and transport interface docs to the extracted repo
-2. add sanitized fixtures and regression tests there
-3. choose the long-term integration mode for this runtime repo
-4. remove compatibility copies once this repo consumes the extracted repo directly
+1. keep reducing Pip-specific framing in runtime docs and commands where it is not required for compatibility
+2. add more generic skill-test conventions only if a second integration needs them
+3. validate the same integration staging model for native local once that work is prioritized

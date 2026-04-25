@@ -112,14 +112,18 @@ Current operator-facing shape:
 - `agent-runtime local test basic`
 - `agent-runtime local test core`
 - `agent-runtime local test integration`
+- `agent-runtime local test skill pip-newsletter-digest`
 - `agent-runtime cloud test digest`
+- `agent-runtime cloud test skill pip-newsletter-digest`
 - `./bin/agent-runtime local deploy`
 - `./bin/agent-runtime cloud deploy`
 - `./bin/agent-runtime local cron list`
 - `./bin/agent-runtime local test basic`
 - `./bin/agent-runtime local test core`
 - `./bin/agent-runtime local test integration`
+- `./bin/agent-runtime local test skill pip-newsletter-digest`
 - `./bin/agent-runtime cloud test digest`
+- `./bin/agent-runtime cloud test skill pip-newsletter-digest`
 
 Preferred in-repo setup:
 
@@ -155,8 +159,8 @@ The runtime repo should have a tiered local Docker runtime test surface.
 
 - `core`
 - runtime facade works
-- host runtime shims are callable
-- workspace wrapper scripts are callable inside the container
+- staged integration commands are callable
+- skill-owned test entrypoints are present inside the composed workspace
 
 These tiers stay intentionally smaller than full workflow or Gmail tests. They validate the runtime command surface and runtime setup itself.
 

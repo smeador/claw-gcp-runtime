@@ -4,10 +4,6 @@
   "bin": {
     "agent-runtime": "./bin/agent-runtime"
   },
-  "dependencies": {
-    "cheerio": "^1.1.2",
-    "turndown": "^7.2.1"
-  },
   "engines": {
     "node": ">=22"
   },

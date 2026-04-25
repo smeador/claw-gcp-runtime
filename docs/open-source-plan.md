@@ -4,26 +4,32 @@
 
 We are standardizing on a two-repo split:
 
-1. this repo becomes the OpenClaw runtime / GCP infra / local-cloud operating model repo
-2. a new repo will contain the newsletter and digest system
+1. this repo is the OpenClaw runtime / GCP infra / local-cloud operating model repo
+2. [`agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest) is the newsletter workflow repo
 
-This is intentionally not a split between "infra" and "app" in the abstract. It is a split between:
+This is a split between:
 
-- a reusable OpenClaw runtime/distribution layer
-- a reusable email-to-digest workflow layer
+- a reusable runtime and composition host
+- a reusable workflow implementation and adapter package
 
-The live Pip workflow remains the proving ground, but the code should evolve toward these public surfaces.
+The live Pip workflow remains the proving ground, but it should no longer determine where ownership lives.
 
-Important transition note:
+## Core boundary
 
-- keep the live Pip workflow working during the split
-- do not let Pip-specific personality or framing become part of the long-term public identity of the runtime repo
-- over time, Pip should become an example implementation or compatibility layer rather than the conceptual center of the runtime repo
-- during the first extraction phase, this repo may keep compatibility copies under `compat/newsletter/` while the new repo becomes the extracted source of truth
+The key rule is:
 
-## Repo shape
+- runtime repo provisions generic capabilities
+- integration repos consume those capabilities
+- `workspace/` is the composed view, not the long-term home of workflow logic
 
-### Repo A: current repo
+That means:
+
+- if logic is required for the newsletter system to run in any runtime, it belongs in `agent-newsletter-digest`
+- if logic is required to run OpenClaw locally, in Docker, or on GCP, it belongs here
+- if a file only exists to compose the current runtime with installed integrations, it may live in `workspace/`
+- if a script only existed to bridge the old split, remove it
+
+## Repo A: this repo
 
 Recommended future identity:
 
@@ -35,480 +41,212 @@ Purpose:
 - deterministic config rendering
 - deterministic state layout
 - deploy/rebuild/restart/test ergonomics
-- tunnel, logs, cron, and operational helpers
+- integration staging and composed workspace assembly
+- tunnel, logs, cron, and operator helpers
 
 This repo should answer:
 
-- how do I run OpenClaw locally and on GCP with the same operational model?
-- how do I manage state, secrets, Docker, cron jobs, and cloud rollouts safely?
+- how do I run OpenClaw locally and on GCP with the same operating model?
+- how do I provision capabilities such as `gog`, auth, secrets, mounts, logs, and cron?
+- how do I compose one or more workflow integrations into a reviewed runtime workspace?
 
-### Repo B: new repo
-
-Recommended future identity:
-
-- `agent-newsletter-digest`
-
-Purpose:
-
-- ingest newsletter/email sources
-- extract cleaned artifacts
-- select issues
-- synthesize digest content
-- render deterministic email output
-- send through pluggable transports
-
-This repo should answer:
-
-- how do I turn emails into a structured digest workflow that can plug into different agent frameworks?
-
-## Core principle
-
-The public design principle should stay the same:
-
-- code owns deterministic mechanics
-- agent instructions own judgment
-
-That means:
-
-- retrieval and extraction should be code-owned
-- schemas should be explicit and versioned
-- rendering and send should be code-owned
-- prompts/skills should focus on selection, synthesis, and adaptation
-
-## What stays in this repo
-
-This repo should keep everything that is primarily about running OpenClaw as an environment.
-
-### Runtime and infra
+### What stays here
 
 - `docker/`
 - `opentofu/`
 - runtime-oriented `config/`
 - version pinning and sync logic
-- cloud host bootstrap and deploy scripts
-- local Docker lifecycle scripts
-- tunnel, log, cron, and state inspection helpers
+- local/cloud lifecycle scripts
+- generic runtime tests
+- integration staging logic
+- operator docs and specs
 
-### Recommended examples of code that stay here
+### Runtime-owned examples
 
-- `docker/Dockerfile`
-- `docker/compose.local.yml`
-- `docker/compose.cloud.yml`
-- `docker/entrypoint.sh`
-- `scripts/run-cloud.sh`
-- `scripts/rebuild-cloud.sh`
-- `scripts/restart-cloud.sh`
-- `scripts/run-local.sh`
-- `scripts/rebuild-local-docker.sh`
-- `scripts/prepare-local-docker.sh`
-- `scripts/tunnel-cloud-gateway.sh`
-- `scripts/show-local-agent-logs.sh`
-- `scripts/show-cloud-agent-logs.sh`
-- `scripts/render-openclaw-config.mjs`
-- `scripts/push-cloud-runtime-secret.sh`
-- `scripts/prune-unused-docker-images.sh`
-- `config/openclaw.*`
-- `config/secrets.*.example`
-- `config/docker.*`
-- `versions.json`
-- temporary compatibility shims under `scripts/email/`, `scripts/gmail/`, and `compat/newsletter/` until this repo consumes the extracted repo directly
+- [docker/Dockerfile](/Users/sean/Repos/gcp-claw-lab/docker/Dockerfile)
+- [docker/compose.local.yml](/Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml)
+- [docker/compose.cloud.yml](/Users/sean/Repos/gcp-claw-lab/docker/compose.cloud.yml)
+- [scripts/runtime.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime.mjs)
+- [scripts/stage-workspace-integrations.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/stage-workspace-integrations.mjs)
+- [scripts/install-staged-integrations.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/install-staged-integrations.mjs)
+- [scripts/run-local-skill-test.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-local-skill-test.sh)
+- [scripts/run-cloud-skill-test.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-cloud-skill-test.sh)
+- [scripts/prepare-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/prepare-local-docker.sh)
+- [scripts/sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
+- [scripts/tunnel-cloud-gateway.sh](/Users/sean/Repos/gcp-claw-lab/scripts/tunnel-cloud-gateway.sh)
+- [scripts/show-local-agent-logs.sh](/Users/sean/Repos/gcp-claw-lab/scripts/show-local-agent-logs.sh)
+- [scripts/show-cloud-agent-logs.sh](/Users/sean/Repos/gcp-claw-lab/scripts/show-cloud-agent-logs.sh)
+- [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json)
 
-### Docs that stay here
+### What should not stay here
 
-- runtime docs
-- local/cloud operational docs
-- infra architecture docs
-- deployment notes
-- state layout docs
-- compatibility matrix docs
+- newsletter extraction logic
+- deterministic digest rendering
+- digest finalization/send logic
+- newsletter-specific wrapper scripts
+- compatibility copies of newsletter implementation
 
-Examples:
+## Repo B: `agent-newsletter-digest`
 
-- `README.md`
-- `docs/spec.md`
-- `docs/backlog.md`
-- `docs/openclaw-agent-guide.md`
+Purpose:
 
-## What moves to the new newsletter repo
+- ingest newsletter/email sources
+- extract cleaned artifacts
+- synthesize digest content
+- render deterministic email output
+- send through pluggable transports
+- expose OpenClaw adapter commands and skills
 
-The new repo should own the digest workflow itself.
+This repo should answer:
 
-### Deterministic workflow code
+- how do I turn newsletters into structured digest artifacts?
+- how do I package that workflow for OpenClaw or another runtime?
 
-- email extraction logic
-- digest finalization logic
-- deterministic renderer
-- digest send helper
-- schema definitions
-- fixture tests
+### What belongs there
 
-### OpenClaw adapter layer
+- extraction/render/send scripts
+- schema and contract ownership
+- skill text and workflow-specific commands
+- skill-owned test entrypoints
+- fixtures and regression tests
 
-- OpenClaw-facing skills for the digest workflow
-- OpenClaw-specific wrappers that call the core library
+## Execution model
 
-### Recommended examples of code that move
+### Runtime view
 
-- `scripts/email/`
-- `scripts/gmail/send-gog-digest.sh`
-- `workspace/scripts/extract-newsletter-from-gmail.sh`
-- `workspace/scripts/render-newsletter-digest.sh`
-- `workspace/scripts/finalize-newsletter-digest.sh`
-- `workspace/scripts/send-gog-digest.sh`
-- `workspace/skills/pip-newsletter-digest/`
-- `workspace/skills/pip-newsletter-digest-format/`
-- `workspace/skills/pip-gmail-send/`
-- likely most of `workspace/skills/pip-gmail-gog/` after it is generalized
+The runtime should stay generic.
 
-### Data model and fixtures that move
+`agent-runtime` should know about:
 
-- sanitized newsletter fixtures
-- regression tests for extraction/render/send
-- digest schema docs
-- adapter docs
+- environments such as `local` and `cloud`
+- generic operations such as `deploy`, `restart`, `logs`, `cron`, and runtime test tiers
+- generic skill dispatch such as:
+  - `agent-runtime local test skill pip-newsletter-digest`
 
-## What should not stay app-specific in this repo
+It should not know what a newsletter digest is beyond treating it as a skill name.
 
-This repo should stop being the long-term home for:
+### Integration view
 
-- Pip-specific digest orchestration
-- digest-specific renderer/theme choices
-- newsletter-specific extraction heuristics
-- email send semantics specific to the digest product
+The integration package should provide:
 
-Those belong in the newsletter repo, even if this repo continues to consume them.
+- installable commands on `PATH`
+- skill directories under its own `workspace/skills`
+- any `TEST.sh` entrypoint needed for generic runtime testing
 
-## Shape of the new newsletter repo
+### Workspace view
 
-The new repo can still be a monorepo internally. That is probably the cleanest way to expose both reusable code and framework adapters without fragmenting too early.
+The reviewed workspace should contain:
 
-Recommended structure:
+- runtime policy
+- runtime-owned scratch and memory paths
+- copied skill assets staged from declared integrations
+- minimal context-specific glue only
 
-```text
-agent-newsletter-digest/
-  packages/
-    core/
-    provider-gmail/
-    transport-gmail-gog/
-    renderer-email/
-    adapter-openclaw/
-  skills/
-    openclaw/
-  fixtures/
-  examples/
-    pip-digest/
-  docs/
-```
+It should not become a second implementation home for newsletter mechanics.
 
-### `packages/core`
+## Integration mechanism
 
-Owns:
+The current preferred development model is:
 
-- source artifact contract
-- digest JSON contract
-- shared validation
-- common interfaces
+- sibling local checkout for the integration repo
+- latest local code during active development
+- runtime repo stages integrations from [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json)
+- staged integrations are copied under [`.runtime/integrations`](/Users/sean/Repos/gcp-claw-lab/.runtime/integrations)
+- the composed workspace exposes those skills under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
 
-### `packages/provider-gmail`
+This keeps development fast without forcing release pinning yet.
 
-Owns:
-
-- Gmail search/fetch integration
-- extraction helpers
-- normalized output artifacts
-
-### `packages/transport-gmail-gog`
-
-Owns:
-
-- Gmail delivery through `gog`
-- `send-result.json` contract
-
-### `packages/renderer-email`
-
-Owns:
-
-- deterministic `digest.json -> email.html + email.txt`
-- themes/templates
-- validation/sanitization
-
-### `packages/adapter-openclaw`
-
-Owns:
-
-- OpenClaw wrapper scripts
-- OpenClaw skill text
-- OpenClaw-specific contracts and install story
+Longer term, optional pinning can be added after the boundaries settle.
 
 ## Stable contract surface
 
-Before physically splitting files, treat these as the public contract that the new repo will own.
-
-Concrete first-pass docs live at:
+Concrete contract docs in this repo currently live at:
 
 - [docs/contracts/source-artifact-contract.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/source-artifact-contract.md)
 - [docs/contracts/digest-json-contract.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/digest-json-contract.md)
 - [docs/contracts/render-send-contract.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/render-send-contract.md)
 - [docs/contracts/openclaw-runtime-expectations.md](/Users/sean/Repos/gcp-claw-lab/docs/contracts/openclaw-runtime-expectations.md)
 
-### Source artifacts
+The newsletter repo should eventually become the source of truth for the workflow-specific contracts, while this repo keeps the runtime-expectations side.
 
-- `metadata.json`
-- `links.json`
-- `clean.md`
-- `extracted.json`
+## Migration phases
 
-### Digest artifacts
-
-- `digest.json`
-- `email.html`
-- `email.txt`
-- `summary.json`
-- `send-result.json`
-
-### Contract rules
-
-- `digest.json` is the source of truth for final content
-- rendering is deterministic from `digest.json`
-- send helpers archive machine-readable results
-- caches are versioned
-
-## How this repo should consume the newsletter repo later
-
-Long term, this repo should not vendor the newsletter workflow manually.
-
-Preferred order of maturity:
-
-1. split code into the new repo while this repo still references it via local checkout or subtree during development
-2. make the newsletter repo publishable as one or more npm packages plus OpenClaw skill assets
-3. have this repo consume a released version of the newsletter repo
-
-Practical near-term options:
-
-- git subtree while interfaces are still unstable
-- local path dependency during development
-- released npm packages once interfaces settle
-
-Recommendation:
-
-- use a local path / manual sync phase first
-- do not optimize for package publishing until the contracts are stable
-
-## Migration plan
-
-### Phase 1: boundary cleanup inside this repo
+### Phase 1: runtime clarity
 
 Goal:
 
-- make the split obvious before actually extracting files
+- make this repo clearly runtime-first and integration-generic
 
 Tasks:
 
-- separate runtime docs from digest docs more clearly
-- reduce cross-coupling between runtime scripts and digest scripts
-- keep moving digest orchestration into code-owned runner/finalizer layers
-- keep local/cloud behavior aligned
+- document the stricter boundary
+- remove repo-root newsletter implementation and compatibility copies
+- stage integrations generically
+- keep `agent-runtime` generic
 
-### Phase 2: freeze contracts
+### Phase 2: integration ownership
 
 Goal:
 
-- define what the newsletter repo will export
+- make the newsletter repo clearly own all newsletter mechanics
 
 Tasks:
 
-- document source artifact schema
-- document digest JSON schema
-- document renderer inputs/outputs
-- document send helper inputs/outputs
-- version cache format and schema format
+- keep moving workflow logic into `agent-newsletter-digest`
+- keep skill-owned commands and `TEST.sh` there
+- avoid reintroducing workflow scripts into `workspace/`
 
-### Phase 3: extract deterministic newsletter code
+### Phase 3: testing and hardening
 
 Goal:
 
-- move workflow code before prompts
+- make both repos independently reviewable and safe to publish later
 
 Tasks:
 
-- move `scripts/email/*`
-- move digest send helper
-- move renderer
-- move fixture tests and sanitized data
+- add fixtures and regression tests in `agent-newsletter-digest`
+- expand runtime validation here
+- document native-local integration later
 
-### Phase 4: extract OpenClaw adapter
+### Phase 4: open-source readiness
 
 Goal:
 
-- move framework-specific wrapper layer
+- make both repos safe and understandable for others
 
 Tasks:
 
-- move digest skills
-- move wrapper scripts under `workspace/scripts`
-- generalize names away from Pip where appropriate
+- security scrub
+- public README and contribution docs
+- support boundary and compatibility docs
+- eventual version pinning story if and when it becomes useful
 
-### Phase 5: make this repo a consumer
+## Dependency split
 
-Goal:
+### Runtime repo owns capability provisioning
 
-- this repo becomes an integrator of the newsletter repo, not its long-term home
+- OpenClaw installation and versioning
+- `gog` installation and availability
+- auth provisioning
+- Docker/cloud/native behavior
+- config and secret rendering
 
-Tasks:
+### Integration repo owns capability usage
 
-- update local/cloud images to consume released newsletter artifacts
-- keep an example Pip implementation here only if it helps demonstrate integration
+- calling `gog`
+- digest-specific extraction/render/send flow
+- skill commands and test entrypoints
 
-## File-by-file first-pass move map
+Rule of thumb:
 
-This is the first-pass extraction map, not the final package boundary.
+- runtime provisions
+- integration consumes
 
-### Move to newsletter repo
+## Transitional note on Pip
 
-- `scripts/email/extract-newsletter-from-gmail.mjs`
-- `scripts/email/render-newsletter-digest.mjs`
-- `scripts/email/finalize-newsletter-digest.sh`
-- `scripts/gmail/send-gog-digest.sh`
-- `workspace/scripts/extract-newsletter-from-gmail.sh`
-- `workspace/scripts/render-newsletter-digest.sh`
-- `workspace/scripts/finalize-newsletter-digest.sh`
-- `workspace/scripts/send-gog-digest.sh`
-- `workspace/skills/pip-newsletter-digest/SKILL.md`
-- `workspace/skills/pip-newsletter-digest-format/SKILL.md`
-- `workspace/skills/pip-gmail-send/SKILL.md`
+Pip can remain the current example workflow and compatibility surface for now.
 
-### Keep in runtime repo
+Long term:
 
-- `docker/*`
-- `config/openclaw.*`
-- `config/secrets.*.example`
-- `scripts/run-cloud.sh`
-- `scripts/rebuild-cloud.sh`
-- `scripts/restart-cloud.sh`
-- `scripts/run-local.sh`
-- `scripts/rebuild-local-docker.sh`
-- `scripts/prepare-local-docker.sh`
-- `scripts/deploy-cloud.sh`
-- `scripts/install-cloud-host.sh`
-- `scripts/tunnel-cloud-gateway.sh`
-- `scripts/show-local-agent-logs.sh`
-- `scripts/show-cloud-agent-logs.sh`
-- `scripts/render-openclaw-config.mjs`
-- `scripts/push-cloud-runtime-secret.sh`
-- `scripts/apply-cloud-cron.sh`
-- `scripts/apply-local-cron.sh`
-- `scripts/print-local-docker-access.sh`
-- `opentofu/**`
-
-### Needs review before deciding
-
-- `workspace/skills/pip-gmail-gog/SKILL.md`
-  - if it stays digest-specific, move it
-  - if it becomes a generic Gmail/OpenClaw operations skill, keep it here or extract to a more generic adapter package
-- `workspace/skills/allowed-web-research/`
-  - likely runtime/workspace policy, so probably stays
-
-## Security and privacy review
-
-Before any public extraction, scrub more than just secrets.
-
-### Remove or sanitize
-
-- personal email addresses
-- project IDs
-- VM names
-- hostnames
-- local absolute paths
-- screenshots from real inboxes
-- session transcripts with private content
-- real newsletter artifacts under `workspace/memory`
-- secret names that are too specific to the private deployment
-
-### Replace with
-
-- synthetic fixtures
-- neutral example users
-- generic project naming
-- documented env var shapes
-
-## Generalization targets for the newsletter repo
-
-The new repo should not stay forever tied to Pip.
-
-High-value generalizations:
-
-- configurable source definitions
-- configurable section order
-- configurable rendering theme
-- transport abstraction beyond `gog`
-- optional non-OpenClaw execution path
-
-What should remain opinionated:
-
-- artifact-backed workflow
-- deterministic renderer
-- schema-first handoffs
-- explicit cache invalidation/versioning
-
-## Ergonomics targets for the runtime repo
-
-This repo should evolve into a good operator experience for OpenClaw on GCP and local Docker.
-
-High-value improvements:
-
-- clearer command naming
-- lighter config-only rollout path
-- stronger smoke checks after deploy
-- native-local parity checks
-- better compatibility docs between runtime and app packages
-- less quoting-heavy cloud command execution
-
-## Dependency strategy
-
-### Runtime repo
-
-Should own:
-
-- OpenClaw version pin
-- `gog` installation and provisioning
-- Docker base image pins
-- cloud host package policy
-- infra module versions
-
-### Newsletter repo
-
-Should own:
-
-- extraction/render/send package versions
-- schema versions
-- fixture and regression coverage
-- adapter logic that knows how to use runtime-provided capabilities such as `gog`, without provisioning those capabilities itself
-
-### Compatibility story
-
-Eventually publish a simple matrix:
-
-- runtime repo version X supports newsletter repo version Y
-
-Without that, upgrades will become guesswork.
-
-## Recommended immediate next steps
-
-1. create a concrete extraction checklist from the move map above
-2. prepare the new newsletter repo skeleton and package layout
-3. move deterministic newsletter code first
-4. leave this repo as the runtime proving ground until the new repo contracts settle
-
-## Short version
-
-The split is:
-
-- this repo = OpenClaw runtime + GCP/local infra + config + operational tooling
-- new repo = newsletter ingestion/extraction/digest/render/send system
-
-That is the cleanest way to:
-
-- open-source useful parts sooner
-- keep security review manageable
-- improve ergonomics independently on each side
-- evolve the newsletter system toward broader reuse without entangling it with the GCP/OpenClaw runtime story
+- Pip should not define the public identity of the runtime repo
+- Pip should become an example integration rather than the conceptual center of the project

@@ -6,6 +6,7 @@ This file captures project-level working memory for agents operating on the repo
 
 - This repo manages a private OpenClaw lab on GCP plus a reviewed workspace for local and cloud agent workflows.
 - The main active product workflow is the Pip newsletter digest.
+- Newsletter implementation logic now lives in the sibling repo [`/Users/sean/Repos/agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest); this repo should stay runtime-first and integration-generic.
 - Treat this file as system-builder guidance, not end-user bot persona guidance.
 
 ## Builder Preferences
@@ -15,6 +16,7 @@ This file captures project-level working memory for agents operating on the repo
 - When there is a real tradeoff, surface it clearly and briefly.
 - Keep local and cloud behavior aligned where it makes sense.
 - Prefer deterministic scripts over increasingly complex prompt instructions.
+- Keep `workspace/` minimal: it is the composed runtime + integration surface, not the long-term home of workflow mechanics.
 
 ## Repo Conventions
 
@@ -44,6 +46,9 @@ This file captures project-level working memory for agents operating on the repo
 - Avoid overcomplicating the trigger prompt; extra wording has repeatedly caused worse behavior.
 - The cloud digest test path should go through [scripts/run-cloud-digest-test.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-cloud-digest-test.sh).
 - The local Docker digest test path should go through [scripts/run-local-digest-test.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-local-digest-test.sh).
+- Prefer the generic form when updating runtime tooling:
+  - `agent-runtime local test skill pip-newsletter-digest`
+  - `agent-runtime cloud test skill pip-newsletter-digest`
 - The cloud gateway tunnel should go through [scripts/tunnel-cloud-gateway.sh](/Users/sean/Repos/gcp-claw-lab/scripts/tunnel-cloud-gateway.sh).
 - The digest formatter should write direct briefing prose, not source-framed prose like `the article says`.
 - For Substack-backed items, app-friendly links are preferred when clean `open.substack.com/.../p/...` URLs are available.
@@ -75,3 +80,4 @@ This file captures project-level working memory for agents operating on the repo
 - Prefer machine-readable artifact handoffs between steps.
 - Prefer bounded synthesis over giving the model large, messy source payloads.
 - Favor changes that improve local/cloud parity and make failure modes easier to inspect.
+- Prefer generic integration staging over reintroducing workflow-specific compatibility wrappers in the runtime repo.

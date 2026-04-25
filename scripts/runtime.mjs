@@ -125,6 +125,7 @@ Grouped commands:
   test basic
   test core
   test integration
+  test skill SKILL_NAME
   cron apply
   cron list
   cron run-digest
@@ -139,7 +140,9 @@ Examples:
   agent-runtime local test basic
   agent-runtime local test core
   agent-runtime local test integration
+  agent-runtime local test skill pip-newsletter-digest
   agent-runtime cloud test digest
+  agent-runtime cloud test skill pip-newsletter-digest
   ./bin/agent-runtime local deploy
   ./bin/agent-runtime cloud deploy
   ./bin/agent-runtime local cron list
@@ -168,6 +171,22 @@ function resolveScript(envName, parts) {
   return "";
 }
 
+function runDirect(envName, parts) {
+  if (parts.length === 3 && parts[0] === "test" && parts[1] === "skill") {
+    const skillName = parts[2];
+    const script = envName === "local" ? "./scripts/run-local-skill-test.sh" : "./scripts/run-cloud-skill-test.sh";
+    const result = spawnSync("bash", [script, skillName], {
+      stdio: "inherit",
+      env: process.env,
+      shell: false,
+    });
+    if (typeof result.status === "number") {
+      process.exit(result.status);
+    }
+    process.exit(1);
+  }
+}
+
 const argv = process.argv.slice(2);
 
 if (argv.length === 0 || argv[0] === "-h" || argv[0] === "--help" || argv[0] === "help") {
@@ -187,6 +206,8 @@ if (commandParts.length === 0) {
   printHelp();
   process.exit(1);
 }
+
+runDirect(envName, commandParts);
 
 const scriptName = resolveScript(envName, commandParts);
 

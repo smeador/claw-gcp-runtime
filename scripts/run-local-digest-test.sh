@@ -3,8 +3,9 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-MESSAGE="${DIGEST_MESSAGE:-Run pip-newsletter-digest now in test mode.}"
-TIMEOUT_MS="${DIGEST_TEST_TIMEOUT_MS:-600000}"
+export SKILL_TEST_MESSAGE="${SKILL_TEST_MESSAGE:-${DIGEST_MESSAGE:-Run pip-newsletter-digest now in test mode.}}"
+if [ -n "${DIGEST_TEST_TIMEOUT_MS:-}" ] && [ -z "${SKILL_TEST_TIMEOUT_MS:-}" ]; then
+  export SKILL_TEST_TIMEOUT_MS="${DIGEST_TEST_TIMEOUT_MS}"
+fi
 
-docker compose --env-file config/docker.build.env -f docker/compose.local.yml exec openclaw-gateway \
-  bash -lc "DIGEST_MESSAGE=$(printf '%q' "${MESSAGE}") DIGEST_TEST_TIMEOUT_MS=$(printf '%q' "${TIMEOUT_MS}") bash /workspace/scripts/run-digest-test-via-cron.sh"
+bash ./scripts/run-local-skill-test.sh pip-newsletter-digest
