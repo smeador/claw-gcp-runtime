@@ -145,14 +145,19 @@ Each integration repo exposes one root manifest, for example:
   "adapter": {
     "type": "openclaw",
     "skillsRoot": "adapter/openclaw/skills",
-    "skillTestRunner": "adapter/openclaw/run-skill-test.sh"
+    "skillTestRunner": "adapter/openclaw/run-skill-test.sh",
+    "testSkill": "pip-newsletter-digest"
   },
-  "bins": {
-    "agent-newsletter-digest-extract": "bin/extract",
-    "agent-newsletter-digest-render": "bin/render",
-    "agent-newsletter-digest-finalize": "bin/finalize",
-    "agent-newsletter-digest-send": "bin/send"
-  }
+  "smokeTests": [
+    {
+      "name": "extract-help",
+      "command": ["agent-newsletter-digest-extract", "--help"]
+    },
+    {
+      "name": "render-help",
+      "command": ["agent-newsletter-digest-render", "--help"]
+    }
+  ]
 }
 ```
 
@@ -160,7 +165,8 @@ This manifest should answer only:
 
 - where are the skills?
 - how does the runtime run a generic skill test?
-- which commands should be exposed on `PATH`?
+- which skill should the runtime use for adapter smoke validation?
+- which lightweight smoke commands can the runtime execute generically?
 
 It should not encode runtime deployment details.
 

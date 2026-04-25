@@ -115,6 +115,33 @@ function loadIntegrationManifest(sourceRoot, integrationName) {
     throw new Error(`Integration ${integrationName} is missing adapter.skillsRoot.`);
   }
 
+  if ("testSkill" in adapter && (typeof adapter.testSkill !== "string" || adapter.testSkill.length === 0)) {
+    throw new Error(`Integration ${integrationName} adapter.testSkill must be a non-empty string when provided.`);
+  }
+
+  if ("smokeTests" in manifest) {
+    if (!Array.isArray(manifest.smokeTests)) {
+      throw new Error(`Integration ${integrationName} smokeTests must be an array when provided.`);
+    }
+
+    for (const [index, smokeTest] of manifest.smokeTests.entries()) {
+      if (!smokeTest || typeof smokeTest !== "object") {
+        throw new Error(`Integration ${integrationName} smokeTests[${index}] must be an object.`);
+      }
+      if (typeof smokeTest.name !== "string" || smokeTest.name.length === 0) {
+        throw new Error(`Integration ${integrationName} smokeTests[${index}] is missing a name.`);
+      }
+      if (!Array.isArray(smokeTest.command) || smokeTest.command.length === 0) {
+        throw new Error(`Integration ${integrationName} smokeTests[${index}] must declare a non-empty command array.`);
+      }
+      for (const part of smokeTest.command) {
+        if (typeof part !== "string" || part.length === 0) {
+          throw new Error(`Integration ${integrationName} smokeTests[${index}] command entries must be non-empty strings.`);
+        }
+      }
+    }
+  }
+
   return manifest;
 }
 
@@ -187,7 +214,9 @@ function main() {
         type: integrationManifest.adapter.type,
         skillsRoot: integrationManifest.adapter.skillsRoot,
         skillTestRunner: integrationManifest.adapter.skillTestRunner ?? "",
+        testSkill: integrationManifest.adapter.testSkill ?? "",
       },
+      smokeTests: integrationManifest.smokeTests ?? [],
       skills: skillDirs,
     });
   }
