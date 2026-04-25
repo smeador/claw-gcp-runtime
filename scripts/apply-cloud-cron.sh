@@ -22,6 +22,24 @@ cd "${APP_ROOT}"
 current_jobs_file="$(mktemp)"
 trap 'rm -f "${current_jobs_file}"' EXIT
 
+wait_for_gateway() {
+  local attempts="${OPENCLAW_CRON_READY_ATTEMPTS:-30}"
+  local sleep_seconds="${OPENCLAW_CRON_READY_SLEEP_SECONDS:-1}"
+
+  for ((attempt = 1; attempt <= attempts; attempt += 1)); do
+    if compose_cmd -f docker/compose.cloud.yml exec -T openclaw-gateway \
+      openclaw cron list --all --json >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep "${sleep_seconds}"
+  done
+
+  echo "Cloud gateway did not become ready for cron operations after ${attempts} attempts." >&2
+  return 1
+}
+
+wait_for_gateway
+
 compose_cmd -f docker/compose.cloud.yml exec -T openclaw-gateway \
   openclaw cron list --all --json > "${current_jobs_file}"
 

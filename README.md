@@ -235,6 +235,12 @@ Gateway addresses:
 
 Routine operations:
 
+- unified runtime facade:
+  ```bash
+  npm run rt -- local deploy
+  npm run rt -- cloud deploy
+  npm run rt -- local cron list
+  ```
 - local Docker command list:
   ```bash
   npm run local:help
@@ -256,6 +262,10 @@ Routine operations:
   npm run local:ps
   npm run local:logs
   npm run local:agent:logs
+  ```
+- run the lightweight local Docker runtime smoke test:
+  ```bash
+  npm run runtime:test:local
   ```
 - shell into the Docker-local gateway:
   ```bash
