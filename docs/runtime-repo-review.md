@@ -109,6 +109,9 @@ Current operator-facing shape:
 - `./bin/agent-runtime local deploy`
 - `./bin/agent-runtime cloud deploy`
 - `./bin/agent-runtime local cron list`
+- `./bin/agent-runtime local test basic`
+- `./bin/agent-runtime local test core`
+- `./bin/agent-runtime local test integration`
 - `./bin/agent-runtime cloud test digest`
 
 Optional local install:
@@ -118,20 +121,38 @@ Optional local install:
 
 ## Runtime test framework
 
-The runtime repo should have a lightweight local Docker smoke test that validates:
+The runtime repo should have a tiered local Docker runtime test surface.
+
+### `basic`
 
 - deploy works
 - the gateway is present in `ps`
 - logs are readable
 - cron listing works
 
-That is intentionally smaller than a full workflow or Gmail test. It validates the runtime command surface itself.
+### `core`
+
+- `basic`
+- gateway health reports `ok`
+- model status resolves
+- workspace mount expectations are correct
+- required runtime binaries are present
+
+### `integration`
+
+- `core`
+- runtime facade works
+- host runtime shims are callable
+- workspace wrapper scripts are callable inside the container
+
+These tiers stay intentionally smaller than full workflow or Gmail tests. They validate the runtime command surface and runtime setup itself.
 
 Implemented first pass:
 
-- [scripts/runtime-smoke-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-smoke-local.mjs)
-- the smoke test now passes against the local Docker setup
-- the harness supports `RUNTIME_SMOKE_SKIP_DEPLOY=1` for quicker reruns when the gateway is already up
+- [scripts/runtime-test-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-test-local.mjs)
+- [scripts/runtime-smoke-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-smoke-local.mjs) as a backwards-compatible `basic` alias
+- the harness supports `RUNTIME_TEST_SKIP_DEPLOY=1` for quicker reruns when the gateway is already up
+- legacy `RUNTIME_SMOKE_SKIP_DEPLOY=1` still works
 
 ## Framework alternatives worth considering
 
