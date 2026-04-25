@@ -66,6 +66,15 @@ const NESTED_COMMANDS = {
     },
   },
   test: {
+    basic: {
+      local: "runtime:test:local:basic",
+    },
+    core: {
+      local: "runtime:test:local:core",
+    },
+    integration: {
+      local: "runtime:test:local:integration",
+    },
     "gmail-read": {
       local: "local:test:gmail:read",
       cloud: "cloud:test:gmail:read",
@@ -113,6 +122,9 @@ Cloud-only commands:
   push-secret
 
 Grouped commands:
+  test basic
+  test core
+  test integration
   cron apply
   cron list
   cron run-digest
@@ -124,6 +136,9 @@ Examples:
   ./bin/agent-runtime local deploy
   ./bin/agent-runtime cloud deploy
   ./bin/agent-runtime local cron list
+  ./bin/agent-runtime local test basic
+  ./bin/agent-runtime local test core
+  ./bin/agent-runtime local test integration
   ./bin/agent-runtime cloud test digest
   npm run rt -- local deploy
   npm run rt -- cloud deploy

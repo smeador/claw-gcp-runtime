@@ -14,6 +14,9 @@
   "scripts": {
     "rt": "node scripts/runtime.mjs",
     "runtime:test:local": "node scripts/runtime-smoke-local.mjs",
+    "runtime:test:local:basic": "node scripts/runtime-test-local.mjs basic",
+    "runtime:test:local:core": "node scripts/runtime-test-local.mjs core",
+    "runtime:test:local:integration": "node scripts/runtime-test-local.mjs integration",
     "deps:show": "node scripts/deps/show-versions.mjs",
     "deps:check": "node scripts/deps/check-latest.mjs",
     "deps:bump": "node scripts/deps/bump-latest.mjs",

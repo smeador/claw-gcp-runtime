@@ -278,6 +278,12 @@ Routine operations:
   ```bash
   npm run runtime:test:local
   ```
+  or through the runtime CLI:
+  ```bash
+  ./bin/agent-runtime local test basic
+  ./bin/agent-runtime local test core
+  ./bin/agent-runtime local test integration
+  ```
 - shell into the Docker-local gateway:
   ```bash
   npm run local:shell
