@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
@@ -43,6 +44,14 @@ function assertIncludes(haystack, needle, label) {
 function parseJson(text, label) {
   try {
     return JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${label} did not return valid JSON: ${error.message}`);
+  }
+}
+
+function readJsonFile(filePath, label) {
+  try {
+    return JSON.parse(readFileSync(filePath, "utf8"));
   } catch (error) {
     throw new Error(`${label} did not return valid JSON: ${error.message}`);
   }
@@ -133,42 +142,67 @@ function runIntegration() {
   run(process.execPath, ["scripts/runtime.mjs", "help"], "runtime facade help");
   run(process.execPath, ["scripts/stage-workspace-integrations.mjs"], "stage workspace integrations");
 
-  const [stagedPackageCmd, stagedPackageArgs] = [
-    "bash",
-    [
-      "-lc",
+  const state = readJsonFile("./.runtime/integrations-state.json", "integration state");
+  const integrations = Array.isArray(state.integrations) ? state.integrations : [];
+  if (integrations.length === 0) {
+    throw new Error("integration state did not include any staged integrations");
+  }
+
+  for (const integration of integrations) {
+    const stagedRoot = integration.stagedRoot;
+    const firstSkill = integration.skills?.[0];
+    if (!stagedRoot || !firstSkill) {
+      throw new Error(`integration ${integration.name ?? "unknown"} did not declare a staged root and skills`);
+    }
+    const testSkill = integration.adapter?.testSkill || firstSkill;
+
+    const [stagedPackageCmd, stagedPackageArgs] = [
+      "bash",
       [
-        "test -f ./.runtime/integrations/agent-newsletter-digest/integration.json",
-        "test -f ./.runtime/integrations/agent-newsletter-digest/package.json",
-        "test -f ./.runtime/integrations/agent-newsletter-digest/scripts/email/extract-newsletter-from-gmail.mjs",
-        "test -f ./.runtime/integrations/agent-newsletter-digest/scripts/email/render-newsletter-digest.mjs",
-        "test -f ./.runtime/integrations/agent-newsletter-digest/adapter/openclaw/skills/pip-newsletter-digest/SKILL.md",
-        "echo staged-integration-present",
-      ].join(" && "),
-    ],
-  ];
-  const stagedPackageOutput = run(stagedPackageCmd, stagedPackageArgs, "staged integration package");
-  assertIncludes(stagedPackageOutput, "staged-integration-present", "staged integration package");
+        "-lc",
+        [
+          `test -f ./${stagedRoot}/integration.json`,
+          `test -f ./${stagedRoot}/package.json`,
+          `test -f ./${stagedRoot}/${integration.adapter.skillsRoot}/${firstSkill}/SKILL.md`,
+          "echo staged-integration-present",
+        ].join(" && "),
+      ],
+    ];
+    const stagedPackageOutput = run(
+      stagedPackageCmd,
+      stagedPackageArgs,
+      `staged integration package (${integration.name})`,
+    );
+    assertIncludes(
+      stagedPackageOutput,
+      "staged-integration-present",
+      `staged integration package (${integration.name})`,
+    );
 
-  const [installedExtractCmd, installedExtractArgs] = composeExec(
-    "agent-newsletter-digest-extract",
-    "--help",
-  );
-  run(installedExtractCmd, installedExtractArgs, "installed integration extract help");
+    for (const smokeTest of integration.smokeTests ?? []) {
+      const [command, ...args] = smokeTest.command;
+      run(
+        ...composeExec(command, ...args),
+        `integration smoke test (${integration.name}: ${smokeTest.name})`,
+      );
+    }
 
-  const [installedRenderCmd, installedRenderArgs] = composeExec(
-    "agent-newsletter-digest-render",
-    "--help",
-  );
-  run(installedRenderCmd, installedRenderArgs, "installed integration render help");
-
-  const [skillTestEntryCmd, skillTestEntryArgs] = composeExec(
-    "bash",
-    "-lc",
-    "test -x /workspace/skills/pip-newsletter-digest/TEST.sh && echo skill-test-present",
-  );
-  const skillTestEntryOutput = run(skillTestEntryCmd, skillTestEntryArgs, "skill test entrypoint");
-  assertIncludes(skillTestEntryOutput, "skill-test-present", "skill test entrypoint");
+    const [skillTestEntryCmd, skillTestEntryArgs] = composeExec(
+      "bash",
+      "-lc",
+      `test -x /workspace/skills/${testSkill}/TEST.sh && echo skill-test-present`,
+    );
+    const skillTestEntryOutput = run(
+      skillTestEntryCmd,
+      skillTestEntryArgs,
+      `skill test entrypoint (${integration.name})`,
+    );
+    assertIncludes(
+      skillTestEntryOutput,
+      "skill-test-present",
+      `skill test entrypoint (${integration.name})`,
+    );
+  }
 }
 
 const mode = process.argv[2] ?? "basic";
