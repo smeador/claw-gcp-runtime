@@ -60,9 +60,9 @@ Cons:
 
 Example:
 
-- `npm run rt -- local deploy`
-- `npm run rt -- cloud deploy`
-- `npm run rt -- local cron list`
+- `agent-runtime local deploy`
+- `agent-runtime cloud deploy`
+- `agent-runtime local cron list`
 
 Pros:
 
@@ -134,7 +134,7 @@ Preferred in-repo setup:
 Fallbacks:
 
 - `./bin/agent-runtime ...`
-- `npm run rt -- ...`
+- `agent-runtime ...`
 
 ## Runtime test framework
 
@@ -167,7 +167,7 @@ These tiers stay intentionally smaller than full workflow or Gmail tests. They v
 Implemented first pass:
 
 - [scripts/runtime-test-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-test-local.mjs)
-- [scripts/runtime-smoke-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-smoke-local.mjs) as a backwards-compatible `basic` alias
+- [scripts/runtime-test-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-test-local.mjs) as the implementation behind `agent-runtime local test basic|core|integration`
 - the harness supports `RUNTIME_TEST_SKIP_DEPLOY=1` for quicker reruns when the gateway is already up
 - legacy `RUNTIME_SMOKE_SKIP_DEPLOY=1` still works
 

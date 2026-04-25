@@ -353,7 +353,7 @@ Operator interface guidance:
 - Prefer the `agent-runtime` CLI as the primary in-repo operator surface
 - Use `direnv` to expose `agent-runtime` directly from the repo `bin/` directory
 - Keep the underlying shell scripts as the implementation layer behind that CLI
-- Keep `npm run rt -- ...` and direct `npm run local:*` / `npm run cloud:*` commands as compatibility and fallback entrypoints, not the primary documented UX
+- Keep `agent-runtime` as the sole runtime operator interface for local and cloud commands
 - Prefer generic runtime validation before workflow validation:
   - `agent-runtime local test basic`
   - `agent-runtime local test core`

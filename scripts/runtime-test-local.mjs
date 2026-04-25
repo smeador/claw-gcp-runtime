@@ -48,7 +48,7 @@ function parseJson(text, label) {
   }
 }
 
-const npmRun = (...parts) => ["npm", ["run", "rt", "--", ...parts]];
+const runtimeCli = (...parts) => [process.execPath, ["scripts/runtime.mjs", ...parts]];
 const composeExec = (...parts) => [
   "docker",
   [
@@ -66,21 +66,21 @@ const composeExec = (...parts) => [
 
 function runBasic(skipDeploy) {
   if (!skipDeploy) {
-    const [deployCmd, deployArgs] = npmRun("local", "deploy");
+    const [deployCmd, deployArgs] = runtimeCli("local", "deploy");
     run(deployCmd, deployArgs, "local deploy");
   } else {
     process.stdout.write("\n== local deploy\nSkipping deploy because a skip-deploy flag is set\n");
   }
 
-  const [psCmd, psArgs] = npmRun("local", "ps");
+  const [psCmd, psArgs] = runtimeCli("local", "ps");
   const psOutput = run(psCmd, psArgs, "local ps");
   assertIncludes(psOutput, "openclaw-gateway", "local ps");
 
-  const [logsCmd, logsArgs] = npmRun("local", "logs");
+  const [logsCmd, logsArgs] = runtimeCli("local", "logs");
   const logsOutput = run(logsCmd, logsArgs, "local logs");
   assertIncludes(logsOutput, "[gateway] ready", "local logs");
 
-  const [cronListCmd, cronListArgs] = npmRun("local", "cron", "list");
+  const [cronListCmd, cronListArgs] = runtimeCli("local", "cron", "list");
   const cronListOutput = run(cronListCmd, cronListArgs, "local cron list");
   assertIncludes(cronListOutput, "ID", "local cron list");
 

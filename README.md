@@ -247,57 +247,37 @@ Routine operations:
   agent-runtime local deploy
   agent-runtime cloud deploy
   agent-runtime local cron list
+  agent-runtime cloud logs-download
   agent-runtime local test basic
   agent-runtime local test core
   agent-runtime local test integration
   agent-runtime local test skill pip-newsletter-digest
-  ```
-- direct-path fallback:
-  ```bash
-  ./bin/agent-runtime local deploy
-  ```
-- npm fallback:
-  ```bash
-  npm run rt -- local deploy
-  npm run rt -- cloud deploy
-  npm run rt -- local cron list
   ```
 - local Docker command list:
   ```bash
-  npm run local:help
+  agent-runtime local help
   ```
 - prepare and start the local gateway:
   ```bash
-  npm run local:deploy
+  agent-runtime local deploy
   ```
 - restart the local gateway after secret/runtime config changes without rebuilding:
   ```bash
-  npm run local:restart
+  agent-runtime local restart
   ```
 - force a clean local image rebuild and recreate the gateway:
   ```bash
-  npm run local:rebuild
+  agent-runtime local rebuild
   ```
 - show local Docker status and logs:
   ```bash
-  npm run local:ps
-  npm run local:logs
-  npm run local:agent:logs
-  ```
-- run the local runtime validation tiers:
-  ```bash
-  agent-runtime local test basic
-  agent-runtime local test core
-  agent-runtime local test integration
-  agent-runtime local test skill pip-newsletter-digest
-  ```
-- legacy smoke alias:
-  ```bash
-  npm run runtime:test:local
+  agent-runtime local ps
+  agent-runtime local logs
+  agent-runtime local agent-logs
   ```
 - shell into the Docker-local gateway:
   ```bash
-  npm run local:shell
+  agent-runtime local shell
   ```
 - reset Docker-local state without touching native local:
   ```bash
@@ -305,26 +285,26 @@ Routine operations:
   ```
 - local cron config is repo-managed in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
   ```bash
-  npm run local:cron:apply
-  npm run local:cron:list
-  npm run local:cron:run:digest
+  agent-runtime local cron apply
+  agent-runtime local cron list
+  agent-runtime local cron run-digest
   ```
 - local Gmail and digest test commands:
   ```bash
-  npm run local:test:gmail:read
-  npm run local:test:gmail:send
-  npm run local:test:digest
+  agent-runtime local test gmail-read
+  agent-runtime local test gmail-send
+  agent-runtime local test digest
   ```
 
 Optional local overrides:
 
 - `LOCAL_CRON_FILE` to use a cron config file other than `config/cron.local.json`
-- `TAIL_LINES` for `local:logs`
-- `AGENT_NAME` for `local:agent:logs`
-- `LOG_VIEW` for `local:agent:logs` with `messages`, `replies`, `errors`, or `full`
-- `SHOW_RUNTIME_LOG=1` for `local:agent:logs` to append the raw runtime log tail
-- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `local:test:gmail:send`
-- `DIGEST_MESSAGE` for `local:test:digest`
+- `TAIL_LINES` for `agent-runtime local logs`
+- `AGENT_NAME` for `agent-runtime local agent-logs`
+- `LOG_VIEW` for `agent-runtime local agent-logs` with `messages`, `replies`, `errors`, or `full`
+- `SHOW_RUNTIME_LOG=1` for `agent-runtime local agent-logs` to append the raw runtime log tail
+- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime local test gmail-send`
+- `DIGEST_MESSAGE` for `agent-runtime local test digest`
 
 ### Digest workflow notes
 
@@ -419,38 +399,39 @@ agent-runtime cloud test digest
 agent-runtime cloud test skill pip-newsletter-digest
 ```
 
-Fallback npm commands:
+Cloud runtime commands:
 
 ```bash
-npm run cloud:help
-npm run cloud:push-secret
-npm run cloud:deploy
-npm run cloud:restart
-npm run cloud:rebuild
-npm run cloud:ps
-npm run cloud:logs
-npm run cloud:agent:logs
-npm run cloud:logs:download
-npm run cloud:shell
-npm run cloud:tunnel
-npm run cloud:cron:apply
-npm run cloud:cron:list
-npm run cloud:cron:run:digest
-npm run cloud:test:gmail:read
-npm run cloud:test:gmail:send
-npm run cloud:test:digest
+agent-runtime cloud help
+agent-runtime cloud push-secret
+agent-runtime cloud sync
+agent-runtime cloud deploy
+agent-runtime cloud restart
+agent-runtime cloud rebuild
+agent-runtime cloud ps
+agent-runtime cloud logs
+agent-runtime cloud agent-logs
+agent-runtime cloud logs-download
+agent-runtime cloud shell
+agent-runtime cloud tunnel
+agent-runtime cloud cron apply
+agent-runtime cloud cron list
+agent-runtime cloud cron run-digest
+agent-runtime cloud test gmail-read
+agent-runtime cloud test gmail-send
+agent-runtime cloud test digest
 ```
 
 Optional overrides:
 
 - `CLOUD_SECRET_FILE` to use a secret file other than `config/secrets.cloud.json`
 - `CLOUD_CRON_FILE` to use a cron config file other than `config/cron.cloud.json`
-- `TAIL_LINES` for `cloud:logs`
-- `AGENT_NAME` for `cloud:agent:logs`
-- `LOG_VIEW` for `cloud:agent:logs` with `messages`, `replies`, `errors`, or `full`
-- `SHOW_RUNTIME_LOG=1` for `cloud:agent:logs` to append the raw runtime log tail
-- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `cloud:test:gmail:send`
-- `DIGEST_MESSAGE` for `cloud:test:digest`
+- `TAIL_LINES` for `agent-runtime cloud logs`
+- `AGENT_NAME` for `agent-runtime cloud agent-logs`
+- `LOG_VIEW` for `agent-runtime cloud agent-logs` with `messages`, `replies`, `errors`, or `full`
+- `SHOW_RUNTIME_LOG=1` for `agent-runtime cloud agent-logs` to append the raw runtime log tail
+- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime cloud test gmail-send`
+- `DIGEST_MESSAGE` for `agent-runtime cloud test digest`
 
 Cloud command guidance:
 
@@ -469,7 +450,7 @@ Cloud command guidance:
 - `agent-runtime cloud cron apply`
   - reconcile repo-managed cloud cron jobs into the gateway by name
   - removes duplicate jobs with the same name and updates the surviving job to match config
-- `npm run cloud:logs:download`
+- `agent-runtime cloud logs-download`
   - downloads cloud OpenClaw session logs locally for inspection/debugging
 
 Repo-managed cloud cron config lives in [config/cron.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/cron.cloud.json).
