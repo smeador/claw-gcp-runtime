@@ -9,6 +9,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "rt": "node scripts/runtime.mjs",
+    "runtime:test:local": "node scripts/runtime-smoke-local.mjs",
     "deps:show": "node scripts/deps/show-versions.mjs",
     "deps:check": "node scripts/deps/check-latest.mjs",
     "deps:bump": "node scripts/deps/bump-latest.mjs",

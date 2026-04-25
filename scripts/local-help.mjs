@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
 const lines = [
+  "Unified runtime facade",
+  "",
+  "  npm run rt -- local COMMAND",
+  "    Run the environment-parameterized runtime facade for local Docker commands.",
+  "",
   "Dependency commands",
   "",
   "  npm run deps:show",
