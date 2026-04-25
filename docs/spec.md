@@ -4,6 +4,13 @@
 
 This project provisions a secure, isolated experimentation environment on Google Cloud Platform (GCP) for running OpenClaw (or equivalent agent runtime) using OpenTofu.
 
+In its current phase, this repository serves two related purposes:
+
+1. the general OpenClaw runtime and GCP operating model repo
+2. the active integration shell that composes that runtime with sibling workflow repos during development
+
+The newsletter workflow is being extracted into a sibling repo, but this repo still owns the runtime conventions, local/cloud lifecycle, secrets rendering, and operator tooling used to run it.
+
 Open backlog items live in [backlog.md](/Users/sean/Repos/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
 Primary goals:
@@ -337,6 +344,14 @@ Follow a local-first, cloud-parity workflow:
 - Keep local and cloud runtime inputs as similar as practical
 - Use Docker as the cloud deployment target
 - Keep the workspace and reviewed policy/configuration in the repository so local and cloud runs use the same source of truth
+- Treat sibling integrations such as `agent-newsletter-digest` as first-class development inputs, even while this repo remains the runtime source of truth
+
+Operator interface guidance:
+
+- Prefer the `agent-runtime` CLI as the primary in-repo operator surface
+- Use `direnv` to expose `agent-runtime` directly from the repo `bin/` directory
+- Keep the underlying shell scripts as the implementation layer behind that CLI
+- Keep `npm run rt -- ...` and direct `npm run local:*` / `npm run cloud:*` commands as compatibility and fallback entrypoints, not the primary documented UX
 
 Local development:
 - Prefer a local OpenClaw runtime for the fastest iteration loop
@@ -362,6 +377,14 @@ Do NOT:
 - Mount entire filesystem
 - Grant broad shell execution
 - Add unreviewed extensions initially
+
+Runtime validation guidance:
+- The runtime repo should expose lightweight local Docker validation tiers that verify the setup itself before workflow-specific tests run
+- Current local validation tiers are:
+  - `basic`: deploy, container status, logs, cron list/status
+  - `core`: `basic` plus health, model status, workspace mount expectations, required runtime binaries
+  - `integration`: `core` plus runtime facade resolution and host/container wrapper availability
+- Workflow tests such as Gmail or digest tests should be treated as a separate layer above runtime validation
 
 ## OpenClaw Runtime Configuration
 
@@ -462,6 +485,9 @@ Container operations guidance:
 - `boot-md` should be explicitly disabled in repo-managed templates unless there is a reviewed startup-automation need for it
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
 - Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
+- Operator ergonomics should prefer short stable entrypoints over increasingly complex one-off command strings
+- When local and cloud behavior can share the same verb shape, they should use it
+- Environment-specific differences should sit behind the runtime CLI or helper scripts rather than leaking into the operator prompt surface
 
 Scheduling guidance:
 - OpenClaw recurring jobs may run inside the long-lived gateway process if the gateway scheduler/cron features are enabled
@@ -480,12 +506,13 @@ Recommended workflow:
 1. Update reviewed configuration in Git.
 2. Keep the live local-native config in `~/.openclaw` aligned with the repository template for managed fields.
 3. Test the change locally against the repository workspace.
-4. Smoke test cloud-parity container behavior locally when needed.
-5. Render local or cloud runtime config from the repo template plus the appropriate secret source.
-6. For local Docker, use a Git-ignored local secret file with the same payload shape as cloud.
-7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup and render both `openclaw.json` and any required runtime env/bootstrap artifacts on the VM host.
-8. Deploy or sync configuration to the VM.
-9. Start or restart the OpenClaw service.
+4. Run local runtime validation tiers before cloud rollout when the change touches runtime behavior, image contents, mounts, or operator tooling.
+5. Smoke test cloud-parity container behavior locally when needed.
+6. Render local or cloud runtime config from the repo template plus the appropriate secret source.
+7. For local Docker, use a Git-ignored local secret file with the same payload shape as cloud.
+8. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup and render both `openclaw.json` and any required runtime env/bootstrap artifacts on the VM host.
+9. Deploy or sync configuration to the VM.
+10. Start or restart the OpenClaw service.
 
 Dependency/version workflow:
 - Repository-pinned runtime versions should live in a single checked-in manifest.
@@ -518,6 +545,8 @@ Operational guidance:
 - Local Docker should use a Git-ignored local secret file for parity testing rather than storing important credentials only in container state
 - Local Docker may use that same Git-ignored local secret file to carry `gog` service-account bootstrap material for `pip@meador.me`, but that material should render to a separate bootstrap file rather than appearing in `openclaw.json`
 - OpenClaw config secrets should be rendered to a private runtime file and mounted read-only into the container
+- During the current extraction phase, this repo may keep compatibility shims and compatibility copies for sibling workflow repos, but those should be treated as transitional runtime integration aids rather than the long-term home of workflow logic
+- The long-term goal is for this repo to own runtime capabilities such as OpenClaw, Docker/GCP lifecycle, `gog`, secrets rendering, cron reconciliation, and operator tooling, while sibling repos own workflow implementation
 - Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
