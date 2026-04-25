@@ -3,12 +3,12 @@
 ## Current structure
 
 - the newsletter implementation now lives in the sibling repo:
-  - [`/Users/sean/Repos/agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest)
-- this runtime repo stages declared integrations from [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json)
+  - [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest)
+- this runtime repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
 - staged integrations are copied into:
-  - [`.runtime/integrations`](/Users/sean/Repos/gcp-claw-lab/.runtime/integrations)
+  - [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
 - the reviewed workspace exposes the composed skill surface by copying staged skills into:
-  - [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
+  - [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
 
 This is intentionally different from the older transition model. The runtime repo no longer carries `compat/newsletter` or repo-root newsletter wrapper scripts.
 

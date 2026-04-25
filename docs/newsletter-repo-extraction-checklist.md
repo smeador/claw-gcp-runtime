@@ -3,7 +3,7 @@
 This checklist tracks the stricter split we agreed on:
 
 - this repo stays runtime-first and integration-generic
-- [`agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest) owns newsletter mechanics
+- [`agent-newsletter-digest`](/path/to/agent-newsletter-digest) owns newsletter mechanics
 - `workspace/` in this repo remains a composed surface, not an implementation home
 
 ## Guardrails
@@ -36,11 +36,11 @@ Goal:
 Tasks:
 
 - [x] add a reviewed integration manifest:
-  - [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json)
+  - [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
 - [x] stage integrations into:
-  - [`.runtime/integrations`](/Users/sean/Repos/gcp-claw-lab/.runtime/integrations)
+  - [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
 - [x] expose composed skills under:
-  - [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
+  - [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
 - [x] install integration-provided CLI entrypoints into the runtime image
 - [ ] validate the same model for native local later
 
@@ -70,7 +70,7 @@ Tasks:
 - [x] move extraction/render/send commands there
 - [x] move OpenClaw skill assets there
 - [x] move workflow-specific test logic there
-- [ ] decide the long-term home of [workspace/skills/pip-gmail-gog/SKILL.md](/Users/sean/Repos/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
+- [ ] decide the long-term home of [workspace/skills/pip-gmail-gog/SKILL.md](/path/to/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
 - [ ] keep reducing runtime-doc assumptions about newsletter-specific commands
 
 ## Phase 5: Runtime hardening

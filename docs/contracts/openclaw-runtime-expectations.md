@@ -99,9 +99,9 @@ Native local may differ in exact filesystem layout, but should still satisfy:
 For the current Pip workflow, the adapter assumes:
 
 - Gmail workflow account:
-  - `automation@example.com`
+  - `gmail-workflow@example.com`
 - default digest recipient:
-  - `user@example.com`
+  - `operator@example.com`
 
 These values are workflow configuration, not universal adapter requirements.
 

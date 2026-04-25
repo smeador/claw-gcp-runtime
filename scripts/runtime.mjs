@@ -191,25 +191,8 @@ const NESTED_COMMANDS = {
       local: () => nodeScript("scripts/runtime-test-local.mjs", ["integration"]),
     },
     "gmail-read": {
-      local: () => localCompose(["exec", "-T", "openclaw-gateway", "gog", "gmail", "search", "newer_than:1d", "--account", "automation@example.com", "--plain"]),
-      cloud: () =>
-        cloudRemote([
-          "docker-compose",
-          "--env-file",
-          "config/docker.build.env",
-          "-f",
-          "docker/compose.cloud.yml",
-          "exec",
-          "-T",
-          "openclaw-gateway",
-          "gog",
-          "gmail",
-          "search",
-          "newer_than:1d",
-          "--account",
-          "automation@example.com",
-          "--plain",
-        ]),
+      local: () => bashScript("./scripts/read-local-gmail-test.sh"),
+      cloud: () => bashScript("./scripts/read-cloud-gmail-test.sh"),
     },
     "gmail-send": {
       local: () => bashScript("./scripts/send-local-gmail-test.sh"),

@@ -166,8 +166,8 @@ These tiers stay intentionally smaller than full workflow or Gmail tests. They v
 
 Implemented first pass:
 
-- [scripts/runtime-test-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-test-local.mjs)
-- [scripts/runtime-test-local.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-test-local.mjs) as the implementation behind `agent-runtime local test basic|core|integration`
+- [scripts/runtime-test-local.mjs](/path/to/gcp-claw-lab/scripts/runtime-test-local.mjs)
+- [scripts/runtime-test-local.mjs](/path/to/gcp-claw-lab/scripts/runtime-test-local.mjs) as the implementation behind `agent-runtime local test basic|core|integration`
 - the harness supports `RUNTIME_TEST_SKIP_DEPLOY=1` for quicker reruns when the gateway is already up
 - legacy `RUNTIME_SMOKE_SKIP_DEPLOY=1` still works
 

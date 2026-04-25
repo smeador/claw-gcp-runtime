@@ -4,8 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 function usage() {
-  console.error("Usage: node scripts/render-gog-service-account-key.mjs --secrets <path> --account <email> --output <path>");
-  console.error("   or: node scripts/render-gog-service-account-key.mjs --json <json> --account <email> --output <path>");
+  console.error("Usage: node scripts/render-gog-service-account-key.mjs --secrets <path> [--account <email>] --output <path>");
+  console.error("   or: node scripts/render-gog-service-account-key.mjs --json <json> [--account <email>] --output <path>");
   process.exit(1);
 }
 
@@ -30,15 +30,26 @@ function ensureDir(filePath) {
   fs.mkdirSync(path.dirname(filePath), {recursive: true});
 }
 
+function firstServiceAccount(secrets) {
+  const accounts = secrets?.gog?.serviceAccounts;
+  if (!accounts || typeof accounts !== "object") {
+    return null;
+  }
+
+  const [account] = Object.keys(accounts);
+  return account || null;
+}
+
 const args = parseArgs(process.argv.slice(2));
-if (!args.account || !args.output || ((args.secrets ? 1 : 0) + (args.json ? 1 : 0) !== 1)) {
+if (!args.output || ((args.secrets ? 1 : 0) + (args.json ? 1 : 0) !== 1)) {
   usage();
 }
 
 const secrets = args.secrets
   ? JSON.parse(fs.readFileSync(args.secrets, "utf8"))
   : JSON.parse(args.json);
-const key = secrets?.gog?.serviceAccounts?.[args.account];
+const account = args.account || firstServiceAccount(secrets);
+const key = account ? secrets?.gog?.serviceAccounts?.[account] : null;
 
 if (!key) {
   try {
@@ -54,4 +65,4 @@ if (!key) {
 
 ensureDir(args.output);
 fs.writeFileSync(args.output, `${JSON.stringify(key, null, 2)}\n`, {mode: 0o600});
-console.log(`Rendered Gmail service-account key to ${args.output}`);
+console.log(`Rendered Gmail service-account key for ${account} to ${args.output}`);

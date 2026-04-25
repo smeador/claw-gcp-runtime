@@ -77,7 +77,7 @@ const lines = [
   "    Run a Gmail read/search test inside the cloud gateway container.",
   "",
   "  agent-runtime cloud test gmail-send",
-  "    Send a Gmail test message from automation@example.com from the cloud gateway container.",
+  "    Send a Gmail test message from the configured Gmail workflow account from the cloud gateway container.",
   "",
   "  agent-runtime cloud test skill SKILL_NAME",
   "    Run a skill-owned cloud test entrypoint through the generic runtime dispatcher.",

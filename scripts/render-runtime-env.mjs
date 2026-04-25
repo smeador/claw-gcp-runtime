@@ -47,6 +47,24 @@ function defaultApiKeyEnvVar(provider) {
   return `${String(provider || "provider").replace(/[^A-Za-z0-9]+/g, "_").toUpperCase()}_API_KEY`;
 }
 
+function resolveGogAccount(secrets) {
+  if (typeof process.env.GOG_ACCOUNT === "string" && process.env.GOG_ACCOUNT.length > 0) {
+    return process.env.GOG_ACCOUNT;
+  }
+
+  if (typeof secrets?.hooks?.gmail?.account === "string" && secrets.hooks.gmail.account.length > 0) {
+    return secrets.hooks.gmail.account;
+  }
+
+  const accounts = secrets?.gog?.serviceAccounts;
+  if (!accounts || typeof accounts !== "object") {
+    return null;
+  }
+
+  const [firstAccount] = Object.keys(accounts);
+  return firstAccount || null;
+}
+
 const args = parseArgs(process.argv.slice(2));
 if (!args.output || ((args.secrets ? 1 : 0) + (args.json ? 1 : 0) !== 1)) {
   usage();
@@ -56,8 +74,9 @@ const secrets = args.secrets ? readJson(args.secrets) : JSON.parse(args.json);
 const profiles = secrets?.auth?.profiles ?? {};
 const lines = [];
 
-if (secrets?.gog?.serviceAccounts?.["automation@example.com"]) {
-  lines.push("GOG_ACCOUNT=automation@example.com");
+const gogAccount = resolveGogAccount(secrets);
+if (gogAccount) {
+  lines.push(`GOG_ACCOUNT=${shellEscapeEnvValue(gogAccount)}`);
 }
 
 for (const profile of Object.values(profiles)) {

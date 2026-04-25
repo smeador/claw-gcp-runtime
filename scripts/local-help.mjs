@@ -67,7 +67,7 @@ const lines = [
   "    Run a Gmail read/search test inside the local gateway container.",
   "",
   "  agent-runtime local test gmail-send",
-  "    Send a Gmail test message from automation@example.com from the local gateway container.",
+  "    Send a Gmail test message from the configured Gmail workflow account from the local gateway container.",
   "",
   "  agent-runtime local test digest",
   "    Run the Pip newsletter digest from the local gateway container.",
