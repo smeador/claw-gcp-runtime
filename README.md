@@ -197,7 +197,7 @@ The runtime env renderer will emit `OPENROUTER_API_KEY` automatically when the p
 
 Docker-local notes:
 
-- `./scripts/prepare-local-docker.sh` renders:
+- `agent-runtime local prepare` renders:
   - `config/rendered/openclaw.json`
   - `config/docker.local.env`
   - `config/docker.build.env`
@@ -230,8 +230,8 @@ Initial setup:
 cd /Users/sean/Repos/gcp-claw-lab
 npm run deps:sync
 cp config/secrets.local.json.example config/secrets.local.json
-bash ./scripts/prepare-local-docker.sh
-bash ./scripts/run-local.sh
+agent-runtime local prepare
+agent-runtime local deploy
 bash ./scripts/print-local-docker-access.sh
 ```
 
@@ -555,15 +555,15 @@ bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJE
 Primary scripts:
 
 - local Docker
-  - [prepare-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/prepare-local-docker.sh)
-  - [run-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-local.sh)
+  - [runtime-lifecycle.sh](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-lifecycle.sh)
+  - [runtime-cron.sh](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-cron.sh)
   - [reset-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh)
   - [print-local-docker-access.sh](/Users/sean/Repos/gcp-claw-lab/scripts/print-local-docker-access.sh)
 - cloud
   - [push-cloud-runtime-secret.sh](/Users/sean/Repos/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh)
   - [sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
   - [deploy-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/deploy-cloud.sh)
-  - [run-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-cloud.sh)
+  - [cloud-ssh-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/cloud-ssh-app.sh)
 
 Supporting scripts:
 
