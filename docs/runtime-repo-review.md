@@ -106,6 +106,13 @@ This gives us a better UX without a disruptive rewrite.
 
 Current operator-facing shape:
 
+- `agent-runtime local deploy`
+- `agent-runtime cloud deploy`
+- `agent-runtime local cron list`
+- `agent-runtime local test basic`
+- `agent-runtime local test core`
+- `agent-runtime local test integration`
+- `agent-runtime cloud test digest`
 - `./bin/agent-runtime local deploy`
 - `./bin/agent-runtime cloud deploy`
 - `./bin/agent-runtime local cron list`
@@ -114,10 +121,16 @@ Current operator-facing shape:
 - `./bin/agent-runtime local test integration`
 - `./bin/agent-runtime cloud test digest`
 
-Optional local install:
+Preferred in-repo setup:
 
-- `npm link`
-- `agent-runtime local deploy`
+- enable `direnv`
+- use `.envrc` and `.envrc.local`
+- let `PATH_add bin` expose `agent-runtime`
+
+Fallbacks:
+
+- `./bin/agent-runtime ...`
+- `npm run rt -- ...`
 
 ## Runtime test framework
 

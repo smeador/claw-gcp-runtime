@@ -7,7 +7,7 @@
 - this runtime repo still carries a compatibility copy of the deterministic newsletter implementation under:
   - `/Users/sean/Repos/gcp-claw-lab/compat/newsletter`
 - runtime-facing entry points in `scripts/email/` and `scripts/gmail/` now resolve to:
-  1. `AGENT_EMAIL_DIGEST_ROOT`
+  1. `AGENT_NEWSLETTER_DIGEST_ROOT`
   2. sibling `agent-newsletter-digest` checkout
   3. local compatibility copy
 

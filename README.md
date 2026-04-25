@@ -118,7 +118,7 @@ Native-local host tools are still operator-managed. The repo does not auto-upgra
 
 ### Local operator environment with direnv
 
-For cloud commands, the easiest setup is `direnv`.
+For operator commands in this repo, the easiest setup is `direnv`.
 
 Install it on macOS with:
 
@@ -141,6 +141,13 @@ export GMAIL_TEST_TO=user@example.com
 EOF
 direnv allow
 ```
+
+The repo-managed `.envrc` now:
+
+- loads `.envrc.local` if present
+- adds [bin](/Users/sean/Repos/gcp-claw-lab/bin) to `PATH`
+
+So after `direnv allow`, `agent-runtime ...` works directly while you are inside this repo.
 
 `.envrc` and `.envrc.local` are Git-ignored. Use them for operator defaults such as VM/project/zone/secret name, not for runtime secret payloads. Keep runtime secrets in [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json).
 
@@ -235,18 +242,20 @@ Gateway addresses:
 
 Routine operations:
 
-- direct runtime CLI:
+- preferred runtime CLI:
+  ```bash
+  agent-runtime local deploy
+  agent-runtime cloud deploy
+  agent-runtime local cron list
+  agent-runtime local test basic
+  agent-runtime local test core
+  agent-runtime local test integration
+  ```
+- direct-path fallback:
   ```bash
   ./bin/agent-runtime local deploy
-  ./bin/agent-runtime cloud deploy
-  ./bin/agent-runtime local cron list
   ```
-- optional local install:
-  ```bash
-  npm link
-  agent-runtime local deploy
-  ```
-- unified runtime facade:
+- npm fallback:
   ```bash
   npm run rt -- local deploy
   npm run rt -- cloud deploy
@@ -274,15 +283,15 @@ Routine operations:
   npm run local:logs
   npm run local:agent:logs
   ```
-- run the lightweight local Docker runtime smoke test:
+- run the local runtime validation tiers:
+  ```bash
+  agent-runtime local test basic
+  agent-runtime local test core
+  agent-runtime local test integration
+  ```
+- legacy smoke alias:
   ```bash
   npm run runtime:test:local
-  ```
-  or through the runtime CLI:
-  ```bash
-  ./bin/agent-runtime local test basic
-  ./bin/agent-runtime local test core
-  ./bin/agent-runtime local test integration
   ```
 - shell into the Docker-local gateway:
   ```bash
@@ -387,6 +396,25 @@ export OPENCLAW_SECRET_NAME=REPLACE_ME
 Then use:
 
 ```bash
+agent-runtime cloud deploy
+agent-runtime cloud restart
+agent-runtime cloud rebuild
+agent-runtime cloud ps
+agent-runtime cloud logs
+agent-runtime cloud agent-logs
+agent-runtime cloud shell
+agent-runtime cloud tunnel
+agent-runtime cloud cron apply
+agent-runtime cloud cron list
+agent-runtime cloud cron run-digest
+agent-runtime cloud test gmail-read
+agent-runtime cloud test gmail-send
+agent-runtime cloud test digest
+```
+
+Fallback npm commands:
+
+```bash
 npm run cloud:help
 npm run cloud:push-secret
 npm run cloud:deploy
@@ -419,19 +447,19 @@ Optional overrides:
 
 Cloud command guidance:
 
-- `npm run cloud:deploy`
+- `agent-runtime cloud deploy`
   - normal safe default
   - syncs app files, installs host prerequisites, renders runtime artifacts, and rebuilds with Docker cache enabled
-- `npm run cloud:restart`
+- `agent-runtime cloud restart`
   - fastest path when only the cloud secret payload or other runtime inputs changed
   - does not rebuild the image
-- `npm run cloud:rebuild`
+- `agent-runtime cloud rebuild`
   - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
   - prunes stale Docker images after a successful rebuild to keep the VM disk from filling up with old build artifacts
-- `npm run cloud:tunnel`
+- `agent-runtime cloud tunnel`
   - opens a local tunnel to the remote gateway so you can use the browser UI at `http://127.0.0.1:18789/overview`
-- `npm run cloud:cron:apply`
+- `agent-runtime cloud cron apply`
   - reconcile repo-managed cloud cron jobs into the gateway by name
   - removes duplicate jobs with the same name and updates the surviving job to match config
 - `npm run cloud:logs:download`
@@ -441,17 +469,17 @@ Repo-managed cloud cron config lives in [config/cron.cloud.json](/Users/sean/Rep
 
 Local Docker command guidance:
 
-- `npm run local:deploy`
+- `agent-runtime local deploy`
   - normal local operator entrypoint
   - renders runtime artifacts, builds with Docker cache enabled, seeds writable state paths, starts the local gateway, and reconciles local cron config
-- `npm run local:restart`
+- `agent-runtime local restart`
   - fastest path when only local secret payloads or runtime-rendered config changed
   - does not rebuild the image
-- `npm run local:rebuild`
+- `agent-runtime local rebuild`
   - use when the local image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
   - prunes stale Docker images after a successful rebuild to keep local Docker storage from filling up with old build artifacts
-- `npm run local:cron:apply`
+- `agent-runtime local cron apply`
   - reconcile repo-managed local cron jobs into the gateway by name
   - local cron is disabled by default in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) to avoid duplicate scheduled sends
 
