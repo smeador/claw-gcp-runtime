@@ -39,7 +39,7 @@ Steady-state operations:
   1. Edit config/secrets.local.json
   2. agent-runtime local restart
 - Add or update reviewed skills:
-  edit workspace/skills/ and then rerun:
+  edit the source integration repo declared in workspace/integrations.json and then rerun:
   agent-runtime local restart
 - Add or update reviewed hooks:
   edit config/openclaw.container.example.json5 or the relevant repo-managed workspace files, then rerun:

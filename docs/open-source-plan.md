@@ -130,8 +130,9 @@ It should not know what a newsletter digest is beyond treating it as a skill nam
 The integration package should provide:
 
 - installable commands on `PATH`
-- skill directories under its own `workspace/skills`
-- any `TEST.sh` entrypoint needed for generic runtime testing
+- an adapter manifest such as `integration.json`
+- skill directories under its own adapter tree, such as `adapter/openclaw/skills`
+- any skill test runner needed for generic runtime testing
 
 ### Workspace view
 
