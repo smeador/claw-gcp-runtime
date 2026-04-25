@@ -29,14 +29,20 @@ RUN curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard --versio
 
 COPY --from=gog-builder /go/bin/gog /usr/local/bin/gog
 COPY package.json package-lock.json ${AGENT_LAB_ROOT}/
+COPY compat/newsletter ${AGENT_LAB_ROOT}/compat/newsletter
 COPY scripts/email ${AGENT_LAB_ROOT}/scripts/email
 COPY scripts/gmail ${AGENT_LAB_ROOT}/scripts/gmail
 
 RUN cd "${AGENT_LAB_ROOT}" \
   && npm ci --omit=dev --ignore-scripts \
   && chmod +x "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" \
+  && chmod +x "${AGENT_LAB_ROOT}/scripts/email/render-newsletter-digest.mjs" \
   && chmod +x "${AGENT_LAB_ROOT}/scripts/email/finalize-newsletter-digest.sh" \
   && chmod +x "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" \
+  && chmod +x "${AGENT_LAB_ROOT}/compat/newsletter/scripts/email/extract-newsletter-from-gmail.mjs" \
+  && chmod +x "${AGENT_LAB_ROOT}/compat/newsletter/scripts/email/render-newsletter-digest.mjs" \
+  && chmod +x "${AGENT_LAB_ROOT}/compat/newsletter/scripts/email/finalize-newsletter-digest.sh" \
+  && chmod +x "${AGENT_LAB_ROOT}/compat/newsletter/scripts/gmail/send-gog-digest.sh" \
   && ln -sf "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" /usr/local/bin/agent-lab-extract-newsletter-from-gmail \
   && ln -sf "${AGENT_LAB_ROOT}/scripts/email/finalize-newsletter-digest.sh" /usr/local/bin/agent-lab-finalize-newsletter-digest \
   && ln -sf "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" /usr/local/bin/agent-lab-send-gog-digest
