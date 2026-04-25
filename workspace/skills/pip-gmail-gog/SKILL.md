@@ -30,7 +30,7 @@ Use this skill for Pip's Gmail integration through OpenClaw's `gog` webhook flow
 ## Local-first setup
 
 ```bash
-bash scripts/gmail/setup-gog-local.sh pip@meador.me
+bash scripts/gmail/setup-gog-local.sh gmail-workflow@example.com
 ```
 
 Use the OpenClaw wizard defaults first. It writes `hooks.gmail` config and the Gmail preset mapping.

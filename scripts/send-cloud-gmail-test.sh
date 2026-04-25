@@ -10,6 +10,9 @@ bash ./scripts/cloud-ssh-app.sh \
   exec \
   -T \
   openclaw-gateway \
+  env \
+  TEST_TO="${GMAIL_TEST_TO:-recipient@example.com}" \
+  TEST_SUBJECT="${GMAIL_TEST_SUBJECT:-Runtime cloud Gmail send test}" \
   bash \
   -lc \
-  "printf 'Cloud Gmail send test\n' | gog gmail send --account pip@meador.me --to '${GMAIL_TEST_TO:-sean@meador.me}' --subject '${GMAIL_TEST_SUBJECT:-Pip Cloud Gmail send test}' --body-file=-"
+  'printf "Cloud Gmail send test\n" | gog gmail send --account "${GOG_ACCOUNT:?missing GOG_ACCOUNT}" --to "$TEST_TO" --subject "$TEST_SUBJECT" --body-file=-'

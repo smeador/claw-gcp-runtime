@@ -36,7 +36,6 @@ node scripts/render-runtime-env.mjs \
   --output "${RUNTIME_DIR}/runtime.env"
 node scripts/render-gog-service-account-key.mjs \
   --json "${SECRET_JSON}" \
-  --account "pip@meador.me" \
   --output "${RUNTIME_DIR}/gog-service-account.json"
 
 node scripts/render-openclaw-config.mjs \

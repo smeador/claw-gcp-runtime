@@ -62,7 +62,6 @@ runtime_prepare_local_artifacts() {
     --output config/docker.local.env
   node ./scripts/render-gog-service-account-key.mjs \
     --secrets config/secrets.local.json \
-    --account "${GOG_ACCOUNT:-pip@meador.me}" \
     --output config/rendered/gog-service-account.json
 
   bash ./scripts/render-openclaw-local.sh
