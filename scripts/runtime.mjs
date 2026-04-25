@@ -3,89 +3,221 @@
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
+const cwd = process.cwd();
+
+function envOrFail(name) {
+  const value = process.env[name];
+  if (!value) {
+    console.error(`Missing required environment variable: ${name}`);
+    process.exit(1);
+  }
+  return value;
+}
+
+function bashScript(scriptPath, args = [], extraEnv = {}) {
+  return {
+    command: "bash",
+    args: [scriptPath, ...args],
+    env: { ...process.env, ...extraEnv },
+  };
+}
+
+function nodeScript(scriptPath, args = []) {
+  return {
+    command: process.execPath,
+    args: [scriptPath, ...args],
+    env: process.env,
+  };
+}
+
+function bashLogin(command, extraEnv = {}) {
+  return {
+    command: "bash",
+    args: ["-lc", command],
+    env: { ...process.env, ...extraEnv },
+  };
+}
+
+function localCompose(args) {
+  return bashLogin(
+    `docker compose --env-file config/docker.build.env -f docker/compose.local.yml ${args.join(" ")}`,
+  );
+}
+
+function cloudRemote(args, { tty = false } = {}) {
+  return bashScript("./scripts/cloud-ssh-app.sh", tty ? ["--tty", ...args] : args);
+}
+
+function cloudDeployArgs() {
+  return [
+    envOrFail("VM_NAME"),
+    envOrFail("PROJECT_ID"),
+    envOrFail("ZONE"),
+    envOrFail("OPENCLAW_SECRET_NAME"),
+  ];
+}
+
+function cloudBaseReady() {
+  envOrFail("VM_NAME");
+  envOrFail("PROJECT_ID");
+  envOrFail("ZONE");
+}
+
 const COMMANDS = {
   help: {
-    local: "local:help",
-    cloud: "cloud:help",
+    local: () => nodeScript("scripts/local-help.mjs"),
+    cloud: () => nodeScript("scripts/cloud-help.mjs"),
   },
   prepare: {
-    local: "local:prepare",
+    local: () => bashScript("./scripts/runtime-lifecycle.sh", ["local", "prepare"]),
   },
   deploy: {
-    local: "local:deploy",
-    cloud: "cloud:deploy",
+    local: () => bashScript("./scripts/runtime-lifecycle.sh", ["local", "deploy"]),
+    cloud: () => bashScript("./scripts/deploy-cloud.sh", cloudDeployArgs()),
   },
   restart: {
-    local: "local:restart",
-    cloud: "cloud:restart",
+    local: () => bashScript("./scripts/runtime-lifecycle.sh", ["local", "restart"]),
+    cloud: () =>
+      cloudRemote([
+        "env",
+        "OPENCLAW_APP_ROOT=/opt/openclaw/app",
+        "OPENCLAW_DEPLOY_ROOT=/opt/openclaw",
+        "bash",
+        "./scripts/runtime-lifecycle.sh",
+        "cloud",
+        "restart",
+        envOrFail("OPENCLAW_SECRET_NAME"),
+      ]),
   },
   rebuild: {
-    local: "local:rebuild",
-    cloud: "cloud:rebuild",
+    local: () => bashScript("./scripts/runtime-lifecycle.sh", ["local", "rebuild"]),
+    cloud: () => {
+      cloudBaseReady();
+      envOrFail("OPENCLAW_SECRET_NAME");
+      return bashLogin(
+        `bash ./scripts/sync-cloud-app.sh ${JSON.stringify(process.env.VM_NAME)} ${JSON.stringify(process.env.PROJECT_ID)} ${JSON.stringify(process.env.ZONE)} && bash ./scripts/cloud-ssh-app.sh env OPENCLAW_APP_ROOT=/opt/openclaw/app OPENCLAW_DEPLOY_ROOT=/opt/openclaw bash ./scripts/runtime-lifecycle.sh cloud rebuild ${JSON.stringify(process.env.OPENCLAW_SECRET_NAME)}`,
+      );
+    },
   },
   ps: {
-    local: "local:ps",
-    cloud: "cloud:ps",
+    local: () => localCompose(["ps"]),
+    cloud: () => cloudRemote(["docker-compose", "--env-file", "config/docker.build.env", "-f", "docker/compose.cloud.yml", "ps"]),
   },
   logs: {
-    local: "local:logs",
-    cloud: "cloud:logs",
+    local: () => localCompose(["logs", `--tail=${process.env.TAIL_LINES || 200}`, "openclaw-gateway"]),
+    cloud: () =>
+      cloudRemote([
+        "docker-compose",
+        "--env-file",
+        "config/docker.build.env",
+        "-f",
+        "docker/compose.cloud.yml",
+        "logs",
+        `--tail=${process.env.TAIL_LINES || 200}`,
+        "openclaw-gateway",
+      ]),
   },
   "agent-logs": {
-    local: "local:agent:logs",
-    cloud: "cloud:agent:logs",
+    local: () => bashScript("./scripts/show-local-agent-logs.sh"),
+    cloud: () => bashScript("./scripts/show-cloud-agent-logs.sh", [envOrFail("VM_NAME"), envOrFail("PROJECT_ID"), envOrFail("ZONE")]),
+  },
+  "logs-download": {
+    cloud: () => bashScript("./scripts/download-cloud-session-logs.sh"),
   },
   shell: {
-    local: "local:shell",
-    cloud: "cloud:shell",
+    local: () => bashScript("./scripts/shell-local-gateway.sh"),
+    cloud: () => bashScript("./scripts/shell-cloud-gateway.sh", [envOrFail("VM_NAME"), envOrFail("PROJECT_ID"), envOrFail("ZONE")]),
   },
   tunnel: {
-    cloud: "cloud:tunnel",
+    cloud: () => bashScript("./scripts/tunnel-cloud-gateway.sh", [envOrFail("VM_NAME"), envOrFail("PROJECT_ID"), envOrFail("ZONE")]),
   },
   sync: {
-    cloud: "cloud:sync",
+    cloud: () => bashScript("./scripts/sync-cloud-app.sh", [envOrFail("VM_NAME"), envOrFail("PROJECT_ID"), envOrFail("ZONE")]),
   },
   "push-secret": {
-    cloud: "cloud:push-secret",
+    cloud: () => bashScript("./scripts/push-cloud-runtime-secret.sh", [envOrFail("OPENCLAW_SECRET_NAME"), envOrFail("PROJECT_ID"), process.env.CLOUD_SECRET_FILE || "config/secrets.cloud.json"]),
   },
 };
 
 const NESTED_COMMANDS = {
   cron: {
     apply: {
-      local: "local:cron:apply",
-      cloud: "cloud:cron:apply",
+      local: () => bashScript("./scripts/runtime-cron.sh", ["local", "apply", process.env.LOCAL_CRON_FILE || "config/cron.local.json"], { OPENCLAW_APP_ROOT: cwd }),
+      cloud: () =>
+        cloudRemote([
+          "env",
+          "OPENCLAW_APP_ROOT=/opt/openclaw/app",
+          "bash",
+          "./scripts/runtime-cron.sh",
+          "cloud",
+          "apply",
+          process.env.CLOUD_CRON_FILE || "config/cron.cloud.json",
+        ]),
     },
     list: {
-      local: "local:cron:list",
-      cloud: "cloud:cron:list",
+      local: () => bashScript("./scripts/runtime-cron.sh", ["local", "list"], { OPENCLAW_APP_ROOT: cwd }),
+      cloud: () =>
+        cloudRemote([
+          "env",
+          "OPENCLAW_APP_ROOT=/opt/openclaw/app",
+          "bash",
+          "./scripts/runtime-cron.sh",
+          "cloud",
+          "list",
+        ]),
     },
     "run-digest": {
-      local: "local:cron:run:digest",
-      cloud: "cloud:cron:run:digest",
+      local: () => bashScript("./scripts/runtime-cron.sh", ["local", "run", "pip-newsletter-digest-morning"], { OPENCLAW_APP_ROOT: cwd }),
+      cloud: () =>
+        cloudRemote([
+          "env",
+          "OPENCLAW_APP_ROOT=/opt/openclaw/app",
+          "bash",
+          "./scripts/runtime-cron.sh",
+          "cloud",
+          "run",
+          "pip-newsletter-digest-morning",
+        ]),
     },
   },
   test: {
     basic: {
-      local: "runtime:test:local:basic",
+      local: () => nodeScript("scripts/runtime-test-local.mjs", ["basic"]),
     },
     core: {
-      local: "runtime:test:local:core",
+      local: () => nodeScript("scripts/runtime-test-local.mjs", ["core"]),
     },
     integration: {
-      local: "runtime:test:local:integration",
+      local: () => nodeScript("scripts/runtime-test-local.mjs", ["integration"]),
     },
     "gmail-read": {
-      local: "local:test:gmail:read",
-      cloud: "cloud:test:gmail:read",
+      local: () => localCompose(["exec", "-T", "openclaw-gateway", "gog", "gmail", "search", "newer_than:1d", "--account", "pip@meador.me", "--plain"]),
+      cloud: () =>
+        cloudRemote([
+          "docker-compose",
+          "--env-file",
+          "config/docker.build.env",
+          "-f",
+          "docker/compose.cloud.yml",
+          "exec",
+          "-T",
+          "openclaw-gateway",
+          "gog",
+          "gmail",
+          "search",
+          "newer_than:1d",
+          "--account",
+          "pip@meador.me",
+          "--plain",
+        ]),
     },
     "gmail-send": {
-      local: "local:test:gmail:send",
-      cloud: "cloud:test:gmail:send",
+      local: () => bashScript("./scripts/send-local-gmail-test.sh"),
+      cloud: () => bashScript("./scripts/send-cloud-gmail-test.sh"),
     },
     digest: {
-      local: "local:test:digest",
-      cloud: "cloud:test:digest",
+      local: () => bashScript("./scripts/run-local-digest-test.sh"),
+      cloud: () => bashScript("./scripts/run-cloud-digest-test.sh"),
     },
   },
 };
@@ -94,10 +226,6 @@ function printHelp() {
   console.log(`Usage:
   agent-runtime ENV COMMAND
   agent-runtime ENV GROUP COMMAND
-  ./bin/agent-runtime ENV COMMAND
-  ./bin/agent-runtime ENV GROUP COMMAND
-  npm run rt -- ENV COMMAND
-  npm run rt -- ENV GROUP COMMAND
 
 Environments:
   local
@@ -110,6 +238,7 @@ Common commands:
   rebuild
   ps
   logs
+  logs-download
   agent-logs
   shell
 
@@ -143,32 +272,21 @@ Examples:
   agent-runtime local test skill pip-newsletter-digest
   agent-runtime cloud test digest
   agent-runtime cloud test skill pip-newsletter-digest
-  ./bin/agent-runtime local deploy
-  ./bin/agent-runtime cloud deploy
-  ./bin/agent-runtime local cron list
-  ./bin/agent-runtime local test basic
-  ./bin/agent-runtime local test core
-  ./bin/agent-runtime local test integration
-  ./bin/agent-runtime cloud test digest
-  npm run rt -- local deploy
-  npm run rt -- cloud deploy
-  npm run rt -- local cron list
-  npm run rt -- cloud test digest
 `);
 }
 
-function resolveScript(envName, parts) {
+function resolveSpec(envName, parts) {
   if (parts.length === 1) {
     const entry = COMMANDS[parts[0]];
-    return entry?.[envName] ?? "";
+    return entry?.[envName]?.() ?? null;
   }
 
   if (parts.length === 2) {
     const group = NESTED_COMMANDS[parts[0]];
-    return group?.[parts[1]]?.[envName] ?? "";
+    return group?.[parts[1]]?.[envName]?.() ?? null;
   }
 
-  return "";
+  return null;
 }
 
 function runDirect(envName, parts) {
@@ -209,17 +327,17 @@ if (commandParts.length === 0) {
 
 runDirect(envName, commandParts);
 
-const scriptName = resolveScript(envName, commandParts);
+const spec = resolveSpec(envName, commandParts);
 
-if (!scriptName) {
+if (!spec) {
   console.error(`Unknown command for ${envName}: ${commandParts.join(" ")}`);
   printHelp();
   process.exit(1);
 }
 
-const result = spawnSync("npm", ["run", scriptName], {
+const result = spawnSync(spec.command, spec.args, {
   stdio: "inherit",
-  env: process.env,
+  env: spec.env ?? process.env,
   shell: false,
 });
 
