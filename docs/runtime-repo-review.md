@@ -113,7 +113,7 @@ Current operator-facing shape:
 - `agent-runtime local test core`
 - `agent-runtime local test integration`
 - `agent-runtime local test skill pip-newsletter-digest`
-- `agent-runtime cloud test digest`
+- `agent-runtime cloud test skill pip-newsletter-digest`
 - `agent-runtime cloud test skill pip-newsletter-digest`
 - `./bin/agent-runtime local deploy`
 - `./bin/agent-runtime cloud deploy`
@@ -122,7 +122,7 @@ Current operator-facing shape:
 - `./bin/agent-runtime local test core`
 - `./bin/agent-runtime local test integration`
 - `./bin/agent-runtime local test skill pip-newsletter-digest`
-- `./bin/agent-runtime cloud test digest`
+- `./bin/agent-runtime cloud test skill pip-newsletter-digest`
 - `./bin/agent-runtime cloud test skill pip-newsletter-digest`
 
 Preferred in-repo setup:

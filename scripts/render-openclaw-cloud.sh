@@ -40,7 +40,7 @@ node scripts/render-gog-service-account-key.mjs \
   --output "${RUNTIME_DIR}/gog-service-account.json"
 
 node scripts/render-openclaw-config.mjs \
-  --template config/openclaw.cloud.json5.example \
+  --template config/openclaw.cloud.example.json5 \
   --output "${RUNTIME_DIR}/openclaw.json" \
   --gcp-secret-json "${SECRET_JSON}"
 

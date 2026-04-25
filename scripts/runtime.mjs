@@ -217,7 +217,6 @@ const NESTED_COMMANDS = {
     },
     digest: {
       local: () => bashScript("./scripts/run-local-digest-test.sh"),
-      cloud: () => bashScript("./scripts/run-cloud-digest-test.sh"),
     },
   },
 };
@@ -244,6 +243,7 @@ Common commands:
 
 Local-only commands:
   prepare
+  test digest
 
 Cloud-only commands:
   sync
@@ -260,7 +260,6 @@ Grouped commands:
   cron run-digest
   test gmail-read
   test gmail-send
-  test digest
 
 Examples:
   agent-runtime local deploy
@@ -270,7 +269,6 @@ Examples:
   agent-runtime local test core
   agent-runtime local test integration
   agent-runtime local test skill pip-newsletter-digest
-  agent-runtime cloud test digest
   agent-runtime cloud test skill pip-newsletter-digest
 `);
 }
