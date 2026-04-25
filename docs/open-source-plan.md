@@ -71,7 +71,7 @@ This repo should answer:
 - [scripts/install-staged-integrations.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/install-staged-integrations.mjs)
 - [scripts/run-local-skill-test.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-local-skill-test.sh)
 - [scripts/run-cloud-skill-test.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-cloud-skill-test.sh)
-- [scripts/prepare-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/prepare-local-docker.sh)
+- [scripts/runtime-lifecycle.sh](/Users/sean/Repos/gcp-claw-lab/scripts/runtime-lifecycle.sh)
 - [scripts/sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
 - [scripts/tunnel-cloud-gateway.sh](/Users/sean/Repos/gcp-claw-lab/scripts/tunnel-cloud-gateway.sh)
 - [scripts/show-local-agent-logs.sh](/Users/sean/Repos/gcp-claw-lab/scripts/show-local-agent-logs.sh)

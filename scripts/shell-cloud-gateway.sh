@@ -6,12 +6,14 @@ if [ $# -ne 3 ]; then
   exit 1
 fi
 
-VM_NAME="$1"
-PROJECT_ID="$2"
-ZONE="$3"
-
-gcloud compute ssh "${VM_NAME}" \
-  --project "${PROJECT_ID}" \
-  --zone "${ZONE}" \
-  --tunnel-through-iap \
-  -- -t "sudo bash -lc 'cd /opt/openclaw/app && docker-compose --env-file config/docker.build.env -f docker/compose.cloud.yml exec openclaw-gateway bash'"
+VM_NAME="$1" \
+PROJECT_ID="$2" \
+ZONE="$3" \
+bash "$(dirname "$0")/cloud-ssh-app.sh" \
+  --tty \
+  docker-compose \
+  --env-file config/docker.build.env \
+  -f docker/compose.cloud.yml \
+  exec \
+  openclaw-gateway \
+  bash

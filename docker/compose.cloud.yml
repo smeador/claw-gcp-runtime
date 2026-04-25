@@ -18,7 +18,6 @@ services:
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
-      - ../.runtime/integrations:/workspace/integrations:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/home:/home/node/.openclaw
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/runtime:/runtime:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/workspace:/workspace/.openclaw
@@ -51,7 +50,6 @@ services:
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
-      - ../.runtime/integrations:/workspace/integrations:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/home:/home/node/.openclaw
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/runtime:/runtime:ro
       - ${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}/state/workspace:/workspace/.openclaw
