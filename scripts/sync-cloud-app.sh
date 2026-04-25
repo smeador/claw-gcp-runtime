@@ -21,6 +21,8 @@ trap cleanup EXIT
 
 cd "$(dirname "$0")/.."
 
+node ./scripts/stage-workspace-integrations.mjs
+
 export COPYFILE_DISABLE=1
 
 EXCLUDES=(
@@ -40,7 +42,7 @@ tar \
   --no-xattrs \
   "${EXCLUDES[@]}" \
   -czf "${LOCAL_ARCHIVE}" \
-  docker config workspace scripts versions.json package.json package-lock.json
+  docker config workspace scripts .runtime versions.json package.json package-lock.json
 
 gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \

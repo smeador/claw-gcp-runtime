@@ -85,6 +85,9 @@ const lines = [
   "  npm run cloud:test:digest",
   "    Run the Pip newsletter digest from the cloud gateway container.",
   "",
+  "  agent-runtime cloud test skill SKILL_NAME",
+  "    Run a skill-owned cloud test entrypoint through the generic runtime dispatcher.",
+  "",
   "Runtime test tiers currently exist only for local Docker:",
   "  agent-runtime local test basic|core|integration",
   "",
@@ -97,7 +100,10 @@ const lines = [
   "  SHOW_RUNTIME_LOG    Set to 1 to append the raw runtime log tail to cloud:agent:logs",
   "  GMAIL_TEST_TO       Recipient for cloud:test:gmail:send",
   "  GMAIL_TEST_SUBJECT  Subject for cloud:test:gmail:send",
-  "  DIGEST_MESSAGE      Custom agent prompt for cloud:test:digest"
+  "  SKILL_TEST_MESSAGE  Generic message override for cloud:test:skill",
+  "  SKILL_TEST_TIMEOUT_MS  Generic timeout override for cloud:test:skill",
+  "  DIGEST_MESSAGE      Custom agent prompt for cloud:test:digest",
+  "  DIGEST_TEST_TIMEOUT_MS  Timeout override for cloud:test:skill pip-newsletter-digest"
 ];
 
 console.log(lines.join("\n"));

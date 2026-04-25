@@ -7,9 +7,9 @@ This project provisions a secure, isolated experimentation environment on Google
 In its current phase, this repository serves two related purposes:
 
 1. the general OpenClaw runtime and GCP operating model repo
-2. the active integration shell that composes that runtime with sibling workflow repos during development
+2. the active composition host that assembles sibling workflow integrations into a reviewed runtime workspace during development
 
-The newsletter workflow is being extracted into a sibling repo, but this repo still owns the runtime conventions, local/cloud lifecycle, secrets rendering, and operator tooling used to run it.
+The newsletter workflow now lives in the sibling repo [`/Users/sean/Repos/agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest). This repo owns the runtime conventions, local/cloud lifecycle, secrets rendering, operator tooling, and generic integration staging used to run it.
 
 Open backlog items live in [backlog.md](/Users/sean/Repos/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
@@ -247,7 +247,7 @@ OpenClaw is treated as:
 - Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
 - Digest rendering is now split from digest synthesis: the formatter returns structured `digest.json`, and a deterministic renderer generates `email.html` and `email.txt` from that JSON before send.
 - The extractor should be treated as the source of truth for message-body cleanup. `clean.md`, `links.json`, and `metadata.json` are the normal model-facing inputs; `raw.html` and `raw.txt` are for inspection/debugging only.
-- Native local, Docker-local, and cloud should all call the digest extractor and digest send helper through workspace-local wrapper scripts so the skill does not depend on environment-specific binary/script paths.
+- Native local, Docker-local, and cloud should all expose the same integration-provided commands and skill surface, but the runtime repo should not own the newsletter implementation scripts themselves.
 - Digest send success should be code-enforced instead of instruction-enforced: the helper writes final run artifacts, executes `gog gmail send`, and only reports success when a Gmail id is returned.
 - Holds durable delegated credentials
 
@@ -345,6 +345,8 @@ Follow a local-first, cloud-parity workflow:
 - Use Docker as the cloud deployment target
 - Keep the workspace and reviewed policy/configuration in the repository so local and cloud runs use the same source of truth
 - Treat sibling integrations such as `agent-newsletter-digest` as first-class development inputs, even while this repo remains the runtime source of truth
+- Stage integrations from [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json) into the runtime rather than copying workflow code back into repo-root scripts
+- Keep `workspace/` as the composed view of runtime plus integrations, not as a second implementation home for workflow logic
 
 Operator interface guidance:
 
@@ -352,6 +354,12 @@ Operator interface guidance:
 - Use `direnv` to expose `agent-runtime` directly from the repo `bin/` directory
 - Keep the underlying shell scripts as the implementation layer behind that CLI
 - Keep `npm run rt -- ...` and direct `npm run local:*` / `npm run cloud:*` commands as compatibility and fallback entrypoints, not the primary documented UX
+- Prefer generic runtime validation before workflow validation:
+  - `agent-runtime local test basic`
+  - `agent-runtime local test core`
+  - `agent-runtime local test integration`
+- Prefer generic skill dispatch for workflow checks:
+  - `agent-runtime local test skill <skill>`
 
 Local development:
 - Prefer a local OpenClaw runtime for the fastest iteration loop

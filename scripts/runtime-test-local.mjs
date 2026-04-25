@@ -131,22 +131,43 @@ function runCore() {
 
 function runIntegration() {
   run(process.execPath, ["scripts/runtime.mjs", "help"], "runtime facade help");
-  run("./scripts/email/extract-newsletter-from-gmail.mjs", ["--help"], "host extract shim help");
-  run("./scripts/email/render-newsletter-digest.mjs", ["--help"], "host render shim help");
+  run(process.execPath, ["scripts/stage-workspace-integrations.mjs"], "stage workspace integrations");
 
-  const [wrapperExtractCmd, wrapperExtractArgs] = composeExec(
+  const [stagedPackageCmd, stagedPackageArgs] = [
     "bash",
-    "/workspace/scripts/extract-newsletter-from-gmail.sh",
+    [
+      "-lc",
+      [
+        "test -f ./.runtime/integrations/agent-newsletter-digest/package.json",
+        "test -f ./.runtime/integrations/agent-newsletter-digest/scripts/email/extract-newsletter-from-gmail.mjs",
+        "test -f ./.runtime/integrations/agent-newsletter-digest/scripts/email/render-newsletter-digest.mjs",
+        "test -f ./.runtime/integrations/agent-newsletter-digest/workspace/skills/pip-newsletter-digest/SKILL.md",
+        "echo staged-integration-present",
+      ].join(" && "),
+    ],
+  ];
+  const stagedPackageOutput = run(stagedPackageCmd, stagedPackageArgs, "staged integration package");
+  assertIncludes(stagedPackageOutput, "staged-integration-present", "staged integration package");
+
+  const [installedExtractCmd, installedExtractArgs] = composeExec(
+    "agent-newsletter-digest-extract",
     "--help",
   );
-  run(wrapperExtractCmd, wrapperExtractArgs, "workspace extract wrapper help");
+  run(installedExtractCmd, installedExtractArgs, "installed integration extract help");
 
-  const [wrapperRenderCmd, wrapperRenderArgs] = composeExec(
-    "bash",
-    "/workspace/scripts/render-newsletter-digest.sh",
+  const [installedRenderCmd, installedRenderArgs] = composeExec(
+    "agent-newsletter-digest-render",
     "--help",
   );
-  run(wrapperRenderCmd, wrapperRenderArgs, "workspace render wrapper help");
+  run(installedRenderCmd, installedRenderArgs, "installed integration render help");
+
+  const [skillTestEntryCmd, skillTestEntryArgs] = composeExec(
+    "bash",
+    "-lc",
+    "test -x /workspace/skills/pip-newsletter-digest/TEST.sh && echo skill-test-present",
+  );
+  const skillTestEntryOutput = run(skillTestEntryCmd, skillTestEntryArgs, "skill test entrypoint");
+  assertIncludes(skillTestEntryOutput, "skill-test-present", "skill test entrypoint");
 }
 
 const mode = process.argv[2] ?? "basic";

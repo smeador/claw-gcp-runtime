@@ -58,13 +58,22 @@ The adapter should not assume:
 
 ### Helper availability
 
-The adapter may assume that helper entry points are available either through:
+The adapter may assume that helper entry points are available through:
 
-- installed helper commands
-- `/workspace/scripts/*` wrappers
-- repo-resolved fallback scripts
+- installed integration commands on `PATH`
+- skill-local entrypoints shipped with the integration package
 
-The adapter should prefer stable wrapper paths over inlining long command logic.
+The adapter should not assume:
+
+- repo-root runtime wrapper scripts for workflow logic
+- `compat/newsletter` fallback copies
+- that `workspace/` is the implementation home for newsletter mechanics
+
+The intended shape is:
+
+- the runtime provisions generic capabilities
+- the integration package exposes its own commands and skill test entrypoints
+- the reviewed workspace composes those skills into the active runtime
 
 ## Runtime-specific path expectations
 
@@ -105,13 +114,15 @@ The skill owns:
 - workflow invocation semantics
 - retrieval/synthesis instructions
 - how to use the available helpers
+- any skill-local `TEST.sh` entrypoint used by generic runtime testing
 
 The runtime owns:
 
 - installing capabilities
 - mounting writable paths
 - providing auth and secrets
-- exposing helper binaries/wrappers
+- staging integration packages into the composed workspace
+- exposing generic runtime commands such as `agent-runtime test skill <skill>`
 
 ## Failure model
 
