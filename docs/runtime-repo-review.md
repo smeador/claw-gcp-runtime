@@ -104,6 +104,18 @@ Recommended near-term path:
 
 This gives us a better UX without a disruptive rewrite.
 
+Current operator-facing shape:
+
+- `./bin/agent-runtime local deploy`
+- `./bin/agent-runtime cloud deploy`
+- `./bin/agent-runtime local cron list`
+- `./bin/agent-runtime cloud test digest`
+
+Optional local install:
+
+- `npm link`
+- `agent-runtime local deploy`
+
 ## Runtime test framework
 
 The runtime repo should have a lightweight local Docker smoke test that validates:
