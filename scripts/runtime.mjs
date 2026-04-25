@@ -83,6 +83,10 @@ const NESTED_COMMANDS = {
 
 function printHelp() {
   console.log(`Usage:
+  ./bin/agent-runtime ENV COMMAND
+  ./bin/agent-runtime ENV GROUP COMMAND
+  agent-runtime ENV COMMAND
+  agent-runtime ENV GROUP COMMAND
   npm run rt -- ENV COMMAND
   npm run rt -- ENV GROUP COMMAND
 
@@ -117,6 +121,10 @@ Grouped commands:
   test digest
 
 Examples:
+  ./bin/agent-runtime local deploy
+  ./bin/agent-runtime cloud deploy
+  ./bin/agent-runtime local cron list
+  ./bin/agent-runtime cloud test digest
   npm run rt -- local deploy
   npm run rt -- cloud deploy
   npm run rt -- local cron list

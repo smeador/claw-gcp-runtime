@@ -235,6 +235,17 @@ Gateway addresses:
 
 Routine operations:
 
+- direct runtime CLI:
+  ```bash
+  ./bin/agent-runtime local deploy
+  ./bin/agent-runtime cloud deploy
+  ./bin/agent-runtime local cron list
+  ```
+- optional local install:
+  ```bash
+  npm link
+  agent-runtime local deploy
+  ```
 - unified runtime facade:
   ```bash
   npm run rt -- local deploy
