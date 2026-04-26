@@ -198,9 +198,6 @@ const NESTED_COMMANDS = {
       local: () => bashScript("./scripts/send-local-gmail-test.sh"),
       cloud: () => bashScript("./scripts/send-cloud-gmail-test.sh"),
     },
-    digest: {
-      local: () => bashScript("./scripts/run-local-digest-test.sh"),
-    },
   },
 };
 
@@ -226,7 +223,6 @@ Common commands:
 
 Local-only commands:
   prepare
-  test digest
 
 Cloud-only commands:
   sync

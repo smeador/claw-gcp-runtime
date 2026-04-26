@@ -289,11 +289,11 @@ Routine operations:
   agent-runtime local cron list
   agent-runtime local cron run-digest
   ```
-- local Gmail and digest test commands:
+- local Gmail and skill test commands:
   ```bash
   agent-runtime local test gmail-read
   agent-runtime local test gmail-send
-  agent-runtime local test digest
+  agent-runtime local test skill pip-newsletter-digest
   ```
 
 Optional local overrides:
@@ -304,7 +304,7 @@ Optional local overrides:
 - `LOG_VIEW` for `agent-runtime local agent-logs` with `messages`, `replies`, `errors`, or `full`
 - `SHOW_RUNTIME_LOG=1` for `agent-runtime local agent-logs` to append the raw runtime log tail
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime local test gmail-send`
-- `DIGEST_MESSAGE` for `agent-runtime local test digest`
+- `SKILL_TEST_MESSAGE` and `SKILL_TEST_TIMEOUT_MS` for `agent-runtime local test skill ...`
 
 ### Digest workflow notes
 

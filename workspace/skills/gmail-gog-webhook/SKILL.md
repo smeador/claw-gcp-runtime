@@ -1,17 +1,17 @@
-# pip-gmail-gog
+# gmail-gog-webhook
 
-Use this skill for Pip's Gmail integration through OpenClaw's `gog` webhook flow.
+Use this skill for Gmail integration through OpenClaw's `gog` webhook flow.
 
 ## Purpose
 
 - Set up Gmail Pub/Sub ingestion using `openclaw webhooks gmail setup`
 - Run and verify Gmail watch delivery into OpenClaw hooks
 - Keep setup local-first before promoting to Docker/cloud
-- Keep webhook ingestion available as optional context/future realtime mode while daily digest reliability comes from historical pull logic in `pip-newsletter-digest`
+- Keep webhook ingestion available as optional realtime context while workflow reliability can still come from historical pull logic
 
 ## Allowed actions
 
-- Configure Gmail webhook integration for Pip's mailbox
+- Configure Gmail webhook integration for the configured workflow mailbox
 - Read logs and status for Gmail watch/webhook health
 
 ## Not allowed
@@ -24,13 +24,15 @@ Use this skill for Pip's Gmail integration through OpenClaw's `gog` webhook flow
 
 - `openclaw` CLI installed and authenticated
 - `gcloud` installed/authenticated
-- `gog` installed and authorized for Pip's mailbox
+- `gog` installed and authorized for the workflow mailbox
 - `tailscale` available if using supported Funnel setup
 
 ## Local-first setup
 
+Use the configured workflow Gmail account, or provide one explicitly:
+
 ```bash
-bash scripts/gmail/setup-gog-local.sh gmail-workflow@example.com
+bash scripts/gmail/setup-gog-local.sh "${GOG_ACCOUNT:-gmail-workflow@example.com}"
 ```
 
 Use the OpenClaw wizard defaults first. It writes `hooks.gmail` config and the Gmail preset mapping.
