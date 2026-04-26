@@ -95,7 +95,10 @@ const lines = [
   "  GMAIL_TEST_TO       Recipient for agent-runtime cloud test gmail-send",
   "  GMAIL_TEST_SUBJECT  Subject for agent-runtime cloud test gmail-send",
   "  SKILL_TEST_MESSAGE  Generic message override for agent-runtime cloud test skill",
-  "  SKILL_TEST_TIMEOUT_MS  Generic timeout override for agent-runtime cloud test skill"
+  "  SKILL_TEST_TIMEOUT_MS  Generic timeout override for agent-runtime cloud test skill",
+  "",
+  "Note:",
+  "  Use config/cron.example.json as the neutral runtime schema example; keep concrete workspace jobs under workspace/config/."
 ];
 
 console.log(lines.join("\n"));

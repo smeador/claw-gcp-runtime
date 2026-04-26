@@ -142,7 +142,7 @@ const COMMANDS = {
 const NESTED_COMMANDS = {
   cron: {
     apply: {
-      local: () => bashScript("./scripts/runtime-cron.sh", ["local", "apply", process.env.LOCAL_CRON_FILE || "config/cron.local.json"], { OPENCLAW_APP_ROOT: cwd }),
+      local: () => bashScript("./scripts/runtime-cron.sh", ["local", "apply", process.env.LOCAL_CRON_FILE || "workspace/config/cron.local.json"], { OPENCLAW_APP_ROOT: cwd }),
       cloud: () =>
         cloudRemote([
           "env",
@@ -151,7 +151,7 @@ const NESTED_COMMANDS = {
           "./scripts/runtime-cron.sh",
           "cloud",
           "apply",
-          process.env.CLOUD_CRON_FILE || "config/cron.cloud.json",
+          process.env.CLOUD_CRON_FILE || "workspace/config/cron.cloud.json",
         ]),
     },
     list: {
