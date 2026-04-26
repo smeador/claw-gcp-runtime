@@ -12,8 +12,9 @@ test -n "${ZONE:-}"
 
 SKILL_NAME="$1"
 RUNNER_PATH="$(node ./scripts/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
+CONTAINER_RUNNER_PATH="/opt/agent-lab/integrations/${RUNNER_PATH#.runtime/integrations/}"
 
-REMOTE_INNER="$(python3 - "$SKILL_NAME" "$RUNNER_PATH" "${SKILL_TEST_MESSAGE:-}" "${SKILL_TEST_TIMEOUT_MS:-}" <<'PY'
+REMOTE_INNER="$(python3 - "$SKILL_NAME" "$CONTAINER_RUNNER_PATH" "${SKILL_TEST_MESSAGE:-}" "${SKILL_TEST_TIMEOUT_MS:-}" <<'PY'
 import shlex
 import sys
 
@@ -33,7 +34,7 @@ cmd = (
     + (" ".join(exec_parts) + " " if exec_parts else "")
     + "openclaw-gateway "
     "bash -lc "
-    + shlex.quote("bash /workspace/" + runner_path + " " + skill_name)
+    + shlex.quote("bash " + runner_path + " " + skill_name)
 )
 print(cmd)
 PY

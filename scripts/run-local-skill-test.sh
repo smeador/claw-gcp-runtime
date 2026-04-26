@@ -10,6 +10,7 @@ fi
 
 cd "$(dirname "$0")/.."
 RUNNER_PATH="$(node ./scripts/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
+CONTAINER_RUNNER_PATH="/opt/agent-lab/integrations/${RUNNER_PATH#.runtime/integrations/}"
 
 compose_args=(
   --env-file config/docker.build.env
@@ -29,7 +30,7 @@ compose_args+=(
   openclaw-gateway
   bash
   -lc
-  "bash /workspace/${RUNNER_PATH} $(printf '%q' "${SKILL_NAME}")"
+  "bash ${CONTAINER_RUNNER_PATH} $(printf '%q' "${SKILL_NAME}")"
 )
 
 docker compose "${compose_args[@]}"

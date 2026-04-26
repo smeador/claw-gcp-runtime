@@ -70,7 +70,7 @@ Tasks:
 - [x] move extraction/render/send commands there
 - [x] move OpenClaw skill assets there
 - [x] move workflow-specific test logic there
-- [ ] decide the long-term home of [workspace/skills/pip-gmail-gog/SKILL.md](/path/to/gcp-claw-lab/workspace/skills/pip-gmail-gog/SKILL.md)
+- [ ] decide the long-term home of [workspace/skills/gmail-gog-webhook/SKILL.md](/Users/sean/Repos/gcp-claw-lab/workspace/skills/gmail-gog-webhook/SKILL.md)
 - [ ] keep reducing runtime-doc assumptions about newsletter-specific commands
 
 ## Phase 5: Runtime hardening

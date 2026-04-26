@@ -295,6 +295,6 @@ Do not:
 
 ## Open questions
 
-- whether `workspace/skills/pip-gmail-gog` remains runtime-owned capability guidance or moves into an integration/adaptor repo
+- whether `workspace/skills/gmail-gog-webhook` should remain runtime-owned capability guidance or eventually move into a more general runtime capability package
 - whether Pip-specific cron aliases remain in the runtime repo as the current concrete composition or move behind a more generic integration mechanism
 - whether the integration manifest should later grow optional metadata for fixtures, health checks, or docs links

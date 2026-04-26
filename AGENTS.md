@@ -44,7 +44,7 @@ This file captures project-level working memory for agents operating on the repo
   - `Run pip-newsletter-digest now.`
   - `Run pip-newsletter-digest now in test mode.`
 - Avoid overcomplicating the trigger prompt; extra wording has repeatedly caused worse behavior.
-- The local Docker digest test path should go through [scripts/run-local-digest-test.sh](/path/to/gcp-claw-lab/scripts/run-local-digest-test.sh).
+- The local Docker digest test path should go through `agent-runtime local test skill pip-newsletter-digest`.
 - Prefer the generic form when updating runtime tooling:
   - `agent-runtime local test skill pip-newsletter-digest`
   - `agent-runtime cloud test skill pip-newsletter-digest`
