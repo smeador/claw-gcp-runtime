@@ -283,7 +283,7 @@ Routine operations:
   ```bash
   bash /path/to/gcp-claw-lab/scripts/reset-local-docker.sh
   ```
-- local cron config is repo-managed in [config/cron.local.json](/path/to/gcp-claw-lab/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
+- local cron config is composed from [workspace/config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
   ```bash
   agent-runtime local cron apply
   agent-runtime local cron list
@@ -298,7 +298,7 @@ Routine operations:
 
 Optional local overrides:
 
-- `LOCAL_CRON_FILE` to use a cron config file other than `config/cron.local.json`
+- `LOCAL_CRON_FILE` to use a cron config file other than `workspace/config/cron.local.json`
 - `TAIL_LINES` for `agent-runtime local logs`
 - `AGENT_NAME` for `agent-runtime local agent-logs`
 - `LOG_VIEW` for `agent-runtime local agent-logs` with `messages`, `replies`, `errors`, or `full`
@@ -352,6 +352,10 @@ Integration note:
 - this repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json) into a composed runtime view under `.runtime/integrations`
 - the reviewed workspace then exposes only the composed skill surface under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
 - runtime-specific code should stay generic; workflow-specific commands should come from the integration package itself
+- cron follows the same split:
+  - [config/cron.example.json](/Users/sean/Repos/gcp-claw-lab/config/cron.example.json) documents the neutral runtime schema
+  - real cron jobs for the current workspace live under [workspace/config](/Users/sean/Repos/gcp-claw-lab/workspace/config)
+  - the runtime reconciles those files into OpenClaw cron state after the gateway starts; they are not rendered into `openclaw.json`
 
 ### Cloud
 
@@ -423,7 +427,7 @@ agent-runtime cloud test gmail-send
 Optional overrides:
 
 - `CLOUD_SECRET_FILE` to use a secret file other than `config/secrets.cloud.json`
-- `CLOUD_CRON_FILE` to use a cron config file other than `config/cron.cloud.json`
+- `CLOUD_CRON_FILE` to use a cron config file other than `workspace/config/cron.cloud.json`
 - `TAIL_LINES` for `agent-runtime cloud logs`
 - `AGENT_NAME` for `agent-runtime cloud agent-logs`
 - `LOG_VIEW` for `agent-runtime cloud agent-logs` with `messages`, `replies`, `errors`, or `full`
@@ -445,12 +449,12 @@ Cloud command guidance:
 - `agent-runtime cloud tunnel`
   - opens a local tunnel to the remote gateway so you can use the browser UI at `http://127.0.0.1:18789/overview`
 - `agent-runtime cloud cron apply`
-  - reconcile repo-managed cloud cron jobs into the gateway by name
+  - reconcile workspace-composed cloud cron jobs into the gateway by name
   - removes duplicate jobs with the same name and updates the surviving job to match config
 - `agent-runtime cloud logs-download`
   - downloads cloud OpenClaw session logs locally for inspection/debugging
 
-Repo-managed cloud cron config lives in [config/cron.cloud.json](/path/to/gcp-claw-lab/config/cron.cloud.json).
+The neutral cron schema example lives in [config/cron.example.json](/Users/sean/Repos/gcp-claw-lab/config/cron.example.json). The concrete cloud composition file lives in [workspace/config/cron.cloud.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.cloud.json).
 
 Local Docker command guidance:
 
@@ -465,8 +469,8 @@ Local Docker command guidance:
   - forces a clean `--no-cache` image rebuild before recreating the gateway
   - prunes stale Docker images after a successful rebuild to keep local Docker storage from filling up with old build artifacts
 - `agent-runtime local cron apply`
-  - reconcile repo-managed local cron jobs into the gateway by name
-  - local cron is disabled by default in [config/cron.local.json](/path/to/gcp-claw-lab/config/cron.local.json) to avoid duplicate scheduled sends
+  - reconcile workspace-composed local cron jobs into the gateway by name
+  - local cron is disabled by default in [workspace/config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.local.json) to avoid duplicate scheduled sends
 
 Cloud secret setup:
 

@@ -26,14 +26,14 @@ runtime_init_env() {
       RUNTIME_APP_ROOT="${OPENCLAW_APP_ROOT:-${RUNTIME_REPO_ROOT}}"
       RUNTIME_DEPLOY_ROOT=""
       RUNTIME_COMPOSE_FILE="docker/compose.local.yml"
-      RUNTIME_DEFAULT_CRON_FILE="config/cron.local.json"
+      RUNTIME_DEFAULT_CRON_FILE="workspace/config/cron.local.json"
       RUNTIME_LABEL="Local"
       ;;
     cloud)
       RUNTIME_APP_ROOT="${OPENCLAW_APP_ROOT:-/opt/openclaw/app}"
       RUNTIME_DEPLOY_ROOT="${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}"
       RUNTIME_COMPOSE_FILE="docker/compose.cloud.yml"
-      RUNTIME_DEFAULT_CRON_FILE="config/cron.cloud.json"
+      RUNTIME_DEFAULT_CRON_FILE="workspace/config/cron.cloud.json"
       RUNTIME_LABEL="Cloud"
       ;;
     *)

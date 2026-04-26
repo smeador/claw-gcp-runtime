@@ -99,7 +99,8 @@ const lines = [
   "  RUNTIME_TEST_SKIP_DEPLOY  Set to 1 to skip the deploy step in local runtime tests",
   "",
   "Note:",
-  "  Local cron is disabled by default in config/cron.local.json to avoid duplicate scheduled sends when cloud cron is active."
+  "  Local cron is disabled by default in workspace/config/cron.local.json to avoid duplicate scheduled sends when cloud cron is active.",
+  "  Use config/cron.example.json as the neutral runtime schema example; keep concrete workspace jobs under workspace/config/."
 ];
 
 console.log(lines.join("\n"));

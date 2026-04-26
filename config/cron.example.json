@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "name": "example-daily-job",
+      "description": "Example daily cron job for a composed workspace skill.",
+      "agent": "main",
+      "cron": "0 9 * * *",
+      "tz": "America/Chicago",
+      "exact": true,
+      "session": "isolated",
+      "message": "Run example-skill now.",
+      "deliver": false,
+      "disabled": true
+    }
+  ]
+}
