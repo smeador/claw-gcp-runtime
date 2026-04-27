@@ -36,6 +36,7 @@ EXCLUDES=(
   --exclude='__pycache__'
   --exclude='*.pyc'
   --exclude='.DS_Store'
+  --exclude='._*'
 )
 
 tar \
