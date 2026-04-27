@@ -180,12 +180,14 @@ Current auth model:
 - Docker-local
   - provider API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.local.json`
   - OpenRouter is the recommended API-key provider for this repo
-  - Gmail service account: store JSON object under `gog.serviceAccounts["gmail-workflow@example.com"]` in `config/secrets.local.json`
+  - Gmail service account: store JSON object under `gog.serviceAccounts["your-workflow-account@example.com"]` in `config/secrets.local.json`
+  - set the configured workflow account under `gog.account`; the examples use `gmail-workflow@example.com` only as a neutral placeholder
 - cloud
   - config secrets come from Secret Manager via `config/secrets.cloud.json` shape
   - provider API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.cloud.json`
   - OpenRouter is the recommended API-key provider for this repo
-  - Gmail service account: store JSON object under `gog.serviceAccounts["gmail-workflow@example.com"]` in `config/secrets.cloud.json`
+  - Gmail service account: store JSON object under `gog.serviceAccounts["your-workflow-account@example.com"]` in `config/secrets.cloud.json`
+  - set the configured workflow account under `gog.account`; the examples use `gmail-workflow@example.com` only as a neutral placeholder
 
 Recommended default model/profile:
 
@@ -351,6 +353,8 @@ Integration note:
 - the newsletter logic now lives in the sibling repo at [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest)
 - this repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json) into a composed runtime view under `.runtime/integrations`
 - the reviewed workspace then exposes only the composed skill surface under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+- cloud deploys package the sibling integration from the local checkout at deploy time; the VM does not fetch the integration repo from GitHub during deploy
+- the Docker image installs the staged integration package and exposes its declared bins on `PATH`
 - runtime-specific code should stay generic; workflow-specific commands should come from the integration package itself
 - cron follows the same split:
   - [config/cron.example.json](/Users/sean/Repos/gcp-claw-lab/config/cron.example.json) documents the neutral runtime schema
@@ -371,6 +375,8 @@ bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
 ```
 
 `deploy-cloud.sh` is the normal operator entrypoint. It syncs the app, installs cloud host prerequisites, renders runtime artifacts on the VM, and starts the cloud gateway container.
+
+`agent-runtime cloud deploy` stages sibling integrations from the local filesystem before sync, so the cloud image always contains a concrete snapshot of the checked-out integration code used for that deploy.
 
 Convenience commands:
 
@@ -484,7 +490,8 @@ Cloud secret setup:
 2. Fill in the fields you need for the first cloud run:
    - `gateway.auth.token`
    - `auth.profiles.openrouter:default.apiKey`
-   - `gog.serviceAccounts["gmail-workflow@example.com"]`
+   - `gog.serviceAccounts["your-workflow-account@example.com"]`
+   - `gog.account`
    - keep `hooks.enabled` set to `false` unless you are explicitly setting up cloud Gmail hooks
 
 3. Push the secret payload to Secret Manager:
@@ -502,20 +509,27 @@ Cloud secret setup:
    bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
    ```
 
-5. Verify the rendered cloud runtime from inside the gateway container:
+5. Verify cloud Gmail read/send through the runtime CLI:
+
+   ```bash
+   agent-runtime cloud test gmail-read
+   agent-runtime cloud test gmail-send
+   ```
+
+   If you need to inspect the gateway manually:
 
    ```bash
    bash /path/to/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
    ```
 
-   Then test Gmail read/send:
+   Then use the configured runtime account:
 
    ```bash
-   gog gmail search "newer_than:1d" --account gmail-workflow@example.com --plain
+   gog gmail search "newer_than:1d" --account "$GOG_ACCOUNT" --plain
    ```
 
    ```bash
-   printf 'Cloud Gmail send test\n' | gog gmail send --account gmail-workflow@example.com --to operator@example.com --subject "Pip Cloud Gmail send test" --body-file=-
+   printf 'Cloud Gmail send test\n' | gog gmail send --account "$GOG_ACCOUNT" --to "${GMAIL_TEST_TO:-operator@example.com}" --subject "${GMAIL_TEST_SUBJECT:-Pip Cloud Gmail send test}" --body-file=-
    ```
 
 Cloud runtime artifacts rendered on the VM:
@@ -552,8 +566,6 @@ Supporting scripts:
 - Gmail service-account bootstrap
   - [bootstrap-gog-docker-local.sh](/path/to/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh)
   - [bootstrap-gog-cloud-service-account.sh](/path/to/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
-- Gmail send helper
-  - [send-gog-local.sh](/path/to/gcp-claw-lab/scripts/gmail/send-gog-local.sh)
 - legacy/manual model auth helper
   - [bootstrap-openai-cloud.sh](/path/to/gcp-claw-lab/scripts/models/bootstrap-openai-cloud.sh)
 - local shutdown
@@ -561,13 +573,22 @@ Supporting scripts:
 
 ### Gmail testing
 
+Prefer the runtime CLI:
+
+```bash
+agent-runtime local test gmail-read
+agent-runtime local test gmail-send
+agent-runtime cloud test gmail-read
+agent-runtime cloud test gmail-send
+```
+
 Host test:
 
 ```bash
 printf 'Pip Gmail send test\n' | gog gmail send \
-  --account gmail-workflow@example.com \
-  --to operator@example.com \
-  --subject "Pip Gmail send test" \
+  --account "${GOG_ACCOUNT:-your-workflow-account@example.com}" \
+  --to "${GMAIL_TEST_TO:-operator@example.com}" \
+  --subject "${GMAIL_TEST_SUBJECT:-Pip Gmail send test}" \
   --body-file=-
 ```
 
@@ -575,12 +596,12 @@ Docker-local test:
 
 ```bash
 docker compose --env-file /path/to/gcp-claw-lab/config/docker.build.env -f /path/to/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
-  bash -lc 'printf "Docker gateway Gmail send test\n" | gog gmail send --account gmail-workflow@example.com --to operator@example.com --subject "Pip Docker Gmail send test" --body-file=-'
+  bash -lc 'printf "Docker gateway Gmail send test\n" | gog gmail send --account "$GOG_ACCOUNT" --to "${GMAIL_TEST_TO:-operator@example.com}" --subject "${GMAIL_TEST_SUBJECT:-Pip Docker Gmail send test}" --body-file=-'
 ```
 
 Docker-local read test:
 
 ```bash
 docker compose --env-file /path/to/gcp-claw-lab/config/docker.build.env -f /path/to/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
-  gog gmail search "newer_than:1d" --account gmail-workflow@example.com --plain
+  bash -lc 'gog gmail search "newer_than:1d" --account "$GOG_ACCOUNT" --plain'
 ```
