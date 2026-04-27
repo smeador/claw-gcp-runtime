@@ -78,7 +78,7 @@ function copyIntegration(sourceRoot, destRoot) {
     preserveTimestamps: true,
     filter: (source) => {
       const base = source.split("/").pop() ?? "";
-      if (base === ".git" || base === "node_modules" || base === ".DS_Store") {
+      if (base === ".git" || base === "node_modules" || base === ".DS_Store" || base.startsWith("._")) {
         return false;
       }
       return true;

@@ -28,7 +28,7 @@ quote_args() {
   printf "%s" "${quoted[*]}"
 }
 
-REMOTE_CMD="cd ${REMOTE_APP_ROOT@Q} && $(quote_args "$@")"
+REMOTE_CMD="cd $(printf "%q" "${REMOTE_APP_ROOT}") && $(quote_args "$@")"
 
 SSH_ARGS=(
   compute ssh "${VM_NAME}"
