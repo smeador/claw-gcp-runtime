@@ -295,6 +295,6 @@ Do not:
 
 ## Open questions
 
-- whether `workspace/skills/gmail-gog-webhook` should remain runtime-owned capability guidance or eventually move into a more general runtime capability package
+- whether we later want a more explicit operator flow for bringing local-only OpenClaw skills into generated `workspace/skills` without checking them into git
 - whether Pip-specific cron aliases remain in the runtime repo as the current concrete composition or move behind a more generic integration mechanism
 - whether the integration manifest should later grow optional metadata for fixtures, health checks, or docs links

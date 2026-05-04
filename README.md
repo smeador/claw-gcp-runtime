@@ -52,7 +52,7 @@ This repo has three operating modes:
 
 - [OpenClaw Agent Guide](/path/to/gcp-claw-lab/docs/openclaw-agent-guide.md): general lessons and best practices for building reliable agent workflows in OpenClaw
 - [Project Spec](/path/to/gcp-claw-lab/docs/spec.md): current architecture, operating model, and constraints for this lab
-- [Skill Integration Options](/path/to/gcp-claw-lab/docs/skill-integration-options.md): when to use native OpenClaw skills, repo-managed workspace skills, plugin-shipped skills, or sibling integration repos
+- [Skill Integration Options](/path/to/gcp-claw-lab/docs/skill-integration-options.md): when to use native OpenClaw skills, generated workspace skills, plugin-shipped skills, or sibling integration repos
 - [Backlog](/path/to/gcp-claw-lab/docs/backlog.md): prioritized open work and follow-up improvements
 
 ### Dependency management

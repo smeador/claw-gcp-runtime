@@ -9,7 +9,7 @@ The goal is to keep standard OpenClaw skills easy to use while still giving us a
 Use the lightest option that matches the skill's complexity.
 
 1. Built-in or already-packaged OpenClaw skill: use it directly through OpenClaw config.
-2. Small custom or third-party skill with little or no code: add a normal skill folder under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills).
+2. Small reviewed third-party or local-only skill: install or copy it into the runtime workspace as generated state, not as committed repo content.
 3. Plugin-shipped skill: enable the plugin if the tool and the skill really belong together.
 4. Complex workflow with real code, tests, or multiple commands: use a sibling integration repo and stage it through [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json).
 
@@ -51,41 +51,38 @@ Recommended usage in this repo:
 - prefer this path first for standard OpenClaw skills
 - only add repo-managed packaging if the native skill shape becomes awkward to run across Docker-local and cloud
 
-## Option 2: Repo-managed workspace skill
+## Option 2: Generated workspace skill
 
-This is the standard OpenClaw skill model, but committed directly in this repo under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills).
+This is still the standard OpenClaw skill model, but in this repo the `workspace/skills` directory is treated as generated runtime state rather than authored source.
 
 How it works:
 
-- create a skill directory:
-  - `workspace/skills/<skill-name>/SKILL.md`
-- optionally add support files in the same folder:
-  - `TEST.sh`
-  - reference docs
-  - tiny helper files
+- install a skill through OpenClaw or copy a reviewed skill folder into `workspace/skills`
+- keep it out of git
+- let local Docker or cloud runtime consume it as part of the reviewed workspace surface
 
 Good fit:
 
-- repo-local skills
-- simple custom workflows
-- reviewed third-party skills we want to keep in the runtime repo directly
-- capability skills that are runtime-specific, such as [workspace/skills/gmail-gog-webhook](/Users/sean/Repos/gcp-claw-lab/workspace/skills/gmail-gog-webhook)
+- simple custom workflows you are trying locally
+- reviewed third-party skills that do not justify a dedicated repo
+- temporary operator-local skill experiments
 
 Pros:
 
 - very little machinery
-- fully visible in the reviewed workspace
+- fully visible in the reviewed workspace at runtime
 - works naturally with OpenClaw's native skill loader
 
 Cons:
 
-- logic can drift into the runtime repo if the skill grows
+- not reproducible unless you manage the skill source outside this repo
+- easy to accumulate local-only drift if the skill matters long-term
 - not ideal for large reusable workflows with real implementation code
 
 Rule of thumb:
 
-- if the skill is mostly `SKILL.md` plus a small `TEST.sh`, this is usually enough
-- if it starts needing real implementation commands, a dedicated repo is usually cleaner
+- if the skill is mostly `SKILL.md` and you just want it available locally, this is usually enough
+- if it matters to the team or starts needing real implementation commands, move it into a dedicated integration repo
 
 ## Option 3: Plugin-shipped skill
 
@@ -163,11 +160,11 @@ Rule of thumb:
 - it is mostly instructions
 - the runtime already provides the binaries/env it needs
 
-### Use a committed workspace skill when:
+### Use a generated workspace skill when:
 
 - the skill is simple
-- it is specific to this runtime repo
-- we want minimal overhead and clear reviewability
+- it is local-only or operator-specific
+- we want minimal overhead without making it repo source
 
 ### Use a plugin-shipped skill when:
 
@@ -201,7 +198,7 @@ But OpenClaw does not by itself give us the full cross-environment packaging sto
 When adding a new skill here:
 
 1. try the native OpenClaw path first
-2. commit it directly under [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills) if it is small and repo-specific
-3. only graduate it to a sibling integration repo once it needs real implementation code or independent lifecycle/testing
+2. keep `workspace/skills` as generated state, not committed source
+3. use a sibling integration repo once the skill needs real implementation code or independent lifecycle/testing
 
 That keeps standard OpenClaw skills easy to use without forcing everything through the heavier integration mechanism.

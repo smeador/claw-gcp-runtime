@@ -88,7 +88,7 @@ Tasks:
 - [x] move extraction/render/send commands there
 - [x] move OpenClaw skill assets there
 - [x] move workflow-specific test logic there
-- [x] decide the long-term home of [workspace/skills/gmail-gog-webhook/SKILL.md](/Users/sean/Repos/gcp-claw-lab/workspace/skills/gmail-gog-webhook/SKILL.md)
+- [x] decide that runtime-owned skills should not stay committed in this repo; `workspace/skills` is now generated runtime state
 - [x] keep reducing runtime-doc assumptions about newsletter-specific commands
 
 ## Phase 5: Runtime hardening
