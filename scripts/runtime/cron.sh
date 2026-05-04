@@ -7,7 +7,7 @@ if [ $# -lt 2 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "${SCRIPT_DIR}/lib/runtime-common.sh"
+source "${SCRIPT_DIR}/../lib/runtime-common.sh"
 
 ENV_NAME="$1"
 ACTION="$2"

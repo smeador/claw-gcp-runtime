@@ -8,8 +8,8 @@ if [ -z "${SKILL_NAME}" ]; then
   exit 1
 fi
 
-cd "$(dirname "$0")/.."
-RUNNER_PATH="$(node ./scripts/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
+cd "$(dirname "$0")/../.."
+RUNNER_PATH="$(node ./scripts/runtime/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
 CONTAINER_RUNNER_PATH="/opt/agent-lab/integrations/${RUNNER_PATH#.runtime/integrations/}"
 
 compose_args=(

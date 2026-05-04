@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
 QUIT_TAILSCALE_APP=1

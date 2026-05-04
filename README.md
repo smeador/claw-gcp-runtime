@@ -213,7 +213,7 @@ Cloud notes:
   - `${OPENCLAW_DEPLOY_ROOT}/state/runtime/openclaw.json`
   - `${OPENCLAW_DEPLOY_ROOT}/state/runtime/runtime.env`
   - `${OPENCLAW_DEPLOY_ROOT}/state/runtime/gog-service-account.json` when Gmail service-account data is present
-- the cloud host needs `node`, `npm`, Docker, `curl`, and `jq`; `deploy-cloud.sh` installs those through `scripts/install-cloud-host.sh`
+- the cloud host needs `node`, `npm`, Docker, `curl`, and `jq`; the cloud runtime action flow installs those through [scripts/cloud/install-host.sh](/path/to/gcp-claw-lab/scripts/cloud/install-host.sh)
 
 ### Native local
 
@@ -235,7 +235,7 @@ npm run deps:sync
 cp config/secrets.local.example.json config/secrets.local.json
 agent-runtime local prepare
 agent-runtime local deploy
-bash ./scripts/print-local-docker-access.sh
+bash ./scripts/maintenance/print-local-docker-access.sh
 ```
 
 Gateway addresses:
@@ -284,7 +284,7 @@ Routine operations:
   ```
 - reset Docker-local state without touching native local:
   ```bash
-  bash /path/to/gcp-claw-lab/scripts/reset-local-docker.sh
+  bash /path/to/gcp-claw-lab/scripts/maintenance/reset-local-docker.sh
   ```
 - local cron config is composed from [workspace/config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
   ```bash
@@ -370,12 +370,12 @@ Cloud container flow:
 cd /path/to/gcp-claw-lab
 npm run deps:sync
 cp config/secrets.cloud.example.json config/secrets.cloud.json
-bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
-bash ./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
-bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
+bash ./scripts/cloud/push-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
+bash ./scripts/cloud/sync-app.sh VM_NAME PROJECT_ID ZONE
+bash ./scripts/cloud/runtime-action.sh deploy VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
 ```
 
-`deploy-cloud.sh` is the normal operator entrypoint. It syncs the app, installs cloud host prerequisites, renders runtime artifacts on the VM, and starts the cloud gateway container.
+`agent-runtime cloud deploy` and [scripts/cloud/runtime-action.sh](/path/to/gcp-claw-lab/scripts/cloud/runtime-action.sh) are the normal operator entrypoints. They sync the app, install cloud host prerequisites, render runtime artifacts on the VM, and start the cloud gateway container.
 
 `agent-runtime cloud deploy` stages sibling integrations from the local filesystem before sync, so the cloud image always contains a concrete snapshot of the checked-out integration code used for that deploy.
 
@@ -499,7 +499,7 @@ Cloud secret setup:
 
    ```bash
    cd /path/to/gcp-claw-lab
-   bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID config/secrets.cloud.json
+   bash ./scripts/cloud/push-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID config/secrets.cloud.json
    ```
 
 4. Deploy the cloud runtime:
@@ -507,7 +507,7 @@ Cloud secret setup:
    ```bash
    cd /path/to/gcp-claw-lab
    npm run deps:sync
-   bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
+   bash ./scripts/cloud/runtime-action.sh deploy VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
    ```
 
 5. Verify cloud Gmail read/send through the runtime CLI:
@@ -520,7 +520,7 @@ Cloud secret setup:
    If you need to inspect the gateway manually:
 
    ```bash
-   bash /path/to/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+   agent-runtime cloud shell
    ```
 
    Then use the configured runtime account:
@@ -544,7 +544,7 @@ For normal cloud operation, you should not need to run the manual Gmail bootstra
 Shell into the cloud gateway:
 
 ```bash
-bash /path/to/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+agent-runtime cloud shell
 ```
 
 ### Setup scripts
@@ -552,15 +552,15 @@ bash /path/to/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZON
 Primary scripts:
 
 - local Docker
-  - [runtime-lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime-lifecycle.sh)
-  - [runtime-cron.sh](/path/to/gcp-claw-lab/scripts/runtime-cron.sh)
-  - [reset-local-docker.sh](/path/to/gcp-claw-lab/scripts/reset-local-docker.sh)
-  - [print-local-docker-access.sh](/path/to/gcp-claw-lab/scripts/print-local-docker-access.sh)
+  - [lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime/lifecycle.sh)
+  - [cron.sh](/path/to/gcp-claw-lab/scripts/runtime/cron.sh)
+  - [reset-local-docker.sh](/path/to/gcp-claw-lab/scripts/maintenance/reset-local-docker.sh)
+  - [print-local-docker-access.sh](/path/to/gcp-claw-lab/scripts/maintenance/print-local-docker-access.sh)
 - cloud
-  - [push-cloud-runtime-secret.sh](/path/to/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh)
-  - [sync-cloud-app.sh](/path/to/gcp-claw-lab/scripts/sync-cloud-app.sh)
-  - [deploy-cloud.sh](/path/to/gcp-claw-lab/scripts/deploy-cloud.sh)
-  - [cloud-ssh-app.sh](/path/to/gcp-claw-lab/scripts/cloud-ssh-app.sh)
+  - [push-runtime-secret.sh](/path/to/gcp-claw-lab/scripts/cloud/push-runtime-secret.sh)
+  - [sync-app.sh](/path/to/gcp-claw-lab/scripts/cloud/sync-app.sh)
+  - [runtime-action.sh](/path/to/gcp-claw-lab/scripts/cloud/runtime-action.sh)
+  - [ssh-app.sh](/path/to/gcp-claw-lab/scripts/cloud/ssh-app.sh)
 
 Supporting scripts:
 
@@ -570,7 +570,7 @@ Supporting scripts:
 - legacy/manual model auth helper
   - [bootstrap-openai-cloud.sh](/path/to/gcp-claw-lab/scripts/models/bootstrap-openai-cloud.sh)
 - local shutdown
-  - [security-shutdown-local.sh](/path/to/gcp-claw-lab/scripts/security-shutdown-local.sh)
+  - [security-shutdown-local.sh](/path/to/gcp-claw-lab/scripts/maintenance/security-shutdown-local.sh)
 
 ### Gmail testing
 

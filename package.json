@@ -13,6 +13,6 @@
     "deps:bump": "node scripts/deps/bump-latest.mjs",
     "deps:sync": "node scripts/render-docker-build-env.mjs --output config/docker.build.env && node scripts/deps/sync-cloud-function-package.mjs",
     "deps:lock:function": "npm --prefix opentofu/modules/cost_controls/function_source install --package-lock-only",
-    "deps:rebuild:docker": "node scripts/runtime.mjs local prepare"
+    "deps:rebuild:docker": "node scripts/runtime/cli.mjs local prepare"
   }
 }

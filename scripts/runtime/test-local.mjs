@@ -57,7 +57,7 @@ function readJsonFile(filePath, label) {
   }
 }
 
-const runtimeCli = (...parts) => [process.execPath, ["scripts/runtime.mjs", ...parts]];
+const runtimeCli = (...parts) => [process.execPath, ["scripts/runtime/cli.mjs", ...parts]];
 const composeExec = (...parts) => [
   "docker",
   [
@@ -139,7 +139,7 @@ function runCore() {
 }
 
 function runIntegration() {
-  run(process.execPath, ["scripts/runtime.mjs", "help"], "runtime facade help");
+  run(process.execPath, ["scripts/runtime/cli.mjs", "help"], "runtime facade help");
   run(process.execPath, ["scripts/stage-workspace-integrations.mjs"], "stage workspace integrations");
 
   const state = readJsonFile("./.runtime/integrations-state.json", "integration state");

@@ -11,7 +11,7 @@ test -n "${PROJECT_ID:-}"
 test -n "${ZONE:-}"
 
 SKILL_NAME="$1"
-RUNNER_PATH="$(node ./scripts/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
+RUNNER_PATH="$(node ./scripts/runtime/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
 CONTAINER_RUNNER_PATH="/opt/agent-lab/integrations/${RUNNER_PATH#.runtime/integrations/}"
 
 REMOTE_INNER="$(python3 - "$SKILL_NAME" "$CONTAINER_RUNNER_PATH" "${SKILL_TEST_MESSAGE:-}" "${SKILL_TEST_TIMEOUT_MS:-}" <<'PY'

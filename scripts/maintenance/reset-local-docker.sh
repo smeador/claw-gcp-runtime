@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
 echo "Resetting Docker-local OpenClaw state..."
@@ -26,6 +26,6 @@ This did not remove:
 
 Next steps:
 1. agent-runtime local deploy
-2. bash ./scripts/print-local-docker-access.sh
+2. bash ./scripts/maintenance/print-local-docker-access.sh
 3. If Docker-local uses an API-key provider, confirm the key in config/secrets.local.json and rerun agent-runtime local deploy
 EOF

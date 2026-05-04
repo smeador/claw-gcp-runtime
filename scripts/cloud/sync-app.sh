@@ -19,7 +19,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 node ./scripts/stage-workspace-integrations.mjs
 

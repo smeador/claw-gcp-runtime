@@ -48,7 +48,7 @@ This file captures project-level working memory for agents operating on the repo
 - Prefer the generic form when updating runtime tooling:
   - `agent-runtime local test skill pip-newsletter-digest`
   - `agent-runtime cloud test skill pip-newsletter-digest`
-- The cloud gateway tunnel should go through [scripts/tunnel-cloud-gateway.sh](/path/to/gcp-claw-lab/scripts/tunnel-cloud-gateway.sh).
+- The cloud gateway tunnel should go through [scripts/cloud/tunnel-gateway.sh](/path/to/gcp-claw-lab/scripts/cloud/tunnel-gateway.sh).
 - The digest formatter should write direct briefing prose, not source-framed prose like `the article says`.
 - For Substack-backed items, app-friendly links are preferred when clean `open.substack.com/.../p/...` URLs are available.
 - For email typography, prefer email-safe choices over decorative or client-fragile ones. The digest title should use `Georgia`.

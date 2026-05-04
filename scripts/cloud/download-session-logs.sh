@@ -68,7 +68,18 @@ gcloud compute scp \
 echo "Extracting locally..."
 tar -xzf "${LOCAL_DIR}/sessions.tgz" -C "${LOCAL_DIR}"
 
+if [ "${KEEP_REMOTE_ARCHIVE:-0}" != "1" ]; then
+  echo "Cleaning up remote archive..."
+  gcloud compute ssh "${VM_NAME}" \
+    --project "${PROJECT_ID}" \
+    --zone "${ZONE}" \
+    --tunnel-through-iap \
+    --command "sudo rm -f \"${REMOTE_ARCHIVE}\""
+  echo "Remote archive removed."
+else
+  echo "Remote archive retained at ${REMOTE_ARCHIVE}"
+fi
+
 echo "Downloaded session logs to ${LOCAL_DIR}"
-echo "Remote archive retained at ${REMOTE_ARCHIVE}"
 echo "Files:"
 find "${LOCAL_DIR}" -maxdepth 1 -type f | sort

@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import process from "node:process";
 
-const REPO_ROOT = resolve(dirname(new URL(import.meta.url).pathname), "..");
+const REPO_ROOT = resolve(dirname(new URL(import.meta.url).pathname), "../..");
 const STATE_FILE = resolve(REPO_ROOT, ".runtime/integrations-state.json");
 
 function usage(message = "") {
@@ -12,7 +12,7 @@ function usage(message = "") {
     console.error(message);
     console.error("");
   }
-  console.error("Usage: node scripts/resolve-skill-test-runner.mjs SKILL_NAME");
+  console.error("Usage: node scripts/runtime/resolve-skill-test-runner.mjs SKILL_NAME");
   process.exit(1);
 }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
 url="http://127.0.0.1:18790/overview"
@@ -28,7 +28,7 @@ Notes:
 - Approve device pairing against Docker-local runtime state, not host-native OpenClaw
 
 Shell into the Docker-local gateway container:
-  bash ./scripts/shell-local-gateway.sh
+  bash ./scripts/runtime/shell-gateway.sh local
 
 Then run these commands inside the container:
 - Inspect Docker-local provider env wiring:

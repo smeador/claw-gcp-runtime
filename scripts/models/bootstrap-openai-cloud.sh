@@ -19,8 +19,8 @@ Set the API key in config/secrets.cloud.json under:
   auth.profiles.<profile>.apiKey
 
 Then push the updated secret payload and redeploy:
-  bash ./scripts/push-cloud-runtime-secret.sh SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
-  bash ./scripts/deploy-cloud.sh ${VM_NAME} ${PROJECT_ID} ${ZONE} SECRET_NAME
+  bash ./scripts/cloud/push-runtime-secret.sh SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
+  bash ./scripts/cloud/runtime-action.sh deploy ${VM_NAME} ${PROJECT_ID} ${ZONE} SECRET_NAME
 
 This keeps cloud provider auth in rendered runtime env instead of interactive
 runtime state bootstrap.

@@ -57,11 +57,11 @@ Current operator-facing shape:
 
 Supporting implementation changes that are now landed:
 
-- shared lifecycle flow in [scripts/runtime-lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime-lifecycle.sh)
-- shared cron flow in [scripts/runtime-cron.sh](/path/to/gcp-claw-lab/scripts/runtime-cron.sh)
+- shared lifecycle flow in [scripts/runtime/lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime/lifecycle.sh)
+- shared cron flow in [scripts/runtime/cron.sh](/path/to/gcp-claw-lab/scripts/runtime/cron.sh)
 - shared shell/runtime helpers in [scripts/lib/runtime-common.sh](/path/to/gcp-claw-lab/scripts/lib/runtime-common.sh)
 - manifest-driven integration staging in [scripts/stage-workspace-integrations.mjs](/path/to/gcp-claw-lab/scripts/stage-workspace-integrations.mjs)
-- direct runtime CLI dispatch in [scripts/runtime.mjs](/path/to/gcp-claw-lab/scripts/runtime.mjs)
+- direct runtime CLI dispatch in [scripts/runtime/cli.mjs](/path/to/gcp-claw-lab/scripts/runtime/cli.mjs)
 
 Preferred in-repo setup:
 
