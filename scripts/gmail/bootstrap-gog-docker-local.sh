@@ -4,9 +4,15 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
-ACCOUNT_EMAIL="${1:-${GOG_ACCOUNT:-gmail-workflow@example.com}}"
+ACCOUNT_EMAIL="${1:-${GOG_ACCOUNT:-}}"
 SERVICE_ACCOUNT_KEY_PATH="${2:-}"
 COMPOSE_FILE="docker/compose.local.yml"
+
+if [ -z "${ACCOUNT_EMAIL}" ]; then
+  echo "Usage: $0 ACCOUNT_EMAIL SERVICE_ACCOUNT_KEY_PATH" >&2
+  echo "Set ACCOUNT_EMAIL explicitly or export GOG_ACCOUNT." >&2
+  exit 1
+fi
 
 if [ -z "${SERVICE_ACCOUNT_KEY_PATH}" ]; then
   echo "Usage: $0 ACCOUNT_EMAIL SERVICE_ACCOUNT_KEY_PATH" >&2
@@ -51,5 +57,5 @@ docker compose --env-file config/docker.build.env -f "${COMPOSE_FILE}" exec -T o
 echo
 echo "Docker Gmail service-account bootstrap complete for ${ACCOUNT_EMAIL}."
 echo "Next tests:"
-echo "docker compose --env-file config/docker.build.env -f ${COMPOSE_FILE} exec openclaw-gateway gog gmail search 'newer_than:1d' --account ${ACCOUNT_EMAIL}"
-echo "docker compose --env-file config/docker.build.env -f ${COMPOSE_FILE} exec openclaw-gateway openclaw agent --agent main --message 'Run pip-newsletter-digest now in test mode.'"
+echo "  agent-runtime local test gmail-read"
+echo "  agent-runtime local test gmail-send"

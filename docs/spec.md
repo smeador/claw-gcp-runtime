@@ -555,7 +555,7 @@ Operational guidance:
 - Local Docker should use a Git-ignored local secret file for parity testing rather than storing important credentials only in container state
 - Local Docker may use that same Git-ignored local secret file to carry `gog` service-account bootstrap material for the configured workflow account, but that material should render to a separate bootstrap file rather than appearing in `openclaw.json`
 - OpenClaw config secrets should be rendered to a private runtime file and mounted read-only into the container
-- During the current extraction phase, this repo may keep compatibility shims and compatibility copies for sibling workflow repos, but those should be treated as transitional runtime integration aids rather than the long-term home of workflow logic
+- This repo should not carry compatibility shims or compatibility copies for sibling workflow repos; runtime capabilities belong here, while workflow implementation belongs in integration repos
 - The long-term goal is for this repo to own runtime capabilities such as OpenClaw, Docker/GCP lifecycle, `gog`, secrets rendering, cron reconciliation, and operator tooling, while sibling repos own workflow implementation
 - Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control

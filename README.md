@@ -564,11 +564,13 @@ Primary scripts:
 
 Supporting scripts:
 
-- Gmail service-account bootstrap
+- Gmail service-account bootstrap for manual recovery only
   - [bootstrap-gog-docker-local.sh](/path/to/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh)
   - [bootstrap-gog-cloud-service-account.sh](/path/to/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
 - legacy/manual model auth helper
   - [bootstrap-openai-cloud.sh](/path/to/gcp-claw-lab/scripts/models/bootstrap-openai-cloud.sh)
+- native-local drift diagnostic
+  - [check-native-local-sync.mjs](/path/to/gcp-claw-lab/scripts/maintenance/check-native-local-sync.mjs)
 - local shutdown
   - [security-shutdown-local.sh](/path/to/gcp-claw-lab/scripts/maintenance/security-shutdown-local.sh)
 
@@ -582,6 +584,8 @@ agent-runtime local test gmail-send
 agent-runtime cloud test gmail-read
 agent-runtime cloud test gmail-send
 ```
+
+Use the Gmail bootstrap scripts only when normal secret-driven setup is not enough and you need to repair or seed `gog` auth state manually. They are not part of the normal happy-path runtime flow.
 
 Host test:
 

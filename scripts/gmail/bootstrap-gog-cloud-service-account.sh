@@ -10,10 +10,16 @@ VM_NAME="$1"
 PROJECT_ID="$2"
 ZONE="$3"
 SERVICE_ACCOUNT_KEY_PATH="$4"
-ACCOUNT_EMAIL="${5:-${GOG_ACCOUNT:-gmail-workflow@example.com}}"
+ACCOUNT_EMAIL="${5:-${GOG_ACCOUNT:-}}"
 REMOTE_APP_ROOT="${OPENCLAW_APP_ROOT:-/opt/openclaw/app}"
 REMOTE_DEPLOY_ROOT="${OPENCLAW_DEPLOY_ROOT:-/opt/openclaw}"
 REMOTE_TMP_KEY="/tmp/gog-service-account-bootstrap.json"
+
+if [ -z "${ACCOUNT_EMAIL}" ]; then
+  echo "Usage: $0 VM_NAME PROJECT_ID ZONE SERVICE_ACCOUNT_KEY_PATH [ACCOUNT_EMAIL]" >&2
+  echo "Pass ACCOUNT_EMAIL explicitly or export GOG_ACCOUNT." >&2
+  exit 1
+fi
 
 if [ ! -f "${SERVICE_ACCOUNT_KEY_PATH}" ]; then
   echo "Service account key not found: ${SERVICE_ACCOUNT_KEY_PATH}" >&2
@@ -33,3 +39,6 @@ gcloud compute ssh "${VM_NAME}" \
 
 echo
 echo "Cloud Gmail service-account bootstrap complete for ${ACCOUNT_EMAIL}."
+echo "Next tests:"
+echo "  agent-runtime cloud test gmail-read"
+echo "  agent-runtime cloud test gmail-send"

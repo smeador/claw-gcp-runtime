@@ -211,9 +211,7 @@ if (!VALID_MODES.has(mode)) {
   process.exit(1);
 }
 
-const skipDeploy =
-  process.env.RUNTIME_TEST_SKIP_DEPLOY === "1" ||
-  process.env.RUNTIME_SMOKE_SKIP_DEPLOY === "1";
+const skipDeploy = process.env.RUNTIME_TEST_SKIP_DEPLOY === "1";
 
 try {
   runBasic(skipDeploy);

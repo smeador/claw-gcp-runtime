@@ -29,7 +29,7 @@ What is still intentionally transitional:
 
 - native-local parity has not been fully revalidated against the new integration model
 - local-sibling checkout composition is still the primary development path rather than a pinned release flow
-- the Pip workflow still acts as the main example integration and compatibility surface
+- the Pip workflow still acts as the main example integration while the runtime remains intentionally generic
 
 ## Core boundary
 

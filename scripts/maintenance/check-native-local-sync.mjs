@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
-const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../..");
 const templatePath = path.join(repoRoot, "config", "openclaw.local.example.json5");
 const livePath = path.join(os.homedir(), ".openclaw", "openclaw.json");
 
@@ -12,12 +12,37 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+function normalizeWorkspacePath(value) {
+  return typeof value === "string" && value.length > 0 ? "<workspace>" : null;
+}
+
+function normalizeInternalHooks(value) {
+  const hooks = value && typeof value === "object" ? value : {};
+  const entries = hooks.entries && typeof hooks.entries === "object" ? hooks.entries : {};
+  const normalizedEntries = {};
+
+  for (const [name, entry] of Object.entries(entries)) {
+    if (!entry || typeof entry !== "object") {
+      continue;
+    }
+    if (entry.enabled === false) {
+      continue;
+    }
+    normalizedEntries[name] = entry;
+  }
+
+  return {
+    enabled: hooks.enabled ?? null,
+    entries: normalizedEntries,
+  };
+}
+
 function projectConfig(config) {
   return {
     agents: {
       defaults: {
         model: config?.agents?.defaults?.model ?? {},
-        workspace: config?.agents?.defaults?.workspace ?? null,
+        workspace: normalizeWorkspacePath(config?.agents?.defaults?.workspace),
         compaction: config?.agents?.defaults?.compaction ?? {},
         maxConcurrent: config?.agents?.defaults?.maxConcurrent ?? null,
         subagents: config?.agents?.defaults?.subagents ?? {},
@@ -27,13 +52,12 @@ function projectConfig(config) {
     commands: config?.commands ?? {},
     session: config?.session ?? {},
     hooks: {
-      internal: config?.hooks?.internal ?? {},
+      internal: normalizeInternalHooks(config?.hooks?.internal),
     },
     gateway: {
       mode: config?.gateway?.mode ?? null,
       port: config?.gateway?.port ?? null,
       bind: config?.gateway?.bind ?? null,
-      tailscale: config?.gateway?.tailscale ?? {},
       nodes: config?.gateway?.nodes ?? {},
     },
   };
@@ -61,11 +85,13 @@ const templateStr = stableStringify(template);
 const liveStr = stableStringify(live);
 
 if (templateStr === liveStr) {
-  console.log("Local OpenClaw config matches the repo template for managed fields.");
+  console.log("Native-local OpenClaw config matches the repo template for managed fields.");
   process.exit(0);
 }
 
-console.log("Local OpenClaw config differs from the repo template for managed fields.");
+console.log("Native-local OpenClaw config differs from the repo template for managed fields.");
+console.log("");
+console.log("This is a manual native-local drift check. It is not used by Docker-local or cloud.");
 console.log("");
 console.log("Template:");
 console.log(JSON.stringify(template, null, 2));
