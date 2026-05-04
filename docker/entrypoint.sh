@@ -43,8 +43,7 @@ elif [ -n "${CONFIG_SEED}" ] && [ -f "${CONFIG_SEED}" ]; then
 fi
 
 AGENT_AUTH_PATH="${STATE_DIR}/agents/main/agent/auth-profiles.json"
-AGENT_MODELS_PATH="${STATE_DIR}/agents/main/agent/models.json"
-CONFIG_PATH="${CONFIG_PATH}" AGENT_AUTH_PATH="${AGENT_AUTH_PATH}" AGENT_MODELS_PATH="${AGENT_MODELS_PATH}" node <<'EOF'
+CONFIG_PATH="${CONFIG_PATH}" AGENT_AUTH_PATH="${AGENT_AUTH_PATH}" node <<'EOF'
 const fs = require("fs");
 const path = require("path");
 
@@ -58,8 +57,6 @@ function defaultApiKeyEnvVar(provider) {
 
 const configPath = process.env.CONFIG_PATH;
 const authPath = process.env.AGENT_AUTH_PATH;
-const modelsPath = process.env.AGENT_MODELS_PATH;
-
 if (!configPath || !authPath || !fs.existsSync(configPath)) {
   process.exit(0);
 }
@@ -136,28 +133,6 @@ for (const [name, seeded] of Object.entries(seededProfiles)) {
 
 fs.mkdirSync(path.dirname(authPath), {recursive: true});
 fs.writeFileSync(authPath, `${JSON.stringify(authStore, null, 2)}\n`, {mode: 0o600});
-
-// Repair stale persisted OpenRouter catalog state from older local runs.
-if (modelsPath && fs.existsSync(modelsPath)) {
-  try {
-    const modelsStore = JSON.parse(fs.readFileSync(modelsPath, "utf8"));
-    if (
-      modelsStore &&
-      typeof modelsStore === "object" &&
-      modelsStore.providers &&
-      typeof modelsStore.providers === "object" &&
-      modelsStore.providers.openrouter &&
-      typeof modelsStore.providers.openrouter === "object" &&
-      modelsStore.providers.openrouter.baseUrl === "https://openrouter.ai/v1"
-    ) {
-      modelsStore.providers.openrouter.baseUrl = "https://openrouter.ai/api/v1";
-      fs.mkdirSync(path.dirname(modelsPath), {recursive: true});
-      fs.writeFileSync(modelsPath, `${JSON.stringify(modelsStore, null, 2)}\n`);
-    }
-  } catch {
-    // Leave malformed provider catalogs untouched; OpenClaw can regenerate them.
-  }
-}
 EOF
 
 if [ -n "${GOG_ACCOUNT}" ] && [ -n "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" ] && [ -f "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" ]; then

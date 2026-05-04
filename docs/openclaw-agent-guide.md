@@ -217,9 +217,9 @@ Practical lessons:
 
 - compare rendered config and persisted state when local and cloud diverge
 - inspect `models.json` under the OpenClaw home when provider behavior looks wrong
-- if a stale persisted value can break normal operation, repair it on startup or fail loudly
+- if a stale persisted value breaks normal operation, reset or correct the persisted state directly
 
-This came up directly with a stale OpenRouter base URL in persisted state. The rendered config was healthy, but the runtime still failed until the persisted `models.json` entry was repaired.
+This came up directly with a stale OpenRouter base URL in persisted state. The rendered config was healthy, but the runtime still failed until the persisted `models.json` entry was corrected.
 
 ## Prevent Workspace Wandering
 

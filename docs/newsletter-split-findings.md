@@ -101,7 +101,7 @@ We hit a local Docker failure where:
 - direct OpenRouter requests worked
 - OpenClaw agent turns still failed with empty payloads
 
-The real drift was in persisted OpenClaw state under `~/.openclaw`, where `models.json` still held a stale OpenRouter base URL. Repairing that stale provider state on startup fixed the issue.
+The real drift was in persisted OpenClaw state under `~/.openclaw`, where `models.json` still held a stale OpenRouter base URL. Correcting that persisted provider state fixed the issue.
 
 This is an important debugging rule for the runtime repo:
 
