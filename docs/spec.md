@@ -13,6 +13,8 @@ The newsletter workflow now lives in the sibling repo [`/path/to/agent-newslette
 
 Open backlog items live in [backlog.md](/path/to/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
+Skill integration guidance lives in [skill-integration-options.md](/Users/sean/Repos/gcp-claw-lab/docs/skill-integration-options.md).
+
 Primary goals:
 
 1. Isolate agent runtime from personal laptop
