@@ -12,6 +12,14 @@
 
 This is intentionally different from the older transition model. The runtime repo no longer carries `compat/newsletter` or repo-root newsletter wrapper scripts.
 
+The current deployed shape is:
+
+- the runtime reads [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- `scripts/stage-workspace-integrations.mjs` copies the sibling integration into [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
+- cloud sync uploads that staged snapshot as part of the app tree
+- the Docker image installs the staged integration package and exposes its declared bins on `PATH`
+- the reviewed workspace exposes copied skill assets under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+
 ## Boundary that worked best
 
 The cleanest split is:
@@ -67,6 +75,46 @@ The newsletter repo can depend on `gog` as an adapter capability, but this runti
 - availability on `PATH`
 
 That boundary still feels correct after the refactor.
+
+### Packaged sibling snapshots work well for cloud
+
+The working cloud deploy model is:
+
+- develop against a sibling local checkout
+- stage that checkout into [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations) at deploy time
+- build the image from the staged snapshot
+
+This gave us the development flexibility we wanted without requiring the VM to fetch the integration repo independently.
+
+The main tradeoff is reproducibility:
+
+- the deployed integration version is whatever was checked out locally when `agent-runtime cloud deploy` ran
+- that is acceptable for current development, but later we may want explicit integration commit recording or pinning
+
+### Persisted OpenClaw state can drift from rendered config
+
+One of the most useful findings from the rollout was that rendered runtime config was not the full story.
+
+We hit a local Docker failure where:
+
+- rendered OpenRouter config looked correct
+- direct OpenRouter requests worked
+- OpenClaw agent turns still failed with empty payloads
+
+The real drift was in persisted OpenClaw state under `~/.openclaw`, where `models.json` still held a stale OpenRouter base URL. Repairing that stale provider state on startup fixed the issue.
+
+This is an important debugging rule for the runtime repo:
+
+- compare rendered config and persisted runtime state when local/cloud behavior diverges
+
+### Cloud host hygiene matters
+
+The cloud rollout also surfaced a few host-level lessons:
+
+- a full root disk can interrupt deploys and leave runtime state looking partially updated
+- stale Docker images need to be pruned periodically on the VM
+- macOS metadata files such as `.DS_Store` and `._*` should be excluded from staging and cloud sync
+- cloud helper scripts should avoid shell features that break on older macOS Bash versions
 
 ## Remaining follow-up
 

@@ -14,6 +14,23 @@ This is a split between:
 
 The live Pip workflow remains the proving ground, but it should no longer determine where ownership lives.
 
+## Current progress
+
+As of `main`:
+
+- the runtime repo is now `agent-runtime`-first
+- local/cloud lifecycle and cron flows were consolidated behind shared runtime scripts
+- runtime integrations are manifest-driven and staged from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- the newsletter implementation lives in [`agent-newsletter-digest`](/path/to/agent-newsletter-digest), not in repo-root runtime scripts
+- cloud deploys package the sibling integration from the local checkout into the staged deploy snapshot
+- local Docker and cloud both run the composed newsletter integration successfully
+
+What is still intentionally transitional:
+
+- native-local parity has not been fully revalidated against the new integration model
+- local-sibling checkout composition is still the primary development path rather than a pinned release flow
+- the Pip workflow still acts as the main example integration and compatibility surface
+
 ## Core boundary
 
 The key rule is:
@@ -184,10 +201,10 @@ Goal:
 
 Tasks:
 
-- document the stricter boundary
-- remove repo-root newsletter implementation and compatibility copies
-- stage integrations generically
-- keep `agent-runtime` generic
+- [x] document the stricter boundary
+- [x] remove repo-root newsletter implementation and compatibility copies
+- [x] stage integrations generically
+- [x] keep `agent-runtime` generic
 
 ### Phase 2: integration ownership
 
@@ -197,9 +214,9 @@ Goal:
 
 Tasks:
 
-- keep moving workflow logic into `agent-newsletter-digest`
-- keep skill-owned commands and `TEST.sh` there
-- avoid reintroducing workflow scripts into `workspace/`
+- [x] move workflow logic into `agent-newsletter-digest`
+- [x] keep skill-owned commands and `TEST.sh` there
+- [x] avoid reintroducing workflow scripts into `workspace/`
 
 ### Phase 3: testing and hardening
 
@@ -209,9 +226,9 @@ Goal:
 
 Tasks:
 
-- add fixtures and regression tests in `agent-newsletter-digest`
-- expand runtime validation here
-- document native-local integration later
+- [ ] add fixtures and regression tests in `agent-newsletter-digest`
+- [x] expand runtime validation here
+- [ ] document native-local integration later
 
 ### Phase 4: open-source readiness
 

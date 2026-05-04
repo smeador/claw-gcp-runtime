@@ -18,9 +18,8 @@ The repo already has reasonably good verb parity between local and cloud:
 
 The main problems are:
 
-- the command surface is duplicated as `local:*` and `cloud:*`
-- cloud commands hide substantial quoting complexity inside `package.json`
-- there is no simple runtime-level smoke test for the operator command surface
+- some cloud operator paths still hide too much quoting or transport detail
+- cloud-side runtime validation is lighter than the local tiered test surface
 - the repo still mixes "general runtime" responsibilities with "active integration shell" responsibilities without naming that clearly
 
 Recent finding:
@@ -41,68 +40,9 @@ That means:
 - workflow implementation does not move back here
 - sibling integrations like `agent-newsletter-digest` are first-class development inputs
 
-## Command ergonomics options
+## Command ergonomics result
 
-### Option A: keep the current `local:*` and `cloud:*` model
-
-Pros:
-
-- no migration risk
-- explicit and easy to grep
-
-Cons:
-
-- duplicated operator surface
-- high mental overhead
-- awkward to document as one system
-
-### Option B: add a unified runtime facade over the existing scripts
-
-Example:
-
-- `agent-runtime local deploy`
-- `agent-runtime cloud deploy`
-- `agent-runtime local cron list`
-
-Pros:
-
-- minimal migration risk
-- preserves existing implementation scripts
-- gives us one environment-parameterized operator surface
-
-Cons:
-
-- still uses npm as the outer entry point
-- not as elegant as a dedicated task runner
-
-### Option C: adopt a dedicated task runner as the primary UX
-
-Examples:
-
-- `just local deploy`
-- `task cloud:deploy`
-
-Pros:
-
-- cleaner operator UX
-- easier grouping and aliases
-- better help/listing semantics
-
-Cons:
-
-- new tool dependency
-- still requires underlying scripts or a rewrite
-- more moving parts right now
-
-## Recommendation
-
-Recommended near-term path:
-
-1. adopt Option B now
-2. keep shell scripts as the implementation layer
-3. revisit a task runner later if the facade still feels too clumsy
-
-This gives us a better UX without a disruptive rewrite.
+We chose the unified runtime CLI path.
 
 Current operator-facing shape:
 
@@ -114,16 +54,14 @@ Current operator-facing shape:
 - `agent-runtime local test integration`
 - `agent-runtime local test skill pip-newsletter-digest`
 - `agent-runtime cloud test skill pip-newsletter-digest`
-- `agent-runtime cloud test skill pip-newsletter-digest`
-- `./bin/agent-runtime local deploy`
-- `./bin/agent-runtime cloud deploy`
-- `./bin/agent-runtime local cron list`
-- `./bin/agent-runtime local test basic`
-- `./bin/agent-runtime local test core`
-- `./bin/agent-runtime local test integration`
-- `./bin/agent-runtime local test skill pip-newsletter-digest`
-- `./bin/agent-runtime cloud test skill pip-newsletter-digest`
-- `./bin/agent-runtime cloud test skill pip-newsletter-digest`
+
+Supporting implementation changes that are now landed:
+
+- shared lifecycle flow in [scripts/runtime-lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime-lifecycle.sh)
+- shared cron flow in [scripts/runtime-cron.sh](/path/to/gcp-claw-lab/scripts/runtime-cron.sh)
+- shared shell/runtime helpers in [scripts/lib/runtime-common.sh](/path/to/gcp-claw-lab/scripts/lib/runtime-common.sh)
+- manifest-driven integration staging in [scripts/stage-workspace-integrations.mjs](/path/to/gcp-claw-lab/scripts/stage-workspace-integrations.mjs)
+- direct runtime CLI dispatch in [scripts/runtime.mjs](/path/to/gcp-claw-lab/scripts/runtime.mjs)
 
 Preferred in-repo setup:
 
@@ -135,6 +73,8 @@ Fallbacks:
 
 - `./bin/agent-runtime ...`
 - `agent-runtime ...`
+
+We have not needed a separate task runner yet. Shell scripts plus the dedicated runtime CLI have been enough so far.
 
 ## Runtime test framework
 
@@ -166,10 +106,17 @@ These tiers stay intentionally smaller than full workflow or Gmail tests. They v
 
 Implemented first pass:
 
-- [scripts/runtime-test-local.mjs](/path/to/gcp-claw-lab/scripts/runtime-test-local.mjs)
 - [scripts/runtime-test-local.mjs](/path/to/gcp-claw-lab/scripts/runtime-test-local.mjs) as the implementation behind `agent-runtime local test basic|core|integration`
 - the harness supports `RUNTIME_TEST_SKIP_DEPLOY=1` for quicker reruns when the gateway is already up
 - legacy `RUNTIME_SMOKE_SKIP_DEPLOY=1` still works
+
+Cloud still relies more on targeted commands such as:
+
+- `agent-runtime cloud test gmail-read`
+- `agent-runtime cloud test gmail-send`
+- `agent-runtime cloud test skill <skill>`
+
+Adding cloud-side `basic` and `core` tiers is still a reasonable follow-up, but not required for the current working setup.
 
 ## Framework alternatives worth considering
 

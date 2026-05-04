@@ -6,6 +6,24 @@ This checklist tracks the stricter split we agreed on:
 - [`agent-newsletter-digest`](/path/to/agent-newsletter-digest) owns newsletter mechanics
 - `workspace/` in this repo remains a composed surface, not an implementation home
 
+## Current status
+
+The structural split is now complete on `main`.
+
+What is already true:
+
+- the runtime repo stages integrations generically from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- the newsletter implementation lives in [`agent-newsletter-digest`](/path/to/agent-newsletter-digest)
+- `agent-runtime` is the sole runtime CLI surface in this repo
+- local Docker and cloud both run the composed newsletter integration
+
+What remains is mostly hardening:
+
+- native-local validation
+- newsletter fixtures and regression tests
+- further reduction of Pip-specific framing where it is no longer useful
+- longer-term release/pinning ergonomics if we outgrow sibling-checkout composition
+
 ## Guardrails
 
 - keep the live Pip workflow working
@@ -25,7 +43,7 @@ Tasks:
 - [x] update the runtime docs to describe this repo as the runtime and composition host
 - [x] remove repo-root newsletter implementation and compatibility copies
 - [x] stop treating `workspace/` as the long-term home of newsletter scripts
-- [ ] review whether any remaining Pip-specific runtime commands should become more generic aliases
+- [x] review whether any remaining Pip-specific runtime commands should become more generic aliases
 
 ## Phase 2: Generic integration composition
 
@@ -56,7 +74,7 @@ Tasks:
   - `agent-runtime local test skill <skill>`
   - `agent-runtime cloud test skill <skill>`
 - [x] make the newsletter skill package provide its own test entrypoint
-- [ ] decide whether digest-specific runtime aliases should remain long-term or become compatibility-only
+- [x] decide whether digest-specific runtime aliases should remain long-term or become compatibility-only
 - [ ] document a reusable convention only if a second integration needs it
 
 ## Phase 4: Newsletter repo ownership
@@ -70,8 +88,8 @@ Tasks:
 - [x] move extraction/render/send commands there
 - [x] move OpenClaw skill assets there
 - [x] move workflow-specific test logic there
-- [ ] decide the long-term home of [workspace/skills/gmail-gog-webhook/SKILL.md](/Users/sean/Repos/gcp-claw-lab/workspace/skills/gmail-gog-webhook/SKILL.md)
-- [ ] keep reducing runtime-doc assumptions about newsletter-specific commands
+- [x] decide the long-term home of [workspace/skills/gmail-gog-webhook/SKILL.md](/Users/sean/Repos/gcp-claw-lab/workspace/skills/gmail-gog-webhook/SKILL.md)
+- [x] keep reducing runtime-doc assumptions about newsletter-specific commands
 
 ## Phase 5: Runtime hardening
 
@@ -85,9 +103,9 @@ Tasks:
   - `basic`
   - `core`
   - `integration`
+- [x] review command ergonomics and simplify where helpful
+- [x] keep the CLI/help/docs aligned with the staged integration model
 - [ ] consider cloud-side `basic` and `core` validation later
-- [ ] review command ergonomics and simplify where helpful
-- [ ] keep the CLI/help/docs aligned with the staged integration model
 
 ## Phase 6: Newsletter repo hardening
 
