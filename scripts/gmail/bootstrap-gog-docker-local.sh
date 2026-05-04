@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 node ./scripts/render-docker-build-env.mjs --output config/docker.build.env >/dev/null
 
-ACCOUNT_EMAIL="${1:-${GOG_ACCOUNT:-automation@example.com}}"
+ACCOUNT_EMAIL="${1:-${GOG_ACCOUNT:-gmail-workflow@example.com}}"
 SERVICE_ACCOUNT_KEY_PATH="${2:-}"
 COMPOSE_FILE="docker/compose.local.yml"
 

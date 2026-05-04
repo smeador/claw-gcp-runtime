@@ -14,7 +14,6 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
-      GOG_ACCOUNT: ${GOG_ACCOUNT:-automation@example.com}
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
@@ -46,7 +45,6 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
-      GOG_ACCOUNT: ${GOG_ACCOUNT:-automation@example.com}
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro

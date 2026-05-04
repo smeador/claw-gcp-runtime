@@ -25,7 +25,7 @@ This did not remove:
 - Repo-managed workspace/config files
 
 Next steps:
-1. npm run local:deploy
+1. agent-runtime local deploy
 2. bash ./scripts/print-local-docker-access.sh
-3. If Docker-local uses an API-key provider, confirm the key in config/secrets.local.json and rerun npm run local:deploy
+3. If Docker-local uses an API-key provider, confirm the key in config/secrets.local.json and rerun agent-runtime local deploy
 EOF

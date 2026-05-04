@@ -36,11 +36,10 @@ node scripts/render-runtime-env.mjs \
   --output "${RUNTIME_DIR}/runtime.env"
 node scripts/render-gog-service-account-key.mjs \
   --json "${SECRET_JSON}" \
-  --account "automation@example.com" \
   --output "${RUNTIME_DIR}/gog-service-account.json"
 
 node scripts/render-openclaw-config.mjs \
-  --template config/openclaw.cloud.json5.example \
+  --template config/openclaw.cloud.example.json5 \
   --output "${RUNTIME_DIR}/openclaw.json" \
   --gcp-secret-json "${SECRET_JSON}"
 

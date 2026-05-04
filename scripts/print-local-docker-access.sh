@@ -37,14 +37,11 @@ Then run these commands inside the container:
 Steady-state operations:
 - Rotate the Docker-local gateway token:
   1. Edit config/secrets.local.json
-  2. bash ./scripts/prepare-local-docker.sh
-  3. docker compose --env-file config/docker.build.env -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  2. agent-runtime local restart
 - Add or update reviewed skills:
-  edit workspace/skills/ and then rerun:
-  bash ./scripts/prepare-local-docker.sh
-  docker compose --env-file config/docker.build.env -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  edit the source integration repo declared in workspace/integrations.json and then rerun:
+  agent-runtime local restart
 - Add or update reviewed hooks:
-  edit config/openclaw.container.json5.example or the relevant repo-managed workspace files, then rerun:
-  bash ./scripts/prepare-local-docker.sh
-  docker compose --env-file config/docker.build.env -f docker/compose.local.yml up -d --force-recreate openclaw-gateway
+  edit config/openclaw.container.example.json5 or the relevant repo-managed workspace files, then rerun:
+  agent-runtime local restart
 EOF

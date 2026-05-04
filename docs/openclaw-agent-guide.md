@@ -14,6 +14,29 @@ OpenClaw works well as an execution environment for agents that need to:
 
 It is especially effective when the agent is treated as a coordinator over deterministic tools, not as the place where all logic lives.
 
+## Keep The Runtime Contract Explicit
+
+OpenClaw workflows get much easier to reason about when the runtime promises are small and concrete.
+
+Good runtime promises:
+
+- where writable artifact paths live
+- which helper commands are on `PATH`
+- which auth account is configured
+- how cron jobs are reconciled
+
+Bad runtime promises:
+
+- implicit dependence on one repo layout
+- hidden dependence on ad hoc host edits
+- assuming `/workspace` is globally writable
+
+In practice, this means:
+
+- keep `/workspace` mostly read-only in containerized environments
+- expose only explicitly writable subpaths such as `/workspace/memory` and `/workspace/.openclaw`
+- let integrations bring their own commands and skills rather than teaching the agent repo-root implementation details
+
 ## Core Principle
 
 Move as much operational behavior as possible out of prompts and into code.
@@ -184,6 +207,20 @@ Why:
 
 Fresh context is especially important for cron jobs and repeatable production tasks.
 
+## Treat Persisted Runtime State As A First-Class Input
+
+Rendered config is not the whole runtime.
+
+OpenClaw also persists state under its home directory, including model/provider metadata and session state. That means a deploy can look correct on disk while the runtime still behaves differently because persisted state drifted earlier.
+
+Practical lessons:
+
+- compare rendered config and persisted state when local and cloud diverge
+- inspect `models.json` under the OpenClaw home when provider behavior looks wrong
+- if a stale persisted value can break normal operation, repair it on startup or fail loudly
+
+This came up directly with a stale OpenRouter base URL in persisted state. The rendered config was healthy, but the runtime still failed until the persisted `models.json` entry was repaired.
+
 ## Prevent Workspace Wandering
 
 Agents often drift when the prompt is vague.
@@ -201,6 +238,18 @@ Mitigation:
 - reduce ambiguity in entrypoint prompts
 
 This is often the difference between a scheduled job that starts immediately and one that burns tokens on orientation.
+
+## Cron Config Is Desired State, Not Static Config
+
+Cron is best treated as runtime state that is reconciled from repo-managed desired state.
+
+That means:
+
+- keep a neutral cron schema example in runtime docs
+- keep concrete workflow cron jobs in the composed workspace config
+- apply or reconcile those jobs after the gateway starts
+
+This is easier to reason about than pretending cron belongs inside `openclaw.json`, and it matches how OpenClaw actually persists cron jobs.
 
 ## Use Bounded Synthesis
 
@@ -239,6 +288,18 @@ Recommended cache rules:
 
 Without versioning, improved parsers can silently reuse stale artifacts and make debugging confusing.
 
+## Container Env Precedence Can Break Good Config
+
+In Docker-based OpenClaw setups, be careful about where environment variables are sourced.
+
+A useful rendered runtime env file can still lose to:
+
+- Compose-time default interpolation
+- stale container-level overrides
+- placeholder values baked into Compose files
+
+When auth or account selection looks wrong, verify the final environment visible inside the container, not just the rendered source file on disk.
+
 ## Treat HTML as a Parsing Problem, Not a Prompting Problem
 
 If a workflow consumes HTML emails, webpages, or rich content:
@@ -257,6 +318,36 @@ Useful processing steps include:
 - converting visible content to markdown
 
 The model should receive cleaned content, not transport markup.
+
+## Package Integrations As Snapshots For Cloud Deploys
+
+If the runtime consumes sibling workflow repos during development, cloud deploys should package a concrete snapshot of that integration rather than assuming the VM will pull from another repo at deploy time.
+
+This keeps the deploy unit inspectable and makes it much easier to answer:
+
+- which integration code was deployed
+- which skills were staged
+- which commands were installed in the image
+
+The runtime can still stay lightweight:
+
+- read an integration manifest
+- stage the integration into the deploy tree
+- expose the declared skills and bins
+
+This preserves local flexibility while keeping cloud deploys deterministic enough to debug.
+
+## Cloud Hygiene Matters
+
+A healthy OpenClaw workflow can still fail because the host around it is drifting.
+
+The highest-value operational checks are often simple:
+
+- free disk space on the VM
+- stale Docker images accumulating across rebuilds
+- macOS metadata files accidentally entering the synced app tree
+
+If cloud deploys start failing in surprising ways, check host health early. A full root disk can interrupt deploys and leave runtime state looking partially updated.
 
 ## Prefer File-Backed Interfaces Over Large Inline Payloads
 

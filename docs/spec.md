@@ -4,7 +4,14 @@
 
 This project provisions a secure, isolated experimentation environment on Google Cloud Platform (GCP) for running OpenClaw (or equivalent agent runtime) using OpenTofu.
 
-Open backlog items live in [backlog.md](/Users/sean/Repos/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
+In its current phase, this repository serves two related purposes:
+
+1. the general OpenClaw runtime and GCP operating model repo
+2. the active composition host that assembles sibling workflow integrations into a reviewed runtime workspace during development
+
+The newsletter workflow now lives in the sibling repo [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest). This repo owns the runtime conventions, local/cloud lifecycle, secrets rendering, operator tooling, and generic integration staging used to run it.
+
+Open backlog items live in [backlog.md](/path/to/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
 Primary goals:
 
@@ -127,7 +134,7 @@ Secret access should be granted at the individual secret resource level, not wit
 
 Secrets include:
 - LLM API key
-- Gmail Workspace service-account material for `automation@example.com`
+- Gmail Workspace service-account material for the configured workflow account
 - Calendar token (if separate)
 - Any scraping API credentials
 
@@ -240,7 +247,7 @@ OpenClaw is treated as:
 - Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
 - Digest rendering is now split from digest synthesis: the formatter returns structured `digest.json`, and a deterministic renderer generates `email.html` and `email.txt` from that JSON before send.
 - The extractor should be treated as the source of truth for message-body cleanup. `clean.md`, `links.json`, and `metadata.json` are the normal model-facing inputs; `raw.html` and `raw.txt` are for inspection/debugging only.
-- Native local, Docker-local, and cloud should all call the digest extractor and digest send helper through workspace-local wrapper scripts so the skill does not depend on environment-specific binary/script paths.
+- Native local, Docker-local, and cloud should all expose the same integration-provided commands and skill surface, but the runtime repo should not own the newsletter implementation scripts themselves.
 - Digest send success should be code-enforced instead of instruction-enforced: the helper writes final run artifacts, executes `gog gmail send`, and only reports success when a Gmail id is returned.
 - Holds durable delegated credentials
 
@@ -337,6 +344,22 @@ Follow a local-first, cloud-parity workflow:
 - Keep local and cloud runtime inputs as similar as practical
 - Use Docker as the cloud deployment target
 - Keep the workspace and reviewed policy/configuration in the repository so local and cloud runs use the same source of truth
+- Treat sibling integrations such as `agent-newsletter-digest` as first-class development inputs, even while this repo remains the runtime source of truth
+- Stage integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json) into the runtime rather than copying workflow code back into repo-root scripts
+- Keep `workspace/` as the composed view of runtime plus integrations, not as a second implementation home for workflow logic
+
+Operator interface guidance:
+
+- Prefer the `agent-runtime` CLI as the primary in-repo operator surface
+- Use `direnv` to expose `agent-runtime` directly from the repo `bin/` directory
+- Keep the underlying shell scripts as the implementation layer behind that CLI
+- Keep `agent-runtime` as the sole runtime operator interface for local and cloud commands
+- Prefer generic runtime validation before workflow validation:
+  - `agent-runtime local test basic`
+  - `agent-runtime local test core`
+  - `agent-runtime local test integration`
+- Prefer generic skill dispatch for workflow checks:
+  - `agent-runtime local test skill <skill>`
 
 Local development:
 - Prefer a local OpenClaw runtime for the fastest iteration loop
@@ -363,6 +386,14 @@ Do NOT:
 - Grant broad shell execution
 - Add unreviewed extensions initially
 
+Runtime validation guidance:
+- The runtime repo should expose lightweight local Docker validation tiers that verify the setup itself before workflow-specific tests run
+- Current local validation tiers are:
+  - `basic`: deploy, container status, logs, cron list/status
+  - `core`: `basic` plus health, model status, workspace mount expectations, required runtime binaries
+  - `integration`: `core` plus runtime facade resolution and host/container wrapper availability
+- Workflow tests such as Gmail or digest tests should be treated as a separate layer above runtime validation
+
 ## OpenClaw Runtime Configuration
 
 OpenClaw configuration should be split between version-controlled non-secret files and Secret Manager-backed runtime secrets.
@@ -381,7 +412,7 @@ Secret ownership model:
 - The payload contract should be documented in the repository and treated as a security-sensitive interface
 - Local and cloud environments should use separate secret payload files even when they share the same schema
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
-- The payload may include a `gog` branch for `automation@example.com`; that branch should render to separate Gmail bootstrap artifacts rather than appearing in rendered `openclaw.json`.
+- The payload may include a `gog` branch for the configured workflow account; that branch should render to separate Gmail bootstrap artifacts rather than appearing in rendered `openclaw.json`.
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
 - Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
@@ -462,6 +493,9 @@ Container operations guidance:
 - `boot-md` should be explicitly disabled in repo-managed templates unless there is a reviewed startup-automation need for it
 - Provider auth established inside Docker should persist in the Docker-local or cloud state path across normal container redeploys, but not across state deletion
 - Docker-local bootstrap should follow the upstream `docker-setup.sh` pattern conceptually while preserving the repository's local-first, shared-workspace, rendered-config model
+- Operator ergonomics should prefer short stable entrypoints over increasingly complex one-off command strings
+- When local and cloud behavior can share the same verb shape, they should use it
+- Environment-specific differences should sit behind the runtime CLI or helper scripts rather than leaking into the operator prompt surface
 
 Scheduling guidance:
 - OpenClaw recurring jobs may run inside the long-lived gateway process if the gateway scheduler/cron features are enabled
@@ -480,12 +514,13 @@ Recommended workflow:
 1. Update reviewed configuration in Git.
 2. Keep the live local-native config in `~/.openclaw` aligned with the repository template for managed fields.
 3. Test the change locally against the repository workspace.
-4. Smoke test cloud-parity container behavior locally when needed.
-5. Render local or cloud runtime config from the repo template plus the appropriate secret source.
-6. For local Docker, use a Git-ignored local secret file with the same payload shape as cloud.
-7. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup and render both `openclaw.json` and any required runtime env/bootstrap artifacts on the VM host.
-8. Deploy or sync configuration to the VM.
-9. Start or restart the OpenClaw service.
+4. Run local runtime validation tiers before cloud rollout when the change touches runtime behavior, image contents, mounts, or operator tooling.
+5. Smoke test cloud-parity container behavior locally when needed.
+6. Render local or cloud runtime config from the repo template plus the appropriate secret source.
+7. For local Docker, use a Git-ignored local secret file with the same payload shape as cloud.
+8. For cloud Docker, fetch the single JSON secret payload from Secret Manager at startup and render both `openclaw.json` and any required runtime env/bootstrap artifacts on the VM host.
+9. Deploy or sync configuration to the VM.
+10. Start or restart the OpenClaw service.
 
 Dependency/version workflow:
 - Repository-pinned runtime versions should live in a single checked-in manifest.
@@ -501,7 +536,7 @@ Authentication guidance by environment:
 - Native local should prefer direct interactive OAuth/provider login when that is the cleanest local operator workflow.
 - Docker-local and cloud should prefer non-interactive auth for server-style integrations where possible.
 - Native-local runtime state must not be treated as an implicit config source for Docker-local or cloud.
-- Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for `automation@example.com`.
+- Gmail for Docker-local and cloud should prefer Google Workspace service-account auth with domain-wide delegation for the configured workflow account.
 - OpenAI for Docker-local and cloud should prefer env-based API-key injection rendered from the environment secret overlay rather than interactive runtime bootstrap.
 - Gmail for native local may continue using user OAuth if that remains the simplest local-native operator path.
 - Docker-local digest/read-send workflows should not require Gmail Pub/Sub, webhook setup, or Tailscale Funnel.
@@ -516,8 +551,10 @@ Operational guidance:
 - The VM should hold only rendered runtime state
 - Runtime-managed config fields should persist locally or in container state, but should not replace the repo-managed template as the source of truth
 - Local Docker should use a Git-ignored local secret file for parity testing rather than storing important credentials only in container state
-- Local Docker may use that same Git-ignored local secret file to carry `gog` service-account bootstrap material for `automation@example.com`, but that material should render to a separate bootstrap file rather than appearing in `openclaw.json`
+- Local Docker may use that same Git-ignored local secret file to carry `gog` service-account bootstrap material for the configured workflow account, but that material should render to a separate bootstrap file rather than appearing in `openclaw.json`
 - OpenClaw config secrets should be rendered to a private runtime file and mounted read-only into the container
+- During the current extraction phase, this repo may keep compatibility shims and compatibility copies for sibling workflow repos, but those should be treated as transitional runtime integration aids rather than the long-term home of workflow logic
+- The long-term goal is for this repo to own runtime capabilities such as OpenClaw, Docker/GCP lifecycle, `gog`, secrets rendering, cron reconciliation, and operator tooling, while sibling repos own workflow implementation
 - Environment variables may still be used for narrowly scoped bootstrap logic, but the preferred long-lived secret handoff is a private runtime config file
 - Treat `auth` as outbound service/provider credentials and `gateway.auth` as inbound gateway access control
 - Treat persisted provider auth state as environment-local sensitive data that survives normal container redeploys when the state path is preserved
@@ -583,11 +620,11 @@ Recommended auth model by environment:
 - Docker-local:
   - prefer non-interactive auth
   - API-key providers may be sourced from the local secret overlay and emitted into Docker env
-  - Gmail should prefer Workspace service-account auth for `automation@example.com`
+  - Gmail should prefer Workspace service-account auth for the configured workflow account
 - Cloud:
   - prefer non-interactive auth and Secret Manager-backed config
   - API-key providers may be sourced from the cloud secret overlay and emitted into a VM-rendered runtime env file
-  - Gmail should prefer Workspace service-account auth for `automation@example.com`
+  - Gmail should prefer Workspace service-account auth for the configured workflow account
 
 Cloud runtime lifecycle guidance:
 - Cloud app-tree sync and cloud runtime state should be treated as separate concerns.

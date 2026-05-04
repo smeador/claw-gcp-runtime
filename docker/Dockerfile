@@ -29,17 +29,12 @@ RUN curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard --versio
 
 COPY --from=gog-builder /go/bin/gog /usr/local/bin/gog
 COPY package.json package-lock.json ${AGENT_LAB_ROOT}/
-COPY scripts/email ${AGENT_LAB_ROOT}/scripts/email
-COPY scripts/gmail ${AGENT_LAB_ROOT}/scripts/gmail
+COPY scripts/install-staged-integrations.mjs ${AGENT_LAB_ROOT}/scripts/install-staged-integrations.mjs
+COPY .runtime/integrations ${AGENT_LAB_ROOT}/integrations
 
 RUN cd "${AGENT_LAB_ROOT}" \
   && npm ci --omit=dev --ignore-scripts \
-  && chmod +x "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" \
-  && chmod +x "${AGENT_LAB_ROOT}/scripts/email/finalize-newsletter-digest.sh" \
-  && chmod +x "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" \
-  && ln -sf "${AGENT_LAB_ROOT}/scripts/email/extract-newsletter-from-gmail.mjs" /usr/local/bin/agent-lab-extract-newsletter-from-gmail \
-  && ln -sf "${AGENT_LAB_ROOT}/scripts/email/finalize-newsletter-digest.sh" /usr/local/bin/agent-lab-finalize-newsletter-digest \
-  && ln -sf "${AGENT_LAB_ROOT}/scripts/gmail/send-gog-digest.sh" /usr/local/bin/agent-lab-send-gog-digest
+  && node "${AGENT_LAB_ROOT}/scripts/install-staged-integrations.mjs" "${AGENT_LAB_ROOT}/integrations" /usr/local/bin
 
 COPY docker/entrypoint.sh /usr/local/bin/agent-lab-openclaw-entrypoint
 RUN chmod +x /usr/local/bin/agent-lab-openclaw-entrypoint \

@@ -1,6 +1,8 @@
-# Cloud operator defaults for npm run cloud:* commands.
-# Copy this file to .envrc and replace the placeholders, or keep this file as-is
-# and put the real values in .envrc.local.
+# Runtime operator defaults for this repo.
+# Keep repo-wide defaults here and put local overrides in .envrc.local.
+
+source_env_if_exists .envrc.local
+PATH_add bin
 
 export VM_NAME=
 export PROJECT_ID=

@@ -24,7 +24,7 @@ The configuration still uses HCL's standard `terraform {}` block name because Op
 5. Run:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab/opentofu/environments/lab
+cd /path/to/gcp-claw-lab/opentofu/environments/lab
 tofu init
 tofu fmt -recursive ../..
 tofu validate
@@ -37,7 +37,7 @@ tofu apply
 After apply, connect with:
 
 ```bash
-gcloud compute ssh claw-runtime-vm --project claw-runtime-example --zone us-central1-a --tunnel-through-iap
+gcloud compute ssh claw-runtime-vm --project your-gcp-project-id --zone us-central1-a --tunnel-through-iap
 ```
 
 ## Setup and Usage
@@ -50,18 +50,18 @@ This repo has three operating modes:
 
 ## Guides
 
-- [OpenClaw Agent Guide](/Users/sean/Repos/gcp-claw-lab/docs/openclaw-agent-guide.md): general lessons and best practices for building reliable agent workflows in OpenClaw
-- [Project Spec](/Users/sean/Repos/gcp-claw-lab/docs/spec.md): current architecture, operating model, and constraints for this lab
-- [Backlog](/Users/sean/Repos/gcp-claw-lab/docs/backlog.md): prioritized open work and follow-up improvements
+- [OpenClaw Agent Guide](/path/to/gcp-claw-lab/docs/openclaw-agent-guide.md): general lessons and best practices for building reliable agent workflows in OpenClaw
+- [Project Spec](/path/to/gcp-claw-lab/docs/spec.md): current architecture, operating model, and constraints for this lab
+- [Backlog](/path/to/gcp-claw-lab/docs/backlog.md): prioritized open work and follow-up improvements
 
 ### Dependency management
 
-Pinned runtime versions live in [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json).
+Pinned runtime versions live in [versions.json](/path/to/gcp-claw-lab/versions.json).
 
 Use:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 npm run deps:show
 ```
 
@@ -75,14 +75,14 @@ That reports:
 Check auto-managed latest versions without editing anything:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 npm run deps:check
 ```
 
-Auto-bump the registry-backed entries in [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json):
+Auto-bump the registry-backed entries in [versions.json](/path/to/gcp-claw-lab/versions.json):
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 npm run deps:bump
 ```
 
@@ -100,10 +100,10 @@ It intentionally does not auto-bump:
 
 Those remain manual family pins so we do not silently jump Docker base-image tracks or Cloud Functions runtime majors.
 
-After editing [versions.json](/Users/sean/Repos/gcp-claw-lab/versions.json), regenerate derived files with:
+After editing [versions.json](/path/to/gcp-claw-lab/versions.json), regenerate derived files with:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 npm run deps:sync
 npm run deps:lock:function
 ```
@@ -118,7 +118,7 @@ Native-local host tools are still operator-managed. The repo does not auto-upgra
 
 ### Local operator environment with direnv
 
-For cloud commands, the easiest setup is `direnv`.
+For operator commands in this repo, the easiest setup is `direnv`.
 
 Install it on macOS with:
 
@@ -129,36 +129,43 @@ brew install direnv
 Then hook it into your shell following the `direnv` install instructions for your shell, and in this repo create a local file:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 cp .envrc.example .envrc
 cat > .envrc.local <<'EOF'
 export VM_NAME=claw-runtime-vm
-export PROJECT_ID=claw-runtime-example
+export PROJECT_ID=your-gcp-project-id
 export ZONE=us-central1-a
 export OPENCLAW_SECRET_NAME=REPLACE_ME
 export CLOUD_SECRET_FILE=config/secrets.cloud.json
-export GMAIL_TEST_TO=user@example.com
+export GMAIL_TEST_TO=operator@example.com
 EOF
 direnv allow
 ```
 
-`.envrc` and `.envrc.local` are Git-ignored. Use them for operator defaults such as VM/project/zone/secret name, not for runtime secret payloads. Keep runtime secrets in [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json).
+The repo-managed `.envrc` now:
+
+- loads `.envrc.local` if present
+- adds [bin](/path/to/gcp-claw-lab/bin) to `PATH`
+
+So after `direnv allow`, `agent-runtime ...` works directly while you are inside this repo.
+
+`.envrc` and `.envrc.local` are Git-ignored. Use them for operator defaults such as VM/project/zone/secret name, not for runtime secret payloads. Keep runtime secrets in [config/secrets.cloud.json](/path/to/gcp-claw-lab/config/secrets.cloud.json).
 
 ### Authentication and secrets
 
 Secrets are split by environment:
 
-- [config/secrets.local.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json)
-- [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json)
+- [config/secrets.local.json](/path/to/gcp-claw-lab/config/secrets.local.json)
+- [config/secrets.cloud.json](/path/to/gcp-claw-lab/config/secrets.cloud.json)
 
 Start from:
 
-- [config/secrets.local.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json.example)
-- [config/secrets.cloud.json.example](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json.example)
+- [config/secrets.local.example.json](/path/to/gcp-claw-lab/config/secrets.local.example.json)
+- [config/secrets.cloud.example.json](/path/to/gcp-claw-lab/config/secrets.cloud.example.json)
 
 Rules:
 
-- repo templates under [config](/Users/sean/Repos/gcp-claw-lab/config) are the source of truth for managed behavior
+- repo templates under [config](/path/to/gcp-claw-lab/config) are the source of truth for managed behavior
 - secret overlay files are Git-ignored and hold config-bound secret values
 - runtime auth state stays environment-local:
   - native local: `~/.openclaw`
@@ -173,12 +180,14 @@ Current auth model:
 - Docker-local
   - provider API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.local.json`
   - OpenRouter is the recommended API-key provider for this repo
-  - Gmail service account: store JSON object under `gog.serviceAccounts["automation@example.com"]` in `config/secrets.local.json`
+  - Gmail service account: store JSON object under `gog.serviceAccounts["your-workflow-account@example.com"]` in `config/secrets.local.json`
+  - set the configured workflow account under `gog.account`; the examples use `gmail-workflow@example.com` only as a neutral placeholder
 - cloud
   - config secrets come from Secret Manager via `config/secrets.cloud.json` shape
   - provider API key: store under `auth.profiles.<profile>.apiKey` in `config/secrets.cloud.json`
   - OpenRouter is the recommended API-key provider for this repo
-  - Gmail service account: store JSON object under `gog.serviceAccounts["automation@example.com"]` in `config/secrets.cloud.json`
+  - Gmail service account: store JSON object under `gog.serviceAccounts["your-workflow-account@example.com"]` in `config/secrets.cloud.json`
+  - set the configured workflow account under `gog.account`; the examples use `gmail-workflow@example.com` only as a neutral placeholder
 
 Recommended default model/profile:
 
@@ -190,7 +199,7 @@ The runtime env renderer will emit `OPENROUTER_API_KEY` automatically when the p
 
 Docker-local notes:
 
-- `./scripts/prepare-local-docker.sh` renders:
+- `agent-runtime local prepare` renders:
   - `config/rendered/openclaw.json`
   - `config/docker.local.env`
   - `config/docker.build.env`
@@ -207,7 +216,7 @@ Cloud notes:
 
 ### Native local
 
-Use [config/openclaw.local.json5.example](/Users/sean/Repos/gcp-claw-lab/config/openclaw.local.json5.example) as the basis for `~/.openclaw/openclaw.json`.
+Use [config/openclaw.local.example.json5](/path/to/gcp-claw-lab/config/openclaw.local.example.json5) as the basis for `~/.openclaw/openclaw.json`.
 
 Recommended prerequisite:
 
@@ -220,11 +229,11 @@ brew install ripgrep
 Initial setup:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 npm run deps:sync
-cp config/secrets.local.json.example config/secrets.local.json
-bash ./scripts/prepare-local-docker.sh
-bash ./scripts/run-local.sh
+cp config/secrets.local.example.json config/secrets.local.json
+agent-runtime local prepare
+agent-runtime local deploy
 bash ./scripts/print-local-docker-access.sh
 ```
 
@@ -235,58 +244,69 @@ Gateway addresses:
 
 Routine operations:
 
+- preferred runtime CLI:
+  ```bash
+  agent-runtime local deploy
+  agent-runtime cloud deploy
+  agent-runtime local cron list
+  agent-runtime cloud logs-download
+  agent-runtime local test basic
+  agent-runtime local test core
+  agent-runtime local test integration
+  agent-runtime local test skill pip-newsletter-digest
+  ```
 - local Docker command list:
   ```bash
-  npm run local:help
+  agent-runtime local help
   ```
 - prepare and start the local gateway:
   ```bash
-  npm run local:deploy
+  agent-runtime local deploy
   ```
 - restart the local gateway after secret/runtime config changes without rebuilding:
   ```bash
-  npm run local:restart
+  agent-runtime local restart
   ```
 - force a clean local image rebuild and recreate the gateway:
   ```bash
-  npm run local:rebuild
+  agent-runtime local rebuild
   ```
 - show local Docker status and logs:
   ```bash
-  npm run local:ps
-  npm run local:logs
-  npm run local:agent:logs
+  agent-runtime local ps
+  agent-runtime local logs
+  agent-runtime local agent-logs
   ```
 - shell into the Docker-local gateway:
   ```bash
-  npm run local:shell
+  agent-runtime local shell
   ```
 - reset Docker-local state without touching native local:
   ```bash
-  bash /Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh
+  bash /path/to/gcp-claw-lab/scripts/reset-local-docker.sh
   ```
-- local cron config is repo-managed in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
+- local cron config is composed from [workspace/config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.local.json) and disabled by default to avoid duplicate scheduled sends when cloud cron is active:
   ```bash
-  npm run local:cron:apply
-  npm run local:cron:list
-  npm run local:cron:run:digest
+  agent-runtime local cron apply
+  agent-runtime local cron list
+  agent-runtime local cron run-digest
   ```
-- local Gmail and digest test commands:
+- local Gmail and skill test commands:
   ```bash
-  npm run local:test:gmail:read
-  npm run local:test:gmail:send
-  npm run local:test:digest
+  agent-runtime local test gmail-read
+  agent-runtime local test gmail-send
+  agent-runtime local test skill pip-newsletter-digest
   ```
 
 Optional local overrides:
 
-- `LOCAL_CRON_FILE` to use a cron config file other than `config/cron.local.json`
-- `TAIL_LINES` for `local:logs`
-- `AGENT_NAME` for `local:agent:logs`
-- `LOG_VIEW` for `local:agent:logs` with `messages`, `replies`, `errors`, or `full`
-- `SHOW_RUNTIME_LOG=1` for `local:agent:logs` to append the raw runtime log tail
-- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `local:test:gmail:send`
-- `DIGEST_MESSAGE` for `local:test:digest`
+- `LOCAL_CRON_FILE` to use a cron config file other than `workspace/config/cron.local.json`
+- `TAIL_LINES` for `agent-runtime local logs`
+- `AGENT_NAME` for `agent-runtime local agent-logs`
+- `LOG_VIEW` for `agent-runtime local agent-logs` with `messages`, `replies`, `errors`, or `full`
+- `SHOW_RUNTIME_LOG=1` for `agent-runtime local agent-logs` to append the raw runtime log tail
+- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime local test gmail-send`
+- `SKILL_TEST_MESSAGE` and `SKILL_TEST_TIMEOUT_MS` for `agent-runtime local test skill ...`
 
 ### Digest workflow notes
 
@@ -300,7 +320,7 @@ Current Pip newsletter digest shape:
 
 Extractor artifacts are written per message under:
 
-- [workspace/memory/newsletters](/Users/sean/Repos/gcp-claw-lab/workspace/memory/newsletters)
+- [workspace/memory/newsletters](/path/to/gcp-claw-lab/workspace/memory/newsletters)
 
 Each selected message id gets a directory containing:
 
@@ -315,7 +335,7 @@ Normal digest runs should summarize from `clean.md`, `links.json`, and `metadata
 
 Final send artifacts are written per run under:
 
-- [workspace/memory/digests](/Users/sean/Repos/gcp-claw-lab/workspace/memory/digests)
+- [workspace/memory/digests](/path/to/gcp-claw-lab/workspace/memory/digests)
 
 Each run writes:
 
@@ -327,18 +347,28 @@ Each run writes:
 
 `digest.json` is now the structured source of truth for the final digest content. The renderer generates `email.html` and `email.txt` deterministically from that JSON so HTML and plaintext stay aligned.
 
-Native-local note:
+Integration note:
 
-- the digest skills call workspace-local wrappers under [workspace/scripts](/Users/sean/Repos/gcp-claw-lab/workspace/scripts) so the same workflow can find the extractor/send helper in native local, Docker-local, and cloud
+- this runtime repo no longer owns the newsletter implementation scripts
+- the newsletter logic now lives in the sibling repo at [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest)
+- this repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json) into a composed runtime view under `.runtime/integrations`
+- the reviewed workspace then exposes only the composed skill surface under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+- cloud deploys package the sibling integration from the local checkout at deploy time; the VM does not fetch the integration repo from GitHub during deploy
+- the Docker image installs the staged integration package and exposes its declared bins on `PATH`
+- runtime-specific code should stay generic; workflow-specific commands should come from the integration package itself
+- cron follows the same split:
+  - [config/cron.example.json](/Users/sean/Repos/gcp-claw-lab/config/cron.example.json) documents the neutral runtime schema
+  - real cron jobs for the current workspace live under [workspace/config](/Users/sean/Repos/gcp-claw-lab/workspace/config)
+  - the runtime reconciles those files into OpenClaw cron state after the gateway starts; they are not rendered into `openclaw.json`
 
 ### Cloud
 
 Cloud container flow:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /path/to/gcp-claw-lab
 npm run deps:sync
-cp config/secrets.cloud.json.example config/secrets.cloud.json
+cp config/secrets.cloud.example.json config/secrets.cloud.json
 bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID [config/secrets.cloud.json]
 bash ./scripts/sync-cloud-app.sh VM_NAME PROJECT_ID ZONE
 bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
@@ -346,13 +376,15 @@ bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
 
 `deploy-cloud.sh` is the normal operator entrypoint. It syncs the app, installs cloud host prerequisites, renders runtime artifacts on the VM, and starts the cloud gateway container.
 
+`agent-runtime cloud deploy` stages sibling integrations from the local filesystem before sync, so the cloud image always contains a concrete snapshot of the checked-out integration code used for that deploy.
+
 Convenience commands:
 
 Set these once in your shell for the current session, or load them automatically with `direnv` as described above:
 
 ```bash
 export VM_NAME=claw-runtime-vm
-export PROJECT_ID=claw-runtime-example
+export PROJECT_ID=your-gcp-project-id
 export ZONE=us-central1-a
 export OPENCLAW_SECRET_NAME=REPLACE_ME
 ```
@@ -360,118 +392,144 @@ export OPENCLAW_SECRET_NAME=REPLACE_ME
 Then use:
 
 ```bash
-npm run cloud:help
-npm run cloud:push-secret
-npm run cloud:deploy
-npm run cloud:restart
-npm run cloud:rebuild
-npm run cloud:ps
-npm run cloud:logs
-npm run cloud:agent:logs
-npm run cloud:logs:download
-npm run cloud:shell
-npm run cloud:tunnel
-npm run cloud:cron:apply
-npm run cloud:cron:list
-npm run cloud:cron:run:digest
-npm run cloud:test:gmail:read
-npm run cloud:test:gmail:send
-npm run cloud:test:digest
+agent-runtime cloud deploy
+agent-runtime cloud restart
+agent-runtime cloud rebuild
+agent-runtime cloud ps
+agent-runtime cloud logs
+agent-runtime cloud agent-logs
+agent-runtime cloud shell
+agent-runtime cloud tunnel
+agent-runtime cloud cron apply
+agent-runtime cloud cron list
+agent-runtime cloud cron run-digest
+agent-runtime cloud test gmail-read
+agent-runtime cloud test gmail-send
+agent-runtime cloud test skill pip-newsletter-digest
+```
+
+Cloud runtime commands:
+
+```bash
+agent-runtime cloud help
+agent-runtime cloud push-secret
+agent-runtime cloud sync
+agent-runtime cloud deploy
+agent-runtime cloud restart
+agent-runtime cloud rebuild
+agent-runtime cloud ps
+agent-runtime cloud logs
+agent-runtime cloud agent-logs
+agent-runtime cloud logs-download
+agent-runtime cloud shell
+agent-runtime cloud tunnel
+agent-runtime cloud cron apply
+agent-runtime cloud cron list
+agent-runtime cloud cron run-digest
+agent-runtime cloud test gmail-read
+agent-runtime cloud test gmail-send
 ```
 
 Optional overrides:
 
 - `CLOUD_SECRET_FILE` to use a secret file other than `config/secrets.cloud.json`
-- `CLOUD_CRON_FILE` to use a cron config file other than `config/cron.cloud.json`
-- `TAIL_LINES` for `cloud:logs`
-- `AGENT_NAME` for `cloud:agent:logs`
-- `LOG_VIEW` for `cloud:agent:logs` with `messages`, `replies`, `errors`, or `full`
-- `SHOW_RUNTIME_LOG=1` for `cloud:agent:logs` to append the raw runtime log tail
-- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `cloud:test:gmail:send`
-- `DIGEST_MESSAGE` for `cloud:test:digest`
+- `CLOUD_CRON_FILE` to use a cron config file other than `workspace/config/cron.cloud.json`
+- `TAIL_LINES` for `agent-runtime cloud logs`
+- `AGENT_NAME` for `agent-runtime cloud agent-logs`
+- `LOG_VIEW` for `agent-runtime cloud agent-logs` with `messages`, `replies`, `errors`, or `full`
+- `SHOW_RUNTIME_LOG=1` for `agent-runtime cloud agent-logs` to append the raw runtime log tail
+- `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime cloud test gmail-send`
 
 Cloud command guidance:
 
-- `npm run cloud:deploy`
+- `agent-runtime cloud deploy`
   - normal safe default
   - syncs app files, installs host prerequisites, renders runtime artifacts, and rebuilds with Docker cache enabled
-- `npm run cloud:restart`
+- `agent-runtime cloud restart`
   - fastest path when only the cloud secret payload or other runtime inputs changed
   - does not rebuild the image
-- `npm run cloud:rebuild`
+- `agent-runtime cloud rebuild`
   - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
   - prunes stale Docker images after a successful rebuild to keep the VM disk from filling up with old build artifacts
-- `npm run cloud:tunnel`
+- `agent-runtime cloud tunnel`
   - opens a local tunnel to the remote gateway so you can use the browser UI at `http://127.0.0.1:18789/overview`
-- `npm run cloud:cron:apply`
-  - reconcile repo-managed cloud cron jobs into the gateway by name
+- `agent-runtime cloud cron apply`
+  - reconcile workspace-composed cloud cron jobs into the gateway by name
   - removes duplicate jobs with the same name and updates the surviving job to match config
-- `npm run cloud:logs:download`
+- `agent-runtime cloud logs-download`
   - downloads cloud OpenClaw session logs locally for inspection/debugging
 
-Repo-managed cloud cron config lives in [config/cron.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/cron.cloud.json).
+The neutral cron schema example lives in [config/cron.example.json](/Users/sean/Repos/gcp-claw-lab/config/cron.example.json). The concrete cloud composition file lives in [workspace/config/cron.cloud.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.cloud.json).
 
 Local Docker command guidance:
 
-- `npm run local:deploy`
+- `agent-runtime local deploy`
   - normal local operator entrypoint
   - renders runtime artifacts, builds with Docker cache enabled, seeds writable state paths, starts the local gateway, and reconciles local cron config
-- `npm run local:restart`
+- `agent-runtime local restart`
   - fastest path when only local secret payloads or runtime-rendered config changed
   - does not rebuild the image
-- `npm run local:rebuild`
+- `agent-runtime local rebuild`
   - use when the local image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
   - prunes stale Docker images after a successful rebuild to keep local Docker storage from filling up with old build artifacts
-- `npm run local:cron:apply`
-  - reconcile repo-managed local cron jobs into the gateway by name
-  - local cron is disabled by default in [config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/config/cron.local.json) to avoid duplicate scheduled sends
+- `agent-runtime local cron apply`
+  - reconcile workspace-composed local cron jobs into the gateway by name
+  - local cron is disabled by default in [workspace/config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.local.json) to avoid duplicate scheduled sends
 
 Cloud secret setup:
 
-1. Create [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json) from the example:
+1. Create [config/secrets.cloud.json](/path/to/gcp-claw-lab/config/secrets.cloud.json) from the example:
 
    ```bash
-   cd /Users/sean/Repos/gcp-claw-lab
-   cp config/secrets.cloud.json.example config/secrets.cloud.json
+   cd /path/to/gcp-claw-lab
+   cp config/secrets.cloud.example.json config/secrets.cloud.json
    ```
 
 2. Fill in the fields you need for the first cloud run:
    - `gateway.auth.token`
    - `auth.profiles.openrouter:default.apiKey`
-   - `gog.serviceAccounts["automation@example.com"]`
+   - `gog.serviceAccounts["your-workflow-account@example.com"]`
+   - `gog.account`
    - keep `hooks.enabled` set to `false` unless you are explicitly setting up cloud Gmail hooks
 
 3. Push the secret payload to Secret Manager:
 
    ```bash
-   cd /Users/sean/Repos/gcp-claw-lab
+   cd /path/to/gcp-claw-lab
    bash ./scripts/push-cloud-runtime-secret.sh OPENCLAW_SECRET_NAME PROJECT_ID config/secrets.cloud.json
    ```
 
 4. Deploy the cloud runtime:
 
    ```bash
-   cd /Users/sean/Repos/gcp-claw-lab
+   cd /path/to/gcp-claw-lab
    npm run deps:sync
    bash ./scripts/deploy-cloud.sh VM_NAME PROJECT_ID ZONE OPENCLAW_SECRET_NAME
    ```
 
-5. Verify the rendered cloud runtime from inside the gateway container:
+5. Verify cloud Gmail read/send through the runtime CLI:
 
    ```bash
-   bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+   agent-runtime cloud test gmail-read
+   agent-runtime cloud test gmail-send
    ```
 
-   Then test Gmail read/send:
+   If you need to inspect the gateway manually:
 
    ```bash
-   gog gmail search "newer_than:1d" --account automation@example.com --plain
+   bash /path/to/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+   ```
+
+   Then use the configured runtime account:
+
+   ```bash
+   gog gmail search "newer_than:1d" --account "$GOG_ACCOUNT" --plain
    ```
 
    ```bash
-   printf 'Cloud Gmail send test\n' | gog gmail send --account automation@example.com --to user@example.com --subject "Pip Cloud Gmail send test" --body-file=-
+   printf 'Cloud Gmail send test\n' | gog gmail send --account "$GOG_ACCOUNT" --to "${GMAIL_TEST_TO:-operator@example.com}" --subject "${GMAIL_TEST_SUBJECT:-Pip Cloud Gmail send test}" --body-file=-
    ```
 
 Cloud runtime artifacts rendered on the VM:
@@ -480,12 +538,12 @@ Cloud runtime artifacts rendered on the VM:
 - `/opt/openclaw/state/runtime/runtime.env`
 - `/opt/openclaw/state/runtime/gog-service-account.json` when Gmail service-account data is present
 
-For normal cloud operation, you should not need to run the manual Gmail bootstrap script if the service-account JSON is present in [config/secrets.cloud.json](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json).
+For normal cloud operation, you should not need to run the manual Gmail bootstrap script if the service-account JSON is present in [config/secrets.cloud.json](/path/to/gcp-claw-lab/config/secrets.cloud.json).
 
 Shell into the cloud gateway:
 
 ```bash
-bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
+bash /path/to/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJECT_ID ZONE
 ```
 
 ### Setup scripts
@@ -493,50 +551,57 @@ bash /Users/sean/Repos/gcp-claw-lab/scripts/shell-cloud-gateway.sh VM_NAME PROJE
 Primary scripts:
 
 - local Docker
-  - [prepare-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/prepare-local-docker.sh)
-  - [run-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-local.sh)
-  - [reset-local-docker.sh](/Users/sean/Repos/gcp-claw-lab/scripts/reset-local-docker.sh)
-  - [print-local-docker-access.sh](/Users/sean/Repos/gcp-claw-lab/scripts/print-local-docker-access.sh)
+  - [runtime-lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime-lifecycle.sh)
+  - [runtime-cron.sh](/path/to/gcp-claw-lab/scripts/runtime-cron.sh)
+  - [reset-local-docker.sh](/path/to/gcp-claw-lab/scripts/reset-local-docker.sh)
+  - [print-local-docker-access.sh](/path/to/gcp-claw-lab/scripts/print-local-docker-access.sh)
 - cloud
-  - [push-cloud-runtime-secret.sh](/Users/sean/Repos/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh)
-  - [sync-cloud-app.sh](/Users/sean/Repos/gcp-claw-lab/scripts/sync-cloud-app.sh)
-  - [deploy-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/deploy-cloud.sh)
-  - [run-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/run-cloud.sh)
+  - [push-cloud-runtime-secret.sh](/path/to/gcp-claw-lab/scripts/push-cloud-runtime-secret.sh)
+  - [sync-cloud-app.sh](/path/to/gcp-claw-lab/scripts/sync-cloud-app.sh)
+  - [deploy-cloud.sh](/path/to/gcp-claw-lab/scripts/deploy-cloud.sh)
+  - [cloud-ssh-app.sh](/path/to/gcp-claw-lab/scripts/cloud-ssh-app.sh)
 
 Supporting scripts:
 
 - Gmail service-account bootstrap
-  - [bootstrap-gog-docker-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh)
-  - [bootstrap-gog-cloud-service-account.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
-- Gmail send helper
-  - [send-gog-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/send-gog-local.sh)
+  - [bootstrap-gog-docker-local.sh](/path/to/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh)
+  - [bootstrap-gog-cloud-service-account.sh](/path/to/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
 - legacy/manual model auth helper
-  - [bootstrap-openai-cloud.sh](/Users/sean/Repos/gcp-claw-lab/scripts/models/bootstrap-openai-cloud.sh)
+  - [bootstrap-openai-cloud.sh](/path/to/gcp-claw-lab/scripts/models/bootstrap-openai-cloud.sh)
 - local shutdown
-  - [security-shutdown-local.sh](/Users/sean/Repos/gcp-claw-lab/scripts/security-shutdown-local.sh)
+  - [security-shutdown-local.sh](/path/to/gcp-claw-lab/scripts/security-shutdown-local.sh)
 
 ### Gmail testing
+
+Prefer the runtime CLI:
+
+```bash
+agent-runtime local test gmail-read
+agent-runtime local test gmail-send
+agent-runtime cloud test gmail-read
+agent-runtime cloud test gmail-send
+```
 
 Host test:
 
 ```bash
 printf 'Pip Gmail send test\n' | gog gmail send \
-  --account automation@example.com \
-  --to user@example.com \
-  --subject "Pip Gmail send test" \
+  --account "${GOG_ACCOUNT:-your-workflow-account@example.com}" \
+  --to "${GMAIL_TEST_TO:-operator@example.com}" \
+  --subject "${GMAIL_TEST_SUBJECT:-Pip Gmail send test}" \
   --body-file=-
 ```
 
 Docker-local test:
 
 ```bash
-docker compose --env-file /Users/sean/Repos/gcp-claw-lab/config/docker.build.env -f /Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
-  bash -lc 'printf "Docker gateway Gmail send test\n" | gog gmail send --account automation@example.com --to user@example.com --subject "Pip Docker Gmail send test" --body-file=-'
+docker compose --env-file /path/to/gcp-claw-lab/config/docker.build.env -f /path/to/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
+  bash -lc 'printf "Docker gateway Gmail send test\n" | gog gmail send --account "$GOG_ACCOUNT" --to "${GMAIL_TEST_TO:-operator@example.com}" --subject "${GMAIL_TEST_SUBJECT:-Pip Docker Gmail send test}" --body-file=-'
 ```
 
 Docker-local read test:
 
 ```bash
-docker compose --env-file /Users/sean/Repos/gcp-claw-lab/config/docker.build.env -f /Users/sean/Repos/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
-  gog gmail search "newer_than:1d" --account automation@example.com --plain
+docker compose --env-file /path/to/gcp-claw-lab/config/docker.build.env -f /path/to/gcp-claw-lab/docker/compose.local.yml exec -T openclaw-gateway \
+  bash -lc 'gog gmail search "newer_than:1d" --account "$GOG_ACCOUNT" --plain'
 ```
