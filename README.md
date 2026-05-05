@@ -452,7 +452,8 @@ Cloud command guidance:
 - `agent-runtime cloud rebuild`
   - use when the image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
-  - prunes stale Docker images after a successful rebuild to keep the VM disk from filling up with old build artifacts
+- `agent-runtime cloud prune`
+  - explicit maintenance step to reclaim VM disk space from old Docker images when needed
 - `agent-runtime cloud tunnel`
   - opens a local tunnel to the remote gateway so you can use the browser UI at `http://127.0.0.1:18789/overview`
 - `agent-runtime cloud cron apply`
@@ -474,7 +475,8 @@ Local Docker command guidance:
 - `agent-runtime local rebuild`
   - use when the local image seems stale or suspicious, after Dockerfile/runtime build changes, or after odd image-content problems
   - forces a clean `--no-cache` image rebuild before recreating the gateway
-  - prunes stale Docker images after a successful rebuild to keep local Docker storage from filling up with old build artifacts
+- `agent-runtime local prune`
+  - explicit maintenance step to reclaim local Docker disk space from old images when needed
 - `agent-runtime local cron apply`
   - reconcile workspace-composed local cron jobs into the gateway by name
   - local cron is disabled by default in [workspace/config/cron.local.json](/Users/sean/Repos/gcp-claw-lab/workspace/config/cron.local.json) to avoid duplicate scheduled sends

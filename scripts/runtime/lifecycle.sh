@@ -36,7 +36,6 @@ case "${ENV_NAME}:${ACTION}" in
     bash "${SCRIPT_DIR}/lifecycle.sh" local prepare
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d openclaw-gateway
     apply_cron
-    bash "${SCRIPT_DIR}/../maintenance/prune-unused-docker-images.sh"
     ;;
   local:restart)
     runtime_prepare_local_artifacts
@@ -50,7 +49,6 @@ case "${ENV_NAME}:${ACTION}" in
     runtime_seed_local_state
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
-    bash "${SCRIPT_DIR}/../maintenance/prune-unused-docker-images.sh"
     ;;
   cloud:deploy)
     ensure_cloud_secret
@@ -58,7 +56,6 @@ case "${ENV_NAME}:${ACTION}" in
     runtime_render_cloud_artifacts "${SECRET_NAME}"
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --build openclaw-gateway
     apply_cron
-    bash "${SCRIPT_DIR}/../maintenance/prune-unused-docker-images.sh"
     ;;
   cloud:restart)
     ensure_cloud_secret
@@ -74,7 +71,6 @@ case "${ENV_NAME}:${ACTION}" in
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --no-cache openclaw-gateway
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
-    bash "${SCRIPT_DIR}/../maintenance/prune-unused-docker-images.sh"
     ;;
   *)
     echo "Unknown runtime lifecycle: ${ENV_NAME} ${ACTION}" >&2

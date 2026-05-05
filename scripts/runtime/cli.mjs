@@ -106,6 +106,10 @@ const COMMANDS = {
         envOrFail("OPENCLAW_SECRET_NAME"),
       ]),
   },
+  prune: {
+    local: () => bashScript("./scripts/maintenance/prune-unused-docker-images.sh"),
+    cloud: () => cloudRemote(["bash", "./scripts/maintenance/prune-unused-docker-images.sh"]),
+  },
   ps: {
     local: () => localCompose(["ps"]),
     cloud: () => cloudRemote(["docker-compose", "--env-file", "config/docker.build.env", "-f", "docker/compose.cloud.yml", "ps"]),
@@ -196,6 +200,7 @@ Common commands:
   deploy
   restart
   rebuild
+  prune
   ps
   logs
   logs-download
@@ -228,6 +233,8 @@ Examples:
   agent-runtime local test basic
   agent-runtime local test core
   agent-runtime local test integration
+  agent-runtime local prune
+  agent-runtime cloud prune
   agent-runtime local test skill pip-newsletter-digest
   agent-runtime cloud test skill pip-newsletter-digest
 `);

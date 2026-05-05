@@ -49,15 +49,11 @@ function readStateFile() {
 
 function cleanGeneratedSkillsRoot() {
   ensureDirExists(WORKSPACE_SKILLS_ROOT);
-  const previousState = readStateFile();
-  const previousSkills = new Set(
-    Array.isArray(previousState?.integrations)
-      ? previousState.integrations.flatMap((integration) => integration.skills ?? [])
-      : [],
-  );
-
-  for (const entry of previousSkills) {
-    removeIfExists(resolve(WORKSPACE_SKILLS_ROOT, entry));
+  for (const entry of readdirSync(WORKSPACE_SKILLS_ROOT, { withFileTypes: true })) {
+    if (entry.name === ".gitkeep") {
+      continue;
+    }
+    removeIfExists(resolve(WORKSPACE_SKILLS_ROOT, entry.name));
   }
 }
 
@@ -92,6 +88,13 @@ function copyWorkspaceTree(sourcePath, destPath) {
   cpSync(sourcePath, destPath, {
     recursive: true,
     preserveTimestamps: true,
+    filter: (source) => {
+      const base = source.split("/").pop() ?? "";
+      if (base === ".DS_Store" || base.startsWith("._")) {
+        return false;
+      }
+      return true;
+    },
   });
 }
 

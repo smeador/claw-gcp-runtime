@@ -29,6 +29,8 @@ EXCLUDES=(
   --exclude='./workspace/.openclaw'
   --exclude='./workspace/.tmp'
   --exclude='./workspace/tmp'
+  --exclude='./workspace/memory'
+  --exclude='./workspace/state'
   --exclude='./config/secrets.local.json'
   --exclude='./config/secrets.cloud.json'
   --exclude='./config/docker.local.env'
@@ -61,4 +63,4 @@ gcloud compute ssh "${VM_NAME}" \
   --project "${PROJECT_ID}" \
   --zone "${ZONE}" \
   --tunnel-through-iap \
-  --command "sudo bash -lc 'set -euo pipefail; mkdir -p \"${REMOTE_APP_ROOT}\" && tar -xzf \"${REMOTE_ARCHIVE}\" -C \"${REMOTE_APP_ROOT}\" && rm -f \"${REMOTE_ARCHIVE}\" && mkdir -p \"${REMOTE_APP_ROOT}/workspace/.openclaw\" \"${REMOTE_APP_ROOT}/workspace/memory\"'"
+  --command "sudo bash -lc 'set -euo pipefail; mkdir -p \"${REMOTE_APP_ROOT}\" && rm -rf \"${REMOTE_APP_ROOT}/docker\" \"${REMOTE_APP_ROOT}/config\" \"${REMOTE_APP_ROOT}/workspace\" \"${REMOTE_APP_ROOT}/scripts\" \"${REMOTE_APP_ROOT}/.runtime\" \"${REMOTE_APP_ROOT}/versions.json\" \"${REMOTE_APP_ROOT}/package.json\" \"${REMOTE_APP_ROOT}/package-lock.json\" && tar -xzf \"${REMOTE_ARCHIVE}\" -C \"${REMOTE_APP_ROOT}\" && rm -f \"${REMOTE_ARCHIVE}\" && find \"${REMOTE_APP_ROOT}\" \\( -name \".DS_Store\" -o -name \"._*\" \\) -delete && mkdir -p \"${REMOTE_APP_ROOT}/workspace/.openclaw\" \"${REMOTE_APP_ROOT}/workspace/memory\"'"
