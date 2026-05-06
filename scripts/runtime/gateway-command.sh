@@ -21,7 +21,15 @@ fi
 runtime_init_env "${ENV_NAME}"
 
 if [ "${TTY}" = "1" ]; then
-  runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec openclaw-gateway "$@"
+  if [ "${RUNTIME_ENV}" = "cloud" ]; then
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -w / openclaw-gateway "$@"
+  else
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec openclaw-gateway "$@"
+  fi
 else
-  runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -T openclaw-gateway "$@"
+  if [ "${RUNTIME_ENV}" = "cloud" ]; then
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -T -w / openclaw-gateway "$@"
+  else
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -T openclaw-gateway "$@"
+  fi
 fi

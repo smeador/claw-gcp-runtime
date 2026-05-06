@@ -23,6 +23,13 @@
     "restart": true,
     "ownerDisplay": "raw"
   },
+  "tools": {
+    "exec": {
+      "host": "gateway",
+      "security": "full",
+      "ask": "off"
+    }
+  },
   "session": {
     "dmScope": "per-channel-peer"
   },

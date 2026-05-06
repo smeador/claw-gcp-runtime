@@ -14,6 +14,7 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      OPENCLAW_EXEC_APPROVALS_SOURCE: /runtime/exec-approvals.json
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
@@ -46,6 +47,7 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      OPENCLAW_EXEC_APPROVALS_SOURCE: /runtime/exec-approvals.json
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ../workspace:/workspace:ro
@@ -78,6 +80,7 @@ services:
     environment:
       OPENCLAW_WORKSPACE: /workspace
       OPENCLAW_CONFIG_SOURCE: /runtime/openclaw.json
+      OPENCLAW_EXEC_APPROVALS_SOURCE: /runtime/exec-approvals.json
       GOG_SERVICE_ACCOUNT_KEY_SOURCE: /runtime/gog-service-account.json
     volumes:
       - ..:/repo

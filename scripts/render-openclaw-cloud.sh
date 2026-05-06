@@ -38,6 +38,8 @@ node scripts/render-gog-service-account-key.mjs \
   --json "${SECRET_JSON}" \
   --output "${RUNTIME_DIR}/gog-service-account.json"
 
+cp config/exec-approvals.runtime.json "${RUNTIME_DIR}/exec-approvals.json"
+
 node scripts/render-openclaw-config.mjs \
   --template config/openclaw.cloud.example.json5 \
   --output "${RUNTIME_DIR}/openclaw.json" \
@@ -54,4 +56,9 @@ fi
 if [ -f "${RUNTIME_DIR}/gog-service-account.json" ]; then
   chmod 600 "${RUNTIME_DIR}/gog-service-account.json"
   chown 1000:1000 "${RUNTIME_DIR}/gog-service-account.json"
+fi
+
+if [ -f "${RUNTIME_DIR}/exec-approvals.json" ]; then
+  chmod 600 "${RUNTIME_DIR}/exec-approvals.json"
+  chown 1000:1000 "${RUNTIME_DIR}/exec-approvals.json"
 fi

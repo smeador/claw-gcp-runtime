@@ -30,7 +30,7 @@ if timeout_ms:
 cmd = (
     "cd /opt/openclaw/app && "
     "docker-compose --env-file config/docker.build.env "
-    "-f docker/compose.cloud.yml exec "
+    "-f docker/compose.cloud.yml exec -w / "
     + (" ".join(exec_parts) + " " if exec_parts else "")
     + "openclaw-gateway "
     "bash -lc "

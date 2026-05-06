@@ -5,8 +5,10 @@ HOME_DIR="${HOME:-/home/node}"
 STATE_DIR="${HOME_DIR}/.openclaw"
 WORKSPACE_DIR="${OPENCLAW_WORKSPACE:-/workspace}"
 CONFIG_PATH="${STATE_DIR}/openclaw.json"
+EXEC_APPROVALS_PATH="${STATE_DIR}/exec-approvals.json"
 CONFIG_SEED="${OPENCLAW_CONFIG_SEED:-}"
 CONFIG_SOURCE="${OPENCLAW_CONFIG_SOURCE:-}"
+EXEC_APPROVALS_SOURCE="${OPENCLAW_EXEC_APPROVALS_SOURCE:-}"
 GOG_ACCOUNT="${GOG_ACCOUNT:-}"
 GOG_SERVICE_ACCOUNT_KEY_SOURCE="${GOG_SERVICE_ACCOUNT_KEY_SOURCE:-}"
 
@@ -40,6 +42,21 @@ elif [ -n "${CONFIG_SEED}" ] && [ -f "${CONFIG_SEED}" ]; then
   else
     cp "${CONFIG_SEED}" "${CONFIG_PATH}"
   fi
+fi
+
+if [ -n "${EXEC_APPROVALS_SOURCE}" ] && [ -f "${EXEC_APPROVALS_SOURCE}" ]; then
+  if [ -f "${EXEC_APPROVALS_PATH}" ]; then
+    tmp="$(mktemp)"
+    jq -s '
+      . as [$existing, $source]
+      | $source
+      | if ($existing.socket | type) == "object" then .socket = $existing.socket else . end
+    ' "${EXEC_APPROVALS_PATH}" "${EXEC_APPROVALS_SOURCE}" > "${tmp}"
+    mv "${tmp}" "${EXEC_APPROVALS_PATH}"
+  else
+    cp "${EXEC_APPROVALS_SOURCE}" "${EXEC_APPROVALS_PATH}"
+  fi
+  chmod 600 "${EXEC_APPROVALS_PATH}"
 fi
 
 AGENT_AUTH_PATH="${STATE_DIR}/agents/main/agent/auth-profiles.json"

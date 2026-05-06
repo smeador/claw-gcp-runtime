@@ -8,3 +8,5 @@ node scripts/render-openclaw-config.mjs \
   --template config/openclaw.container.example.json5 \
   --output config/rendered/openclaw.json \
   --local-secrets config/secrets.local.json
+
+cp config/exec-approvals.runtime.json config/rendered/exec-approvals.json

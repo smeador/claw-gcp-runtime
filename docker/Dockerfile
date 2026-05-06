@@ -42,7 +42,7 @@ RUN chmod +x /usr/local/bin/agent-lab-openclaw-entrypoint \
   && chown -R node:node /workspace /home/node
 
 USER node
-WORKDIR /workspace
+WORKDIR /
 
 ENTRYPOINT ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
 CMD ["gateway", "--bind", "lan", "--port", "18789"]

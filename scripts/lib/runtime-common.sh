@@ -103,7 +103,11 @@ runtime_render_cloud_artifacts() {
 }
 
 runtime_gateway_exec() {
-  runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -T openclaw-gateway "$@"
+  if [ "${RUNTIME_ENV}" = "cloud" ]; then
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -T -w / openclaw-gateway "$@"
+  else
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" exec -T openclaw-gateway "$@"
+  fi
 }
 
 runtime_wait_for_gateway() {
