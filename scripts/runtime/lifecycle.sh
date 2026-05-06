@@ -34,13 +34,13 @@ case "${ENV_NAME}:${ACTION}" in
     ;;
   local:deploy)
     bash "${SCRIPT_DIR}/lifecycle.sh" local prepare
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
     ;;
   local:restart)
     runtime_prepare_local_artifacts
     runtime_seed_local_state
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
     ;;
   local:rebuild)
@@ -54,14 +54,14 @@ case "${ENV_NAME}:${ACTION}" in
     ensure_cloud_secret
     runtime_prepare_cloud_state
     runtime_render_cloud_artifacts "${SECRET_NAME}"
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --build openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --build --force-recreate openclaw-gateway
     apply_cron
     ;;
   cloud:restart)
     ensure_cloud_secret
     runtime_prepare_cloud_state
     runtime_render_cloud_artifacts "${SECRET_NAME}"
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
     ;;
   cloud:rebuild)

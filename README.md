@@ -309,6 +309,24 @@ Optional local overrides:
 - `GMAIL_TEST_TO` and `GMAIL_TEST_SUBJECT` for `agent-runtime local test gmail-send`
 - `SKILL_TEST_MESSAGE` and `SKILL_TEST_TIMEOUT_MS` for `agent-runtime local test skill ...`
 
+Local and cloud secret payloads may also carry optional channel secrets such as:
+
+- `channels.telegram.botToken`
+
+Telegram is configured as a DM-first channel when enabled:
+
+- `dmPolicy: pairing`
+- `groupPolicy: disabled`
+- `configWrites: false`
+
+Channel configuration is config-first:
+
+- repo templates define channel policy
+- secret overlays provide tokens and enablement flags
+- `agent-runtime ... deploy` and `agent-runtime ... restart` now force-recreate the gateway so rendered config changes reach the live runtime state
+
+For Telegram specifically, a fresh restart may briefly report `connected: false` until the first successful polling cycle completes. Treat that as startup grace unless it persists after a short wait.
+
 ### Digest workflow notes
 
 Current Pip newsletter digest shape:

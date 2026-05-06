@@ -415,10 +415,15 @@ Secret ownership model:
 - Local and cloud environments should use separate secret payload files even when they share the same schema
 - Platform identity such as the VM service account is not stored in the OpenClaw runtime secret payload
 - The payload may include a `gog` branch for the configured workflow account; that branch should render to separate Gmail bootstrap artifacts rather than appearing in rendered `openclaw.json`.
+- The payload may include optional channel secrets such as `channels.telegram.botToken`; channel policy should stay in the repo-managed OpenClaw template while secret overlays only provide tokens and enablement flags.
 - Browser/session state and other runtime artifacts are persisted separately from the config secret payload
 - `gateway.auth` should be treated as a rendered config secret
 - Provider auth may also persist in OpenClaw runtime state files and should be treated as sensitive environment-local state
 - `auth.profiles` in the config payload should define provider/profile metadata; for Docker-local and cloud, an `api_key` profile may additionally carry a raw `apiKey` in the environment secret overlay so bootstrap can emit a runtime env file while stripping the raw token out of the rendered config
+
+Runtime rollout expectation:
+- containerized local and cloud rollouts that change rendered runtime config should recreate the gateway container, not rely on a no-op `up -d`, so the persisted OpenClaw home config is refreshed from the rendered source
+- connection-channel status should be interpreted with protocol-specific startup behavior in mind; for Telegram polling, `connected: false` immediately after restart can still be healthy until the first successful `getUpdates` cycle completes
 
 Version control in Git:
 - OpenClaw base configuration

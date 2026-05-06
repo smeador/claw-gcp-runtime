@@ -251,6 +251,73 @@ That means:
 
 This is easier to reason about than pretending cron belongs inside `openclaw.json`, and it matches how OpenClaw actually persists cron jobs.
 
+## Treat Connection Channels As Config-First Runtime Features
+
+Connection channels such as Telegram are healthiest when they follow the same pattern as provider auth and cron:
+
+- repo-managed templates define non-secret channel policy
+- environment secret overlays provide tokens or other credentials
+- startup merges those into the runtime config
+- the running gateway owns the live connection lifecycle
+
+Good examples of repo-managed channel policy:
+
+- whether the channel is enabled by default
+- DM versus group behavior
+- whether the channel is allowed to write config
+
+Good examples of secret-overlay fields:
+
+- bot tokens
+- per-environment enablement overrides
+
+This keeps the runtime reproducible and avoids cloud-only imperative bootstrap drift.
+
+## Config Changes Must Reach Persisted Runtime State
+
+For containerized OpenClaw, rendering a new config file is not enough by itself.
+
+If the gateway container is left running, the rendered file under a runtime mount may update while the persisted live config under the OpenClaw home directory stays stale. That creates confusing states where:
+
+- the repo looks correct
+- the rendered runtime file looks correct
+- the live gateway behavior is still old
+
+Practical lesson:
+
+- when a deploy changes runtime config or runtime secrets, make sure the gateway process is actually recreated or restarted
+- do not assume `docker compose up -d` will do that if the service is already up
+
+When cloud and local behavior diverge, compare:
+
+- rendered runtime config
+- persisted OpenClaw home config
+- live channel or provider status
+
+That sequence catches “config rendered but not adopted” failures quickly.
+
+## Telegram Polling Has A Startup Grace Window
+
+Telegram polling does not always report as connected immediately at startup.
+
+In current OpenClaw behavior:
+
+- the Telegram provider can start cleanly
+- the bot token can be valid
+- the channel can still report `connected: false` until the first successful `getUpdates` polling cycle completes
+
+That means an immediate post-restart probe can look unhealthy even when the channel is on its way up normally.
+
+Recommended debugging order for Telegram polling:
+
+1. Confirm the channel is configured and enabled.
+2. Confirm the bot token works with `getMe`.
+3. Confirm there is no webhook conflict with `getWebhookInfo`.
+4. Give polling a short startup window before treating `connected: false` as a real failure.
+5. Only then escalate to transport or runtime debugging.
+
+This is especially important in local Docker, where a fresh restart can briefly look worse than cloud even when both runtimes are healthy.
+
 ## Use Bounded Synthesis
 
 OpenClaw can support sophisticated synthesis workflows, but the safest pattern is bounded synthesis.
