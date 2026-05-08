@@ -30,6 +30,29 @@
       "ask": "off"
     }
   },
+  "plugins": {
+    "allow": [
+      "browser",
+      "device-pair",
+      "document-extract",
+      "file-transfer",
+      "memory-core",
+      "openrouter",
+      "telegram",
+      "web-readability"
+    ],
+    "entries": {
+      "browser": { "enabled": true },
+      "device-pair": { "enabled": true },
+      "document-extract": { "enabled": true },
+      "file-transfer": { "enabled": true },
+      "memory-core": { "enabled": true },
+      "openrouter": { "enabled": true },
+      "telegram": { "enabled": true },
+      "web-readability": { "enabled": true }
+    },
+    "bundledDiscovery": "allowlist"
+  },
   "session": {
     "dmScope": "per-channel-peer"
   },
