@@ -164,6 +164,7 @@ function runIntegration() {
           `test -f ./${stagedRoot}/integration.json`,
           `test -f ./${stagedRoot}/package.json`,
           `test -f ./${stagedRoot}/${integration.adapter.skillsRoot}/${firstSkill}/SKILL.md`,
+          ...(integration.workspaceFiles ?? []).map((entry) => `test -e ./workspace/${entry.target}`),
           "echo staged-integration-present",
         ].join(" && "),
       ],
@@ -187,10 +188,15 @@ function runIntegration() {
       );
     }
 
+    const runnerPath = integration.adapter?.skillTestRunner;
+    if (!runnerPath) {
+      throw new Error(`integration ${integration.name} did not declare a skill test runner`);
+    }
+
     const [skillTestEntryCmd, skillTestEntryArgs] = composeExec(
       "bash",
       "-lc",
-      `test -x /workspace/skills/${testSkill}/TEST.sh && echo skill-test-present`,
+      `test -x /opt/agent-lab/integrations/${stagedRoot.replace(/^\.runtime\/integrations\//, "")}/${runnerPath} && echo skill-test-present`,
     );
     const skillTestEntryOutput = run(
       skillTestEntryCmd,

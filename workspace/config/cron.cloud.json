@@ -1,14 +1,15 @@
 {
   "jobs": [
     {
-      "name": "pip-newsletter-digest-morning",
-      "description": "Send the Pip newsletter digest every morning.",
+      "name": "newsletter-digest-morning",
+      "replaces": ["pip-newsletter-digest-morning"],
+      "description": "Send the newsletter digest every morning.",
       "agent": "main",
       "cron": "30 7 * * *",
       "tz": "America/Chicago",
       "exact": true,
       "session": "isolated",
-      "message": "Run pip-newsletter-digest now.",
+      "message": "Run newsletter-digest now.",
       "deliver": false,
       "disabled": false
     }

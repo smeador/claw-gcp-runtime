@@ -518,6 +518,121 @@ For OpenClaw projects, it is especially helpful to document:
 
 - where artifacts are written
 - which scripts own side effects
+
+## Cloud CLI Performance Findings
+
+We investigated a real cloud-only OpenClaw CLI slowdown where commands such as:
+
+- `openclaw health --json`
+- `openclaw status --json`
+- `openclaw channels list --no-usage`
+- `openclaw sessions --json`
+
+felt much slower on the GCP VM than in local Docker, even when transport overhead was removed by running them directly inside the container shell.
+
+### What we measured
+
+Representative timings inside the running gateway containers:
+
+- stock `openclaw health --json`
+  - local Docker: about `0.7s`
+  - cloud Docker on GCP: about `4.1s` to `4.4s`
+- warm import of `/usr/local/lib/node_modules/openclaw/dist/call-DBcRF6-K.js`
+  - local Docker: about `351ms`
+  - cloud Docker on GCP: about `1995ms`
+- warm import of `/usr/local/lib/node_modules/openclaw/dist/health-Dr8OgWGE.js`
+  - local Docker: about `341ms`
+  - cloud Docker on GCP: about `2102ms`
+- warm import of `/usr/local/lib/node_modules/openclaw/dist/status.scan-overview-BnmOVv8P.js`
+  - local Docker: about `168ms`
+  - cloud Docker on GCP: about `948ms`
+- warm import of `/usr/local/lib/node_modules/openclaw/dist/plugin-metadata-snapshot-ClmzhofB.js`
+  - local Docker: about `55ms`
+  - cloud Docker on GCP: about `325ms`
+
+The slowdown is therefore real and is roughly in the `5x` to `7x` range for heavier OpenClaw CLI startup paths.
+
+### What we ruled out
+
+- Not transport overhead:
+  - these numbers were collected inside the container shell, not through repeated `gcloud compute ssh` hops
+- Not missing packaged compile cache:
+  - normal `openclaw` runs on both local and cloud populate and reuse `/tmp/node-compile-cache/openclaw`
+- Not primarily respawn overhead:
+  - `OPENCLAW_NO_RESPAWN=1` only improved cloud `openclaw health --json` modestly
+- Not primarily enabled plugin count:
+  - reducing bundled enabled plugins from `67` to `8` did not materially improve command latency
+- Not mainly headline container resource limits:
+  - temporarily limiting local Docker to `2 CPU / 4 GB` did not reproduce the cloud slowdown
+
+### What the profile showed
+
+A warm CPU profile of the cloud import path for `call-DBcRF6-K.js` showed time spread across:
+
+- `node:internal/modules/package_json_reader`
+- `compileSourceTextModule`
+- AJV compile/codegen
+- Zod initialization
+- `realpathSync`
+- `lstat`
+- some GC
+
+This did not look like a single bad plugin loop or a specific runtime regression in our repo code. It looked like a heavy OpenClaw CLI bootstrap graph.
+
+### Lower-level environment measurements
+
+The cloud penalty also showed up in simple isolated benchmarks:
+
+- pure single-thread JS loop
+  - local: about `36ms`
+  - cloud: about `254ms`
+- filesystem metadata/read benchmark over `4000` OpenClaw files
+  - local: about `33ms`
+  - cloud: about `179ms`
+
+These measurements help explain why the heavy OpenClaw startup graph expands so much on cloud:
+
+- weaker single-thread CPU performance
+- slower filesystem metadata and module-resolution work
+- validation/config startup cost from AJV and Zod
+
+### Current best explanation
+
+The best current explanation is:
+
+- heavier OpenClaw CLI entrypoints import a large validation- and config-heavy graph
+- that graph is much more sensitive to cloud runtime characteristics than to our repo config
+- compile cache helps somewhat, but not enough to remove package resolution, filesystem metadata work, schema initialization, and GC cost
+
+The issue appears closer to:
+
+- Node/ESM/bootstrap behavior on the cloud runtime
+- packaged OpenClaw command graph shape
+
+than to:
+
+- Telegram-specific behavior
+- workspace skill composition
+- bundled plugin count
+
+### Practical operator takeaway
+
+For routine operator checks, prefer lighter commands and repo-owned wrappers where possible, rather than reaching for the heaviest stock OpenClaw CLI commands every time.
+
+Also treat the following as different classes of command:
+
+- lighter:
+  - `openclaw health --json`
+- heavier:
+  - `openclaw status --json`
+  - `openclaw sessions --json`
+  - `openclaw plugins inspect --all --json`
+
+### Good next follow-up if we revisit this
+
+1. Compare the same cloud image on a faster VM class to quantify how much of the penalty is raw single-core performance.
+2. If needed, run a focused syscall trace on the cloud import path to quantify `stat`/`open`/resolution cost more precisely.
+3. If operator ergonomics still matter more than root-cause research, prefer repo-owned fast status helpers instead of the heaviest stock OpenClaw commands.
 - what a successful run must produce
 - how local and cloud execution differ, if they do
 

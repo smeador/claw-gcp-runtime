@@ -161,8 +161,8 @@ const NESTED_COMMANDS = {
       cloud: () => runtimeScript("cloud", "./scripts/runtime/cron.sh", ["list"]),
     },
     "run-digest": {
-      local: () => bashScript("./scripts/runtime/cron.sh", ["local", "run", "pip-newsletter-digest-morning"]),
-      cloud: () => runtimeScript("cloud", "./scripts/runtime/cron.sh", ["run", "pip-newsletter-digest-morning"]),
+      local: () => bashScript("./scripts/runtime/cron.sh", ["local", "run", "newsletter-digest-morning"]),
+      cloud: () => runtimeScript("cloud", "./scripts/runtime/cron.sh", ["run", "newsletter-digest-morning"]),
     },
   },
   test: {
@@ -235,8 +235,8 @@ Examples:
   agent-runtime local test integration
   agent-runtime local prune
   agent-runtime cloud prune
-  agent-runtime local test skill pip-newsletter-digest
-  agent-runtime cloud test skill pip-newsletter-digest
+  agent-runtime local test skill newsletter-digest
+  agent-runtime cloud test skill newsletter-digest
 `);
 }
 

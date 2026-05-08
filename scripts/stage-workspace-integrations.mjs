@@ -8,6 +8,7 @@ const REPO_ROOT = resolve(dirname(new URL(import.meta.url).pathname), "..");
 const MANIFEST_PATH = resolve(REPO_ROOT, "workspace/integrations.json");
 const STAGED_ROOT = resolve(REPO_ROOT, ".runtime/integrations");
 const STATE_FILE = resolve(REPO_ROOT, ".runtime/integrations-state.json");
+const WORKSPACE_ROOT = resolve(REPO_ROOT, "workspace");
 const WORKSPACE_SKILLS_ROOT = resolve(REPO_ROOT, "workspace/skills");
 const LEGACY_WORKSPACE_INTEGRATIONS_PATH = resolve(REPO_ROOT, "workspace/integrations");
 function readJson(filePath) {
@@ -54,6 +55,27 @@ function cleanGeneratedSkillsRoot() {
       continue;
     }
     removeIfExists(resolve(WORKSPACE_SKILLS_ROOT, entry.name));
+  }
+}
+
+function resolveWorkspaceTarget(target) {
+  const resolved = resolve(WORKSPACE_ROOT, target);
+  const relativeTarget = relative(WORKSPACE_ROOT, resolved);
+  if (relativeTarget === "" || relativeTarget.startsWith("..")) {
+    throw new Error(`Workspace target must stay within workspace/: ${target}`);
+  }
+  return resolved;
+}
+
+function cleanPreviouslyStagedWorkspaceFiles(previousState) {
+  const integrations = Array.isArray(previousState?.integrations) ? previousState.integrations : [];
+  for (const integration of integrations) {
+    for (const entry of integration.workspaceFiles ?? []) {
+      if (!entry || typeof entry.target !== "string" || entry.target.length === 0) {
+        continue;
+      }
+      removeIfExists(resolveWorkspaceTarget(entry.target));
+    }
   }
 }
 
@@ -145,6 +167,25 @@ function loadIntegrationManifest(sourceRoot, integrationName) {
     }
   }
 
+  if ("workspaceFiles" in manifest) {
+    if (!Array.isArray(manifest.workspaceFiles)) {
+      throw new Error(`Integration ${integrationName} workspaceFiles must be an array when provided.`);
+    }
+
+    for (const [index, workspaceFile] of manifest.workspaceFiles.entries()) {
+      if (!workspaceFile || typeof workspaceFile !== "object") {
+        throw new Error(`Integration ${integrationName} workspaceFiles[${index}] must be an object.`);
+      }
+      if (typeof workspaceFile.source !== "string" || workspaceFile.source.length === 0) {
+        throw new Error(`Integration ${integrationName} workspaceFiles[${index}] is missing a source.`);
+      }
+      if (typeof workspaceFile.target !== "string" || workspaceFile.target.length === 0) {
+        throw new Error(`Integration ${integrationName} workspaceFiles[${index}] is missing a target.`);
+      }
+      resolveWorkspaceTarget(workspaceFile.target);
+    }
+  }
+
   return manifest;
 }
 
@@ -158,6 +199,23 @@ function discoverSkillDirs(sourceRoot, integrationName, manifest) {
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
+}
+
+function stageWorkspaceFiles(sourceRoot, integrationName, manifest) {
+  const stagedFiles = [];
+  for (const workspaceFile of manifest.workspaceFiles ?? []) {
+    const sourcePath = resolve(sourceRoot, workspaceFile.source);
+    if (!existsSync(sourcePath)) {
+      throw new Error(`Integration ${integrationName} workspace file source not found: ${sourcePath}`);
+    }
+    const targetPath = resolveWorkspaceTarget(workspaceFile.target);
+    copyWorkspaceTree(sourcePath, targetPath);
+    stagedFiles.push({
+      source: workspaceFile.source,
+      target: workspaceFile.target,
+    });
+  }
+  return stagedFiles;
 }
 
 function main() {
@@ -176,6 +234,7 @@ function main() {
   mkdirSync(STAGED_ROOT, { recursive: true });
   mkdirSync(WORKSPACE_SKILLS_ROOT, { recursive: true });
   removeIfExists(LEGACY_WORKSPACE_INTEGRATIONS_PATH);
+  cleanPreviouslyStagedWorkspaceFiles(readStateFile());
   cleanGeneratedSkillsRoot();
 
   const staged = [];
@@ -209,6 +268,8 @@ function main() {
       copyWorkspaceTree(stagedSkillDir, skillLink);
     }
 
+    const stagedWorkspaceFiles = stageWorkspaceFiles(sourceRoot, integration.name, integrationManifest);
+
     staged.push({
       name: integration.name,
       sourceRoot: relative(REPO_ROOT, sourceRoot),
@@ -220,6 +281,7 @@ function main() {
         testSkill: integrationManifest.adapter.testSkill ?? "",
       },
       smokeTests: integrationManifest.smokeTests ?? [],
+      workspaceFiles: stagedWorkspaceFiles,
       skills: skillDirs,
     });
   }

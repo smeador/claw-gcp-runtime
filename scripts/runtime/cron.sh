@@ -21,7 +21,7 @@ cron_list() {
 }
 
 cron_run() {
-  local job_name="${1:-pip-newsletter-digest-morning}"
+  local job_name="${1:-newsletter-digest-morning}"
   local job_id
 
   runtime_wait_for_gateway
@@ -71,6 +71,7 @@ cron_apply() {
     exact="$(jq -r '.exact // false' <<< "${job}")"
     deliver="$(jq -r '.deliver // false' <<< "${job}")"
     disabled="$(jq -r '.disabled // false' <<< "${job}")"
+    mapfile -t replaced_names < <(jq -r '.replaces[]? // empty' <<< "${job}")
 
     mapfile -t matching_ids < <(
       jq -r --arg name "${name}" '
@@ -88,6 +89,20 @@ cron_apply() {
         runtime_gateway_exec openclaw cron rm "${duplicate_id}" >/dev/null
       done
     fi
+
+    for replaced_name in "${replaced_names[@]}"; do
+      if [ -z "${replaced_name}" ]; then
+        continue
+      fi
+      mapfile -t replaced_ids < <(
+        jq -r --arg name "${replaced_name}" '
+          .. | objects | select(has("id") and has("name") and .name == $name) | .id
+        ' "${current_jobs_file}"
+      )
+      for replaced_id in "${replaced_ids[@]}"; do
+        runtime_gateway_exec openclaw cron rm "${replaced_id}" >/dev/null
+      done
+    done
 
     base_args=()
     if [ -n "${name}" ]; then

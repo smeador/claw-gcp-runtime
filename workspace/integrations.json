@@ -1,9 +1,9 @@
 {
   "integrations": [
     {
-      "name": "agent-newsletter-digest",
-      "root": "../agent-newsletter-digest",
-      "rootEnv": "AGENT_NEWSLETTER_DIGEST_ROOT"
+      "name": "newsletter-digest",
+      "root": "../newsletter-digest",
+      "rootEnv": "NEWSLETTER_DIGEST_ROOT"
     }
   ]
 }

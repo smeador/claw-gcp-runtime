@@ -254,7 +254,7 @@ Routine operations:
   agent-runtime local test basic
   agent-runtime local test core
   agent-runtime local test integration
-  agent-runtime local test skill pip-newsletter-digest
+  agent-runtime local test skill newsletter-digest
   ```
 - local Docker command list:
   ```bash
@@ -296,7 +296,7 @@ Routine operations:
   ```bash
   agent-runtime local test gmail-read
   agent-runtime local test gmail-send
-  agent-runtime local test skill pip-newsletter-digest
+  agent-runtime local test skill newsletter-digest
   ```
 
 Optional local overrides:
@@ -369,7 +369,7 @@ Each run writes:
 Integration note:
 
 - this runtime repo no longer owns the newsletter implementation scripts
-- the newsletter logic now lives in the sibling repo at [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest)
+- the newsletter logic now lives in the sibling repo at [`/path/to/newsletter-digest`](/path/to/newsletter-digest)
 - this repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json) into a composed runtime view under `.runtime/integrations`
 - the reviewed workspace then exposes only the composed skill surface under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
 - cloud deploys package the sibling integration from the local checkout at deploy time; the VM does not fetch the integration repo from GitHub during deploy
@@ -424,7 +424,7 @@ agent-runtime cloud cron list
 agent-runtime cloud cron run-digest
 agent-runtime cloud test gmail-read
 agent-runtime cloud test gmail-send
-agent-runtime cloud test skill pip-newsletter-digest
+agent-runtime cloud test skill newsletter-digest
 ```
 
 Cloud runtime commands:

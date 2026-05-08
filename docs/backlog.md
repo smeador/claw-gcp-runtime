@@ -28,6 +28,12 @@ Source of truth for open backlog items in this repository.
     - verify version parity expectations after the `2026.4.15` bump
     - identify any native-only auth, path, or state differences that still need explicit handling
 14. Decide whether additional connection channels beyond Telegram should remain config-bootstrapped, be split by environment, or move behind a more explicit bootstrap flow.
+15. Revisit cloud OpenClaw CLI performance:
+   - current evidence points to a real `5x` to `7x` cloud penalty in heavier CLI bootstrap paths
+   - packaged compile cache is active, but it only helps modestly
+   - reducing bundled enabled plugins from `67` to `8` did not materially improve timings
+   - local `2 CPU / 4 GB` limits did not reproduce the cloud slowdown
+   - next useful comparison is a faster VM class or a more focused filesystem/syscall trace
 
 ## Additional
 

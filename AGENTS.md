@@ -6,7 +6,7 @@ This file captures project-level working memory for agents operating on the repo
 
 - This repo manages a private OpenClaw lab on GCP plus a reviewed workspace for local and cloud agent workflows.
 - The main active product workflow is the Pip newsletter digest.
-- Newsletter implementation logic now lives in the sibling repo [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest); this repo should stay runtime-first and integration-generic.
+- Newsletter implementation logic now lives in the sibling repo [`/path/to/newsletter-digest`](/path/to/newsletter-digest); this repo should stay runtime-first and integration-generic.
 - Treat this file as system-builder guidance, not end-user bot persona guidance.
 
 ## Builder Preferences
@@ -41,13 +41,13 @@ This file captures project-level working memory for agents operating on the repo
 ## Digest-Specific Working Memory
 
 - The digest skill should be triggered by a simple direct command:
-  - `Run pip-newsletter-digest now.`
-  - `Run pip-newsletter-digest now in test mode.`
+  - `Run newsletter-digest now.`
+  - `Run newsletter-digest now in test mode.`
 - Avoid overcomplicating the trigger prompt; extra wording has repeatedly caused worse behavior.
-- The local Docker digest test path should go through `agent-runtime local test skill pip-newsletter-digest`.
+- The local Docker digest test path should go through `agent-runtime local test skill newsletter-digest`.
 - Prefer the generic form when updating runtime tooling:
-  - `agent-runtime local test skill pip-newsletter-digest`
-  - `agent-runtime cloud test skill pip-newsletter-digest`
+  - `agent-runtime local test skill newsletter-digest`
+  - `agent-runtime cloud test skill newsletter-digest`
 - The cloud gateway tunnel should go through [scripts/cloud/tunnel-gateway.sh](/path/to/gcp-claw-lab/scripts/cloud/tunnel-gateway.sh).
 - The digest formatter should write direct briefing prose, not source-framed prose like `the article says`.
 - For Substack-backed items, app-friendly links are preferred when clean `open.substack.com/.../p/...` URLs are available.
