@@ -2,7 +2,7 @@
 
 This document is the detailed operator runbook for the local and cloud runtime.
 
-Use [README.md](/Users/sean/Repos/gcp-claw-lab/README.md) as the front door. Use this file when you need the heavier operational detail.
+Use [README.md](/Users/sean/Repos/claw-gcp-runtime/README.md) as the front door. Use this file when you need the heavier operational detail.
 
 ## Operator Environment
 
@@ -15,7 +15,7 @@ Recommended local setup:
 Example:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /Users/sean/Repos/claw-gcp-runtime
 cp .envrc.example .envrc
 cat > .envrc.local <<'EOF'
 export VM_NAME=claw-runtime-vm
@@ -32,23 +32,23 @@ direnv allow
 
 Start from:
 
-- [`/Users/sean/Repos/gcp-claw-lab/config/secrets.local.example.json`](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.example.json)
-- [`/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.example.json`](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.example.json)
+- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.example.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.example.json)
+- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.example.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.example.json)
 
 Local runtime secrets live in:
 
-- [`/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json`](/Users/sean/Repos/gcp-claw-lab/config/secrets.local.json)
+- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.json)
 
 Cloud runtime secrets live in:
 
-- [`/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json`](/Users/sean/Repos/gcp-claw-lab/config/secrets.cloud.json)
+- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.json)
 
 ## Local Runtime
 
 Initial setup:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /Users/sean/Repos/claw-gcp-runtime
 npm run deps:sync
 cp config/secrets.local.example.json config/secrets.local.json
 agent-runtime local deploy
@@ -80,9 +80,9 @@ agent-runtime local test gmail-send
 Useful maintenance helpers:
 
 ```bash
-bash /Users/sean/Repos/gcp-claw-lab/scripts/maintenance/reset-local-docker.sh
-bash /Users/sean/Repos/gcp-claw-lab/scripts/maintenance/print-local-docker-access.sh
-node /Users/sean/Repos/gcp-claw-lab/scripts/maintenance/check-native-local-sync.mjs
+bash /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/reset-local-docker.sh
+bash /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/print-local-docker-access.sh
+node /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/check-native-local-sync.mjs
 ```
 
 ## Cloud Runtime
@@ -90,7 +90,7 @@ node /Users/sean/Repos/gcp-claw-lab/scripts/maintenance/check-native-local-sync.
 Initial setup:
 
 ```bash
-cd /Users/sean/Repos/gcp-claw-lab
+cd /Users/sean/Repos/claw-gcp-runtime
 npm run deps:sync
 cp config/secrets.cloud.example.json config/secrets.cloud.json
 agent-runtime cloud push-secret
@@ -124,7 +124,7 @@ agent-runtime cloud test gmail-send
 Direct VM shell:
 
 ```bash
-bash /Users/sean/Repos/gcp-claw-lab/scripts/cloud/ssh-app.sh bash
+bash /Users/sean/Repos/claw-gcp-runtime/scripts/cloud/ssh-app.sh bash
 ```
 
 ## Gmail Bootstrap and Testing
@@ -146,8 +146,8 @@ agent-runtime cloud test gmail-send
 
 Manual recovery scripts still exist for break-glass recovery:
 
-- [`/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh`](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-docker-local.sh)
-- [`/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh`](/Users/sean/Repos/gcp-claw-lab/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
+- [`/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-docker-local.sh`](/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-docker-local.sh)
+- [`/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-cloud-service-account.sh`](/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
 
 ## Runtime Notes
 

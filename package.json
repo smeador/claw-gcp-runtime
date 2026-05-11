@@ -1,5 +1,5 @@
 {
-  "name": "gcp-claw-lab",
+  "name": "claw-gcp-runtime",
   "private": true,
   "bin": {
     "agent-runtime": "./bin/agent-runtime"

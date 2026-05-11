@@ -11,7 +11,7 @@ Use the lightest option that matches the skill's complexity.
 1. Built-in or already-packaged OpenClaw skill: use it directly through OpenClaw config.
 2. Small reviewed third-party or local-only skill: install or copy it into the runtime workspace as generated state, not as committed repo content.
 3. Plugin-shipped skill: enable the plugin if the tool and the skill really belong together.
-4. Complex workflow with real code, tests, or multiple commands: use a sibling integration repo and stage it through [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json).
+4. Complex workflow with real code, tests, or multiple commands: use a sibling integration repo and stage it through [workspace/integrations.json](/Users/sean/Repos/claw-gcp-runtime/workspace/integrations.json).
 
 ## Option 1: Built-in or packaged OpenClaw skills
 
@@ -122,13 +122,13 @@ This is the strongest packaging model and the one we now use for [`newsletter-di
 
 How it works:
 
-1. declare the sibling repo in [workspace/integrations.json](/Users/sean/Repos/gcp-claw-lab/workspace/integrations.json)
+1. declare the sibling repo in [workspace/integrations.json](/Users/sean/Repos/claw-gcp-runtime/workspace/integrations.json)
 2. the sibling repo provides:
    - `integration.json`
    - `adapter/openclaw/skills/...`
    - optional package bins and test runners
-3. [scripts/stage-workspace-integrations.mjs](/Users/sean/Repos/gcp-claw-lab/scripts/stage-workspace-integrations.mjs) copies the repo into [`.runtime/integrations`](/Users/sean/Repos/gcp-claw-lab/.runtime/integrations)
-4. the runtime copies the declared skill folders into [workspace/skills](/Users/sean/Repos/gcp-claw-lab/workspace/skills)
+3. [scripts/stage-workspace-integrations.mjs](/Users/sean/Repos/claw-gcp-runtime/scripts/stage-workspace-integrations.mjs) copies the repo into [`.runtime/integrations`](/Users/sean/Repos/claw-gcp-runtime/.runtime/integrations)
+4. the runtime copies the declared skill folders into [workspace/skills](/Users/sean/Repos/claw-gcp-runtime/workspace/skills)
 5. the Docker image installs the staged package bins into the runtime image
 
 Good fit:

@@ -26,7 +26,7 @@ As of `main`:
 
 - the runtime repo is now `agent-runtime`-first
 - local/cloud lifecycle and cron flows were consolidated behind shared runtime scripts
-- runtime integrations are manifest-driven and staged from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- runtime integrations are manifest-driven and staged from [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
 - the newsletter implementation lives in [`agent-newsletter-digest`](/path/to/agent-newsletter-digest), not in repo-root runtime scripts
 - cloud deploys package the sibling integration from the local checkout into the staged deploy snapshot
 - local Docker and cloud both run the composed newsletter integration successfully
@@ -86,19 +86,19 @@ This repo should answer:
 
 ### Runtime-owned examples
 
-- [docker/Dockerfile](/path/to/gcp-claw-lab/docker/Dockerfile)
-- [docker/compose.local.yml](/path/to/gcp-claw-lab/docker/compose.local.yml)
-- [docker/compose.cloud.yml](/path/to/gcp-claw-lab/docker/compose.cloud.yml)
-- [scripts/runtime/cli.mjs](/path/to/gcp-claw-lab/scripts/runtime/cli.mjs)
-- [scripts/stage-workspace-integrations.mjs](/path/to/gcp-claw-lab/scripts/stage-workspace-integrations.mjs)
-- [scripts/install-staged-integrations.mjs](/path/to/gcp-claw-lab/scripts/install-staged-integrations.mjs)
-- [scripts/runtime/test-skill-local.sh](/path/to/gcp-claw-lab/scripts/runtime/test-skill-local.sh)
-- [scripts/runtime/test-skill-cloud.sh](/path/to/gcp-claw-lab/scripts/runtime/test-skill-cloud.sh)
-- [scripts/runtime/lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime/lifecycle.sh)
-- [scripts/cloud/sync-app.sh](/path/to/gcp-claw-lab/scripts/cloud/sync-app.sh)
-- [scripts/cloud/tunnel-gateway.sh](/path/to/gcp-claw-lab/scripts/cloud/tunnel-gateway.sh)
-- [scripts/runtime/agent-logs.sh](/path/to/gcp-claw-lab/scripts/runtime/agent-logs.sh)
-- [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- [docker/Dockerfile](/path/to/claw-gcp-runtime/docker/Dockerfile)
+- [docker/compose.local.yml](/path/to/claw-gcp-runtime/docker/compose.local.yml)
+- [docker/compose.cloud.yml](/path/to/claw-gcp-runtime/docker/compose.cloud.yml)
+- [scripts/runtime/cli.mjs](/path/to/claw-gcp-runtime/scripts/runtime/cli.mjs)
+- [scripts/stage-workspace-integrations.mjs](/path/to/claw-gcp-runtime/scripts/stage-workspace-integrations.mjs)
+- [scripts/install-staged-integrations.mjs](/path/to/claw-gcp-runtime/scripts/install-staged-integrations.mjs)
+- [scripts/runtime/test-skill-local.sh](/path/to/claw-gcp-runtime/scripts/runtime/test-skill-local.sh)
+- [scripts/runtime/test-skill-cloud.sh](/path/to/claw-gcp-runtime/scripts/runtime/test-skill-cloud.sh)
+- [scripts/runtime/lifecycle.sh](/path/to/claw-gcp-runtime/scripts/runtime/lifecycle.sh)
+- [scripts/cloud/sync-app.sh](/path/to/claw-gcp-runtime/scripts/cloud/sync-app.sh)
+- [scripts/cloud/tunnel-gateway.sh](/path/to/claw-gcp-runtime/scripts/cloud/tunnel-gateway.sh)
+- [scripts/runtime/agent-logs.sh](/path/to/claw-gcp-runtime/scripts/runtime/agent-logs.sh)
+- [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
 
 ### What should not stay here
 
@@ -173,9 +173,9 @@ The current preferred development model is:
 
 - sibling local checkout for the integration repo
 - latest local code during active development
-- runtime repo stages integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
-- staged integrations are copied under [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
-- the composed workspace exposes those skills under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+- runtime repo stages integrations from [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
+- staged integrations are copied under [`.runtime/integrations`](/path/to/claw-gcp-runtime/.runtime/integrations)
+- the composed workspace exposes those skills under [workspace/skills](/path/to/claw-gcp-runtime/workspace/skills)
 
 This keeps development fast without forcing release pinning yet.
 
@@ -183,16 +183,16 @@ Longer term, optional pinning can be added after the boundaries settle.
 
 The current concrete draft for this boundary lives in:
 
-- [docs/integration-interface.md](/Users/sean/Repos/gcp-claw-lab/docs/integration-interface.md)
+- [docs/integration-interface.md](/Users/sean/Repos/claw-gcp-runtime/docs/integration-interface.md)
 
 ## Stable contract surface
 
 Concrete contract docs in this repo currently live at:
 
-- [docs/contracts/source-artifact-contract.md](/path/to/gcp-claw-lab/docs/contracts/source-artifact-contract.md)
-- [docs/contracts/digest-json-contract.md](/path/to/gcp-claw-lab/docs/contracts/digest-json-contract.md)
-- [docs/contracts/render-send-contract.md](/path/to/gcp-claw-lab/docs/contracts/render-send-contract.md)
-- [docs/contracts/openclaw-runtime-expectations.md](/path/to/gcp-claw-lab/docs/contracts/openclaw-runtime-expectations.md)
+- [docs/contracts/source-artifact-contract.md](/path/to/claw-gcp-runtime/docs/contracts/source-artifact-contract.md)
+- [docs/contracts/digest-json-contract.md](/path/to/claw-gcp-runtime/docs/contracts/digest-json-contract.md)
+- [docs/contracts/render-send-contract.md](/path/to/claw-gcp-runtime/docs/contracts/render-send-contract.md)
+- [docs/contracts/openclaw-runtime-expectations.md](/path/to/claw-gcp-runtime/docs/contracts/openclaw-runtime-expectations.md)
 
 The newsletter repo should eventually become the source of truth for the workflow-specific contracts, while this repo keeps the runtime-expectations side.
 

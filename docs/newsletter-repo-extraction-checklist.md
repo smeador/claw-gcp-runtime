@@ -18,7 +18,7 @@ The structural split is now complete on `main`.
 
 What is already true:
 
-- the runtime repo stages integrations generically from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- the runtime repo stages integrations generically from [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
 - the newsletter implementation lives in [`agent-newsletter-digest`](/path/to/agent-newsletter-digest)
 - `agent-runtime` is the sole runtime CLI surface in this repo
 - local Docker and cloud both run the composed newsletter integration
@@ -60,11 +60,11 @@ Goal:
 Tasks:
 
 - [x] add a reviewed integration manifest:
-  - [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+  - [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
 - [x] stage integrations into:
-  - [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
+  - [`.runtime/integrations`](/path/to/claw-gcp-runtime/.runtime/integrations)
 - [x] expose composed skills under:
-  - [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+  - [workspace/skills](/path/to/claw-gcp-runtime/workspace/skills)
 - [x] install integration-provided CLI entrypoints into the runtime image
 - [ ] validate the same model for native local later
 

@@ -23,7 +23,7 @@ export function saveVersions(versions) {
 async function fetchJson(url, context) {
   const response = await fetch(url, {
     headers: {
-      "user-agent": "gcp-claw-lab/deps-check"
+      "user-agent": "claw-gcp-runtime/deps-check"
     }
   });
   ensureOk(response, context);

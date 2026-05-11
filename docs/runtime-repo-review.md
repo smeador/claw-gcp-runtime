@@ -4,7 +4,7 @@ Historical note:
 
 - this document captures a runtime ergonomics review from the repo-split period
 - keep it for rationale and tradeoff history
-- use [README.md](/Users/sean/Repos/gcp-claw-lab/README.md), [spec.md](/Users/sean/Repos/gcp-claw-lab/docs/spec.md), and [openclaw-agent-guide.md](/Users/sean/Repos/gcp-claw-lab/docs/openclaw-agent-guide.md) as the current source of truth
+- use [README.md](/Users/sean/Repos/claw-gcp-runtime/README.md), [spec.md](/Users/sean/Repos/claw-gcp-runtime/docs/spec.md), and [openclaw-agent-guide.md](/Users/sean/Repos/claw-gcp-runtime/docs/openclaw-agent-guide.md) as the current source of truth
 
 This note captures the current runtime-repo ergonomics review and the recommended next steps before broader open-source hardening.
 
@@ -63,11 +63,11 @@ Current operator-facing shape:
 
 Supporting implementation changes that are now landed:
 
-- shared lifecycle flow in [scripts/runtime/lifecycle.sh](/path/to/gcp-claw-lab/scripts/runtime/lifecycle.sh)
-- shared cron flow in [scripts/runtime/cron.sh](/path/to/gcp-claw-lab/scripts/runtime/cron.sh)
-- shared shell/runtime helpers in [scripts/lib/runtime-common.sh](/path/to/gcp-claw-lab/scripts/lib/runtime-common.sh)
-- manifest-driven integration staging in [scripts/stage-workspace-integrations.mjs](/path/to/gcp-claw-lab/scripts/stage-workspace-integrations.mjs)
-- direct runtime CLI dispatch in [scripts/runtime/cli.mjs](/path/to/gcp-claw-lab/scripts/runtime/cli.mjs)
+- shared lifecycle flow in [scripts/runtime/lifecycle.sh](/path/to/claw-gcp-runtime/scripts/runtime/lifecycle.sh)
+- shared cron flow in [scripts/runtime/cron.sh](/path/to/claw-gcp-runtime/scripts/runtime/cron.sh)
+- shared shell/runtime helpers in [scripts/lib/runtime-common.sh](/path/to/claw-gcp-runtime/scripts/lib/runtime-common.sh)
+- manifest-driven integration staging in [scripts/stage-workspace-integrations.mjs](/path/to/claw-gcp-runtime/scripts/stage-workspace-integrations.mjs)
+- direct runtime CLI dispatch in [scripts/runtime/cli.mjs](/path/to/claw-gcp-runtime/scripts/runtime/cli.mjs)
 
 Preferred in-repo setup:
 
@@ -112,7 +112,7 @@ These tiers stay intentionally smaller than full workflow or Gmail tests. They v
 
 Implemented first pass:
 
-- [scripts/runtime/test-local.mjs](/path/to/gcp-claw-lab/scripts/runtime/test-local.mjs) as the implementation behind `agent-runtime local test basic|core|integration`
+- [scripts/runtime/test-local.mjs](/path/to/claw-gcp-runtime/scripts/runtime/test-local.mjs) as the implementation behind `agent-runtime local test basic|core|integration`
 - the harness supports `RUNTIME_TEST_SKIP_DEPLOY=1` for quicker reruns when the gateway is already up
 
 Cloud still relies more on targeted commands such as:

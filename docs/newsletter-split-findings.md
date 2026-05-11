@@ -4,27 +4,27 @@ Historical note:
 
 - this document captures findings from the repo split and cloud rollout
 - it is still useful for rationale and debugging lessons
-- use [README.md](/Users/sean/Repos/gcp-claw-lab/README.md) and [spec.md](/Users/sean/Repos/gcp-claw-lab/docs/spec.md) for the current repo shape
+- use [README.md](/Users/sean/Repos/claw-gcp-runtime/README.md) and [spec.md](/Users/sean/Repos/claw-gcp-runtime/docs/spec.md) for the current repo shape
 
 ## Current structure
 
 - the newsletter implementation now lives in the sibling repo:
   - [`/path/to/newsletter-digest`](/path/to/newsletter-digest)
-- this runtime repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
+- this runtime repo stages declared integrations from [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
 - staged integrations are copied into:
-  - [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
+  - [`.runtime/integrations`](/path/to/claw-gcp-runtime/.runtime/integrations)
 - the reviewed workspace exposes the composed skill surface by copying staged skills into:
-  - [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+  - [workspace/skills](/path/to/claw-gcp-runtime/workspace/skills)
 
 This is intentionally different from the older transition model. The runtime repo no longer carries `compat/newsletter` or repo-root newsletter wrapper scripts.
 
 The current deployed shape is:
 
-- the runtime reads [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
-- `scripts/stage-workspace-integrations.mjs` copies the sibling integration into [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)
+- the runtime reads [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json)
+- `scripts/stage-workspace-integrations.mjs` copies the sibling integration into [`.runtime/integrations`](/path/to/claw-gcp-runtime/.runtime/integrations)
 - cloud sync uploads that staged snapshot as part of the app tree
 - the Docker image installs the staged integration package and exposes its declared bins on `PATH`
-- the reviewed workspace exposes copied skill assets under [workspace/skills](/path/to/gcp-claw-lab/workspace/skills)
+- the reviewed workspace exposes copied skill assets under [workspace/skills](/path/to/claw-gcp-runtime/workspace/skills)
 
 ## Boundary that worked best
 
@@ -87,7 +87,7 @@ That boundary still feels correct after the refactor.
 The working cloud deploy model is:
 
 - develop against a sibling local checkout
-- stage that checkout into [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations) at deploy time
+- stage that checkout into [`.runtime/integrations`](/path/to/claw-gcp-runtime/.runtime/integrations) at deploy time
 - build the image from the staged snapshot
 
 This gave us the development flexibility we wanted without requiring the VM to fetch the integration repo independently.
