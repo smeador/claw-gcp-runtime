@@ -23,6 +23,16 @@ variable "machine_type" {
   type        = string
 }
 
+variable "iap_ssh_tag" {
+  description = "Network tag used for IAP SSH access."
+  type        = string
+}
+
+variable "service_account_id" {
+  description = "Service account ID for the VM."
+  type        = string
+}
+
 variable "network_self_link" {
   description = "VPC self link."
   type        = string

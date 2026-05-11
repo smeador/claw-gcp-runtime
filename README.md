@@ -90,8 +90,9 @@ gcloud config set project YOUR_PROJECT_ID
 
 ```bash
 cd opentofu/environments/lab
+cp backend.gcs.hcl.example backend.gcs.hcl
 cp terraform.tfvars.example terraform.tfvars
-tofu init
+tofu init -backend-config=backend.gcs.hcl
 tofu validate
 tofu plan
 tofu apply
@@ -100,6 +101,7 @@ tofu apply
 Notes:
 - OpenTofu and the Google provider use your local Google auth. You should not need to paste service-account keys into this repo just to provision infrastructure.
 - This environment uses a GCS backend for OpenTofu state in [providers.tf](opentofu/environments/lab/providers.tf), so the backend bucket must already exist and your authenticated identity must be able to read and write it before `tofu init`.
+- Use [`backend.gcs.hcl.example`](opentofu/environments/lab/backend.gcs.hcl.example) and your ignored local [`terraform.tfvars`](opentofu/environments/lab/terraform.tfvars) as the place for your deployment-specific bucket and naming choices.
 - Detailed infrastructure and security notes live in [spec.md](docs/spec.md).
 
 ### 3. Start Local Docker Runtime

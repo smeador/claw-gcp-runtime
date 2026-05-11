@@ -60,13 +60,13 @@ variable "image_family" {
 variable "network_name" {
   description = "Name of the VPC network."
   type        = string
-  default     = "agent-lab-vpc"
+  default     = "claw-runtime-vpc"
 }
 
 variable "subnet_name" {
   description = "Name of the subnet."
   type        = string
-  default     = "agent-lab-subnet"
+  default     = "claw-runtime-subnet"
 }
 
 variable "subnet_cidr" {
@@ -103,26 +103,50 @@ variable "labels" {
   type        = map(string)
   default = {
     environment = "lab"
-    workload    = "agent-lab"
+    workload    = "claw-runtime"
   }
+}
+
+variable "iap_ssh_tag" {
+  description = "Network tag used for IAP SSH access."
+  type        = string
+  default     = "claw-runtime-iap-ssh"
+}
+
+variable "vm_service_account_id" {
+  description = "Service account ID for the runtime VM."
+  type        = string
+  default     = "claw-runtime-vm-sa"
 }
 
 variable "shutdown_topic_name" {
   description = "Pub/Sub topic that receives budget notifications."
   type        = string
-  default     = "agent-lab-budget-notifications"
+  default     = "claw-runtime-budget-notifications"
 }
 
 variable "shutdown_function_name" {
   description = "Name of the Cloud Run function that stops the Agent VM."
   type        = string
-  default     = "agent-lab-budget-shutdown"
+  default     = "claw-runtime-budget-shutdown"
 }
 
 variable "shutdown_function_region" {
   description = "Region for the Cloud Run shutdown function."
   type        = string
   default     = "us-central1"
+}
+
+variable "shutdown_function_service_account_id" {
+  description = "Service account ID for the budget shutdown function."
+  type        = string
+  default     = "claw-runtime-budget-stop-sa"
+}
+
+variable "shutdown_function_role_id" {
+  description = "Custom IAM role ID for stopping the runtime VM."
+  type        = string
+  default     = "clawRuntimeVmStopper"
 }
 
 variable "openclaw_runtime_secret_name" {

@@ -10,8 +10,8 @@ VM_NAME="$1"
 PROJECT_ID="$2"
 ZONE="$3"
 REMOTE_APP_ROOT="${OPENCLAW_APP_ROOT:-/opt/openclaw/app}"
-LOCAL_ARCHIVE="$(mktemp /tmp/agent-lab-cloud-sync.XXXXXX.tar.gz)"
-REMOTE_ARCHIVE="/tmp/agent-lab-cloud-sync.tar.gz"
+LOCAL_ARCHIVE="$(mktemp /tmp/claw-runtime-cloud-sync.XXXXXX.tar.gz)"
+REMOTE_ARCHIVE="/tmp/claw-runtime-cloud-sync.tar.gz"
 
 cleanup() {
   rm -f "${LOCAL_ARCHIVE}"

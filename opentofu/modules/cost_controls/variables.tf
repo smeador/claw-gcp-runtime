@@ -23,6 +23,16 @@ variable "function_name" {
   type        = string
 }
 
+variable "function_service_account_id" {
+  description = "Service account ID for the shutdown function."
+  type        = string
+}
+
+variable "function_role_id" {
+  description = "Custom IAM role ID used by the shutdown function."
+  type        = string
+}
+
 variable "target_instance_name" {
   description = "Compute Engine instance to stop."
   type        = string

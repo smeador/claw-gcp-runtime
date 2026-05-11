@@ -13,10 +13,7 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "claw-runtime-example-opentofu-state"
-    prefix = "agent-lab/lab"
-  }
+  backend "gcs" {}
 }
 
 provider "google" {

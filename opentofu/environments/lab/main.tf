@@ -41,6 +41,7 @@ module "network" {
   subnet_name    = var.subnet_name
   subnet_cidr    = var.subnet_cidr
   nat_log_filter = var.nat_log_filter
+  iap_ssh_tag    = var.iap_ssh_tag
   labels         = var.labels
 
   depends_on = [
@@ -57,6 +58,8 @@ module "compute" {
   region                      = var.region
   vm_name                     = var.vm_name
   machine_type                = var.machine_type
+  iap_ssh_tag                 = var.iap_ssh_tag
+  service_account_id          = var.vm_service_account_id
   network_self_link           = module.network.network_self_link
   subnet_self_link            = module.network.subnet_self_link
   machine_image               = "${var.image_project}/${var.image_family}"
@@ -92,13 +95,15 @@ resource "google_secret_manager_secret_iam_member" "openclaw_runtime_vm_access" 
 module "cost_controls" {
   source = "../../modules/cost_controls"
 
-  project_id           = var.project_id
-  region               = var.shutdown_function_region
-  zone                 = var.zone
-  topic_name           = var.shutdown_topic_name
-  function_name        = var.shutdown_function_name
-  target_instance_name = module.compute.vm_name
-  target_instance_zone = var.zone
+  project_id                  = var.project_id
+  region                      = var.shutdown_function_region
+  zone                        = var.zone
+  topic_name                  = var.shutdown_topic_name
+  function_name               = var.shutdown_function_name
+  function_service_account_id = var.shutdown_function_service_account_id
+  function_role_id            = var.shutdown_function_role_id
+  target_instance_name        = module.compute.vm_name
+  target_instance_zone        = var.zone
 
   depends_on = [google_project_service.required]
 }

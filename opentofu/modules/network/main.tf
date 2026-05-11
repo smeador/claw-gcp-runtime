@@ -49,7 +49,7 @@ resource "google_compute_firewall" "allow_iap_ssh" {
   description   = "Allow SSH only from Google IAP TCP forwarding."
   direction     = "INGRESS"
   source_ranges = ["35.235.240.0/20"]
-  target_tags   = ["agent-lab-iap-ssh"]
+  target_tags   = [var.iap_ssh_tag]
 
   allow {
     protocol = "tcp"

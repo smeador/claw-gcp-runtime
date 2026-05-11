@@ -28,6 +28,11 @@ variable "nat_log_filter" {
   type        = string
 }
 
+variable "iap_ssh_tag" {
+  description = "Network tag used for IAP SSH access."
+  type        = string
+}
+
 variable "labels" {
   description = "Labels applied to supported resources."
   type        = map(string)

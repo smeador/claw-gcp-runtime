@@ -72,8 +72,8 @@ No external IP assigned to VM.
 
 ## 1. Networking
 
-- Dedicated VPC: `agent-lab-vpc`
-- Dedicated subnet: `agent-lab-subnet`
+- Dedicated VPC: `claw-runtime-vpc`
+- Dedicated subnet: `claw-runtime-subnet`
 - Private Google Access enabled
 - Cloud Router
 - Cloud NAT for outbound internet access
@@ -85,7 +85,7 @@ No external IP assigned to VM.
 - Firewall rule:
     - Allow TCP:22
     - Source range: 35.235.240.0/20 (IAP TCP forwarding range)
-    - Target tag: agent-lab-iap-ssh
+    - Target tag: claw-runtime-iap-ssh
 - No public ingress rules
 - No external IPs permitted by project policy unless explicitly exempted
 

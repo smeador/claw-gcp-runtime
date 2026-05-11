@@ -3,3 +3,13 @@ region       = "us-central1"
 zone         = "us-central1-a"
 vm_name      = "claw-runtime-vm"
 machine_type = "e2-medium"
+
+# Optional: override the default resource names if you want a custom naming scheme.
+# network_name                         = "claw-runtime-vpc"
+# subnet_name                          = "claw-runtime-subnet"
+# iap_ssh_tag                          = "claw-runtime-iap-ssh"
+# vm_service_account_id                = "claw-runtime-vm-sa"
+# shutdown_topic_name                  = "claw-runtime-budget-notifications"
+# shutdown_function_name               = "claw-runtime-budget-shutdown"
+# shutdown_function_service_account_id = "claw-runtime-budget-stop-sa"
+# shutdown_function_role_id            = "clawRuntimeVmStopper"

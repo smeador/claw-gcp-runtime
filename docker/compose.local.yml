@@ -8,7 +8,7 @@ services:
         NODE_IMAGE: ${NODE_IMAGE}
         GOG_VERSION: ${GOG_VERSION}
         OPENCLAW_NPM_DIST_TAG: ${OPENCLAW_NPM_DIST_TAG}
-    image: agent-lab-openclaw:local
+    image: claw-runtime-openclaw:local
     env_file:
       - ../config/docker.local.env
     environment:
@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
 
   openclaw-cli:
-    image: agent-lab-openclaw:local
+    image: claw-runtime-openclaw:local
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -56,12 +56,12 @@ services:
       - openclaw_workspace_state_local:/workspace/.openclaw
       - ../workspace/.tmp:/workspace/.tmp
       - openclaw_memory_local:/workspace/memory
-    entrypoint: ["/usr/bin/tini", "--", "agent-lab-openclaw-entrypoint"]
+    entrypoint: ["/usr/bin/tini", "--", "claw-runtime-openclaw-entrypoint"]
     command: ["status"]
     profiles: ["cli"]
 
   openclaw-dev:
-    image: agent-lab-openclaw:local
+    image: claw-runtime-openclaw:local
     build:
       context: ..
       dockerfile: docker/Dockerfile

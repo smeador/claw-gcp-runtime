@@ -5,7 +5,7 @@ data "google_compute_image" "vm_image" {
 
 resource "google_service_account" "vm" {
   project      = var.project_id
-  account_id   = "claw-runtime-vm-sa"
+  account_id   = var.service_account_id
   display_name = "Claw Runtime VM service account"
   description  = "Least-privilege service account for the Claw Runtime VM."
 }
@@ -27,7 +27,7 @@ resource "google_compute_instance" "vm" {
   name         = var.vm_name
   zone         = var.zone
   machine_type = var.machine_type
-  tags         = ["agent-lab-iap-ssh"]
+  tags         = [var.iap_ssh_tag]
   labels       = var.labels
 
   boot_disk {

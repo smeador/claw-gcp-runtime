@@ -1,0 +1,2 @@
+bucket = "your-gcp-project-opentofu-state"
+prefix = "claw-runtime/lab"

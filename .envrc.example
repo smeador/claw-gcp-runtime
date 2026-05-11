@@ -13,5 +13,5 @@ export OPENCLAW_SECRET_NAME=
 export CLOUD_SECRET_FILE=
 export GMAIL_TEST_TO=
 # export GMAIL_TEST_SUBJECT="Pip Cloud Gmail send test"
-# export DIGEST_MESSAGE="Run pip-newsletter-digest now in test mode."
+# export DIGEST_MESSAGE="Run newsletter-digest now in test mode."
 # export TAIL_LINES=200

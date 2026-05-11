@@ -10,7 +10,7 @@ fi
 
 cd "$(dirname "$0")/../.."
 RUNNER_PATH="$(node ./scripts/runtime/resolve-skill-test-runner.mjs "${SKILL_NAME}")"
-CONTAINER_RUNNER_PATH="/opt/agent-lab/integrations/${RUNNER_PATH#.runtime/integrations/}"
+CONTAINER_RUNNER_PATH="/opt/claw-runtime/integrations/${RUNNER_PATH#.runtime/integrations/}"
 
 compose_args=(
   --env-file config/docker.build.env

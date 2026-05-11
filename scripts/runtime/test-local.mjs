@@ -196,7 +196,7 @@ function runIntegration() {
     const [skillTestEntryCmd, skillTestEntryArgs] = composeExec(
       "bash",
       "-lc",
-      `test -x /opt/agent-lab/integrations/${stagedRoot.replace(/^\.runtime\/integrations\//, "")}/${runnerPath} && echo skill-test-present`,
+      `test -x /opt/claw-runtime/integrations/${stagedRoot.replace(/^\.runtime\/integrations\//, "")}/${runnerPath} && echo skill-test-present`,
     );
     const skillTestEntryOutput = run(
       skillTestEntryCmd,

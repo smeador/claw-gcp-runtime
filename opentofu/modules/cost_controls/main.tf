@@ -35,13 +35,13 @@ resource "google_storage_bucket_object" "function_archive" {
 
 resource "google_service_account" "function" {
   project      = var.project_id
-  account_id   = "agent-lab-budget-stop-sa"
+  account_id   = var.function_service_account_id
   display_name = "Claw Runtime budget shutdown function"
 }
 
 resource "google_project_iam_custom_role" "vm_stopper" {
   project     = var.project_id
-  role_id     = "agentLabVmStopper"
+  role_id     = var.function_role_id
   title       = "Claw Runtime VM Stopper"
   description = "Stops the single Claw Runtime VM when budget thresholds are exceeded."
   permissions = [

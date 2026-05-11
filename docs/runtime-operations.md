@@ -28,6 +28,13 @@ EOF
 direnv allow
 ```
 
+OpenTofu also expects a local backend config file and a local deployment config:
+
+- copy [`opentofu/environments/lab/backend.gcs.hcl.example`](/Users/sean/Repos/gcp-claw-lab/opentofu/environments/lab/backend.gcs.hcl.example) to `opentofu/environments/lab/backend.gcs.hcl`
+- copy [`opentofu/environments/lab/terraform.tfvars.example`](/Users/sean/Repos/gcp-claw-lab/opentofu/environments/lab/terraform.tfvars.example) to `opentofu/environments/lab/terraform.tfvars`
+
+Those files are ignored and are the right place for your real bucket name, VM name, and other deployment-specific identifiers.
+
 ## Secret Files
 
 Start from:
