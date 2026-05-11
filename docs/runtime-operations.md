@@ -2,7 +2,7 @@
 
 This document is the detailed operator runbook for the local and cloud runtime.
 
-Use [README.md](/Users/sean/Repos/claw-gcp-runtime/README.md) as the front door. Use this file when you need the heavier operational detail.
+Use [README.md](../README.md) as the front door. Use this file when you need the heavier operational detail.
 
 ## Operator Environment
 
@@ -15,7 +15,7 @@ Recommended local setup:
 Example:
 
 ```bash
-cd /Users/sean/Repos/claw-gcp-runtime
+cd /path/to/claw-gcp-runtime
 cp .envrc.example .envrc
 cat > .envrc.local <<'EOF'
 export VM_NAME=claw-runtime-vm
@@ -30,8 +30,8 @@ direnv allow
 
 OpenTofu also expects a local backend config file and a local deployment config:
 
-- copy [`opentofu/environments/lab/backend.gcs.hcl.example`](/Users/sean/Repos/gcp-claw-lab/opentofu/environments/lab/backend.gcs.hcl.example) to `opentofu/environments/lab/backend.gcs.hcl`
-- copy [`opentofu/environments/lab/terraform.tfvars.example`](/Users/sean/Repos/gcp-claw-lab/opentofu/environments/lab/terraform.tfvars.example) to `opentofu/environments/lab/terraform.tfvars`
+- copy [`opentofu/environments/lab/backend.gcs.hcl.example`](../opentofu/environments/lab/backend.gcs.hcl.example) to `opentofu/environments/lab/backend.gcs.hcl`
+- copy [`opentofu/environments/lab/terraform.tfvars.example`](../opentofu/environments/lab/terraform.tfvars.example) to `opentofu/environments/lab/terraform.tfvars`
 
 Those files are ignored and are the right place for your real bucket name, VM name, and other deployment-specific identifiers.
 
@@ -39,23 +39,23 @@ Those files are ignored and are the right place for your real bucket name, VM na
 
 Start from:
 
-- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.example.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.example.json)
-- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.example.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.example.json)
+- [`config/secrets.local.example.json`](../config/secrets.local.example.json)
+- [`config/secrets.cloud.example.json`](../config/secrets.cloud.example.json)
 
 Local runtime secrets live in:
 
-- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.local.json)
+- `config/secrets.local.json`
 
 Cloud runtime secrets live in:
 
-- [`/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.json`](/Users/sean/Repos/claw-gcp-runtime/config/secrets.cloud.json)
+- `config/secrets.cloud.json`
 
 ## Local Runtime
 
 Initial setup:
 
 ```bash
-cd /Users/sean/Repos/claw-gcp-runtime
+cd /path/to/claw-gcp-runtime
 npm run deps:sync
 cp config/secrets.local.example.json config/secrets.local.json
 agent-runtime local deploy
@@ -87,9 +87,9 @@ agent-runtime local test gmail-send
 Useful maintenance helpers:
 
 ```bash
-bash /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/reset-local-docker.sh
-bash /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/print-local-docker-access.sh
-node /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/check-native-local-sync.mjs
+bash scripts/maintenance/reset-local-docker.sh
+bash scripts/maintenance/print-local-docker-access.sh
+node scripts/maintenance/check-native-local-sync.mjs
 ```
 
 ## Cloud Runtime
@@ -97,7 +97,7 @@ node /Users/sean/Repos/claw-gcp-runtime/scripts/maintenance/check-native-local-s
 Initial setup:
 
 ```bash
-cd /Users/sean/Repos/claw-gcp-runtime
+cd /path/to/claw-gcp-runtime
 npm run deps:sync
 cp config/secrets.cloud.example.json config/secrets.cloud.json
 agent-runtime cloud push-secret
@@ -131,7 +131,7 @@ agent-runtime cloud test gmail-send
 Direct VM shell:
 
 ```bash
-bash /Users/sean/Repos/claw-gcp-runtime/scripts/cloud/ssh-app.sh bash
+bash scripts/cloud/ssh-app.sh bash
 ```
 
 ## Gmail Bootstrap and Testing
@@ -153,8 +153,8 @@ agent-runtime cloud test gmail-send
 
 Manual recovery scripts still exist for break-glass recovery:
 
-- [`/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-docker-local.sh`](/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-docker-local.sh)
-- [`/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-cloud-service-account.sh`](/Users/sean/Repos/claw-gcp-runtime/scripts/gmail/bootstrap-gog-cloud-service-account.sh)
+- [`scripts/gmail/bootstrap-gog-docker-local.sh`](../scripts/gmail/bootstrap-gog-docker-local.sh)
+- [`scripts/gmail/bootstrap-gog-cloud-service-account.sh`](../scripts/gmail/bootstrap-gog-cloud-service-account.sh)
 
 ## Runtime Notes
 

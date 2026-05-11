@@ -225,8 +225,6 @@ Current source-of-truth docs:
 - [skill-integration-options.md](docs/skill-integration-options.md): when to use built-in skills, generated workspace skills, plugins, or sibling integrations
 - [backlog.md](docs/backlog.md): prioritized follow-up work
 
-Historical planning and migration docs still live under [`docs/`](docs), but they are not the primary source of truth for current behavior.
-
 ## Notes
 
 - `workspace/skills` and some integration-owned files under `workspace/config` are generated during staging and should be treated as composed state.

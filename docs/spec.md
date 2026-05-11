@@ -9,11 +9,11 @@ In its current phase, this repository serves two related purposes:
 1. the general OpenClaw runtime and GCP operating model repo
 2. the active composition host that assembles sibling workflow integrations into a reviewed runtime workspace during development
 
-The newsletter workflow now lives in the sibling repo [`/path/to/newsletter-digest`](/path/to/newsletter-digest). This repo owns the runtime conventions, local/cloud lifecycle, secrets rendering, operator tooling, and generic integration staging used to run it.
+The newsletter workflow now lives in the sibling `newsletter-digest` repo. This repo owns the runtime conventions, local/cloud lifecycle, secrets rendering, operator tooling, and generic integration staging used to run it.
 
-Open backlog items live in [backlog.md](/path/to/claw-gcp-runtime/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
+Open backlog items live in [backlog.md](backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
-Skill integration guidance lives in [skill-integration-options.md](/Users/sean/Repos/claw-gcp-runtime/docs/skill-integration-options.md).
+Skill integration guidance lives in [skill-integration-options.md](skill-integration-options.md).
 
 Primary goals:
 
@@ -347,7 +347,7 @@ Follow a local-first, cloud-parity workflow:
 - Use Docker as the cloud deployment target
 - Keep the workspace and reviewed policy/configuration in the repository so local and cloud runs use the same source of truth
 - Treat sibling integrations such as `newsletter-digest` as first-class development inputs, even while this repo remains the runtime source of truth
-- Stage integrations from [workspace/integrations.json](/path/to/claw-gcp-runtime/workspace/integrations.json) into the runtime rather than copying workflow code back into repo-root scripts
+- Stage integrations from [workspace/integrations.json](../workspace/integrations.json) into the runtime rather than copying workflow code back into repo-root scripts
 - Keep `workspace/` as the composed view of runtime plus integrations, not as a second implementation home for workflow logic
 
 Operator interface guidance:

@@ -36,13 +36,11 @@ workspace/integrations
 workspace/skills/*
 !workspace/skills/.gitkeep
 workspace/config/newsletter-digest.json
+workspace/state
 workspace/.tmp/
 workspace/tmp/
 workspace/memory/
-.runtime/*
-!.runtime/integrations/
-.runtime/integrations/*
-!.runtime/integrations/.gitkeep
+.runtime/
 node_modules/
 __pycache__/
 **/__pycache__/
