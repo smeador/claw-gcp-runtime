@@ -1,5 +1,11 @@
 # Open Source Plan
 
+Historical note:
+
+- this was the planning document for the repo split and open-source direction
+- much of the planned structure is now implemented
+- keep it for rationale and deferred follow-up, not as the primary description of the current repo
+
 ## Decision
 
 We are standardizing on a two-repo split:

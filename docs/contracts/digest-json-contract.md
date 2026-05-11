@@ -1,5 +1,11 @@
 # Digest JSON Contract
 
+Historical note:
+
+- this contract was copied into the runtime repo during the repo-split work
+- the live workflow contract now belongs with the integration repo
+- keep this file only as historical/reference material unless the runtime itself starts depending on it again
+
 This contract defines the structured digest object that sits between synthesis and rendering.
 
 `digest.json` is the source of truth for final digest content.

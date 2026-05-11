@@ -1,5 +1,11 @@
 # Integration Interface Draft
 
+Historical note:
+
+- this was a design draft from the integration split work
+- it is useful as rationale, not as the current source of truth
+- for the current live model, prefer [README.md](/Users/sean/Repos/gcp-claw-lab/README.md), [spec.md](/Users/sean/Repos/gcp-claw-lab/docs/spec.md), and [skill-integration-options.md](/Users/sean/Repos/gcp-claw-lab/docs/skill-integration-options.md)
+
 This document defines the lightweight composition boundary between:
 
 - the runtime repo

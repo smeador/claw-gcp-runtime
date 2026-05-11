@@ -1,5 +1,11 @@
 # OpenClaw Adapter Runtime Expectations
 
+Historical note:
+
+- this document is still directionally useful, but it was written for the split-era newsletter adapter contract
+- the live integration-owned expectations should now live with the integration repo
+- keep this file as a runtime-side reference, not as the primary workflow contract
+
 This contract defines what the OpenClaw-facing newsletter adapter may assume about the runtime environment.
 
 The skill is the agent-facing entry point.

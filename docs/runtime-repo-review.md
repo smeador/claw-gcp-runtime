@@ -1,5 +1,11 @@
 # Runtime Repo Review
 
+Historical note:
+
+- this document captures a runtime ergonomics review from the repo-split period
+- keep it for rationale and tradeoff history
+- use [README.md](/Users/sean/Repos/gcp-claw-lab/README.md), [spec.md](/Users/sean/Repos/gcp-claw-lab/docs/spec.md), and [openclaw-agent-guide.md](/Users/sean/Repos/gcp-claw-lab/docs/openclaw-agent-guide.md) as the current source of truth
+
 This note captures the current runtime-repo ergonomics review and the recommended next steps before broader open-source hardening.
 
 ## Current state
@@ -38,7 +44,7 @@ That means:
 
 - generic runtime mechanics stay here
 - workflow implementation does not move back here
-- sibling integrations like `agent-newsletter-digest` are first-class development inputs
+- sibling integrations like `newsletter-digest` are first-class development inputs
 
 ## Command ergonomics result
 
@@ -52,8 +58,8 @@ Current operator-facing shape:
 - `agent-runtime local test basic`
 - `agent-runtime local test core`
 - `agent-runtime local test integration`
-- `agent-runtime local test skill pip-newsletter-digest`
-- `agent-runtime cloud test skill pip-newsletter-digest`
+- `agent-runtime local test skill newsletter-digest`
+- `agent-runtime cloud test skill newsletter-digest`
 
 Supporting implementation changes that are now landed:
 

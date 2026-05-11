@@ -10,7 +10,7 @@ It does three things:
 
 The main active integration today is the sibling `newsletter-digest` repo.
 
-## What This Repo Is For
+## When To Use
 
 Use this repo if you want:
 

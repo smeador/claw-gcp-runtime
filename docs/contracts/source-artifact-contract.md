@@ -1,5 +1,11 @@
 # Source Artifact Contract
 
+Historical note:
+
+- this contract was copied into the runtime repo during the repo split
+- the live extraction/source-artifact contract now belongs with the integration repo
+- keep this file as historical/reference material unless the runtime starts enforcing it directly
+
 This contract defines the cleaned newsletter artifact set produced by extraction and consumed by selection, formatting, and debugging flows.
 
 ## Purpose

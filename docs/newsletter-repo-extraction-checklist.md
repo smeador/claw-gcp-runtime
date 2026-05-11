@@ -1,5 +1,11 @@
 # Newsletter Repo Extraction Checklist
 
+Historical note:
+
+- this checklist tracked the repo-split work
+- most of the structural extraction is complete
+- keep this doc for migration history, not as the source of truth for the current runtime
+
 This checklist tracks the stricter split we agreed on:
 
 - this repo stays runtime-first and integration-generic

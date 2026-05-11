@@ -9,7 +9,7 @@ In its current phase, this repository serves two related purposes:
 1. the general OpenClaw runtime and GCP operating model repo
 2. the active composition host that assembles sibling workflow integrations into a reviewed runtime workspace during development
 
-The newsletter workflow now lives in the sibling repo [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest). This repo owns the runtime conventions, local/cloud lifecycle, secrets rendering, operator tooling, and generic integration staging used to run it.
+The newsletter workflow now lives in the sibling repo [`/path/to/newsletter-digest`](/path/to/newsletter-digest). This repo owns the runtime conventions, local/cloud lifecycle, secrets rendering, operator tooling, and generic integration staging used to run it.
 
 Open backlog items live in [backlog.md](/path/to/gcp-claw-lab/docs/backlog.md). This spec describes the current intended architecture, operating model, and constraints.
 
@@ -346,7 +346,7 @@ Follow a local-first, cloud-parity workflow:
 - Keep local and cloud runtime inputs as similar as practical
 - Use Docker as the cloud deployment target
 - Keep the workspace and reviewed policy/configuration in the repository so local and cloud runs use the same source of truth
-- Treat sibling integrations such as `agent-newsletter-digest` as first-class development inputs, even while this repo remains the runtime source of truth
+- Treat sibling integrations such as `newsletter-digest` as first-class development inputs, even while this repo remains the runtime source of truth
 - Stage integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json) into the runtime rather than copying workflow code back into repo-root scripts
 - Keep `workspace/` as the composed view of runtime plus integrations, not as a second implementation home for workflow logic
 

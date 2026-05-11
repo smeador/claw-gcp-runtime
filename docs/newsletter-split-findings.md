@@ -1,9 +1,15 @@
 # Newsletter Split Findings
 
+Historical note:
+
+- this document captures findings from the repo split and cloud rollout
+- it is still useful for rationale and debugging lessons
+- use [README.md](/Users/sean/Repos/gcp-claw-lab/README.md) and [spec.md](/Users/sean/Repos/gcp-claw-lab/docs/spec.md) for the current repo shape
+
 ## Current structure
 
 - the newsletter implementation now lives in the sibling repo:
-  - [`/path/to/agent-newsletter-digest`](/path/to/agent-newsletter-digest)
+  - [`/path/to/newsletter-digest`](/path/to/newsletter-digest)
 - this runtime repo stages declared integrations from [workspace/integrations.json](/path/to/gcp-claw-lab/workspace/integrations.json)
 - staged integrations are copied into:
   - [`.runtime/integrations`](/path/to/gcp-claw-lab/.runtime/integrations)

@@ -118,7 +118,7 @@ Rule of thumb:
 
 ## Option 4: Sibling integration repo
 
-This is the strongest packaging model and the one we now use for [`agent-newsletter-digest`](/Users/sean/Repos/agent-newsletter-digest).
+This is the strongest packaging model and the one we now use for [`newsletter-digest`](/Users/sean/Repos/newsletter-digest).
 
 How it works:
 

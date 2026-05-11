@@ -1,5 +1,11 @@
 # Render and Send Contract
 
+Historical note:
+
+- this contract was copied into the runtime repo during the repo split
+- the live render/send contract now belongs with the integration repo
+- keep this file as historical/reference material unless the runtime starts enforcing it directly
+
 This contract defines the boundary after `digest.json` exists.
 
 It covers:
