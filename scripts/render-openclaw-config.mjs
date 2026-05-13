@@ -6,6 +6,7 @@ import path from "node:path";
 function usage() {
   console.error("Usage:");
   console.error("  node scripts/render-openclaw-config.mjs --template <path> --output <path> --local-secrets <path>");
+  console.error("  node scripts/render-openclaw-config.mjs --template <path> --output <path> --secret-file <path>");
   console.error("  node scripts/render-openclaw-config.mjs --template <path> --output <path> --gcp-secret-json <json>");
   process.exit(1);
 }
@@ -72,7 +73,7 @@ function ensureDir(filePath) {
 const args = parseArgs(process.argv.slice(2));
 const templatePath = args.template;
 const outputPath = args.output;
-const localSecretsPath = args["local-secrets"];
+const localSecretsPath = args["local-secrets"] || args["secret-file"];
 const gcpSecretJson = args["gcp-secret-json"];
 
 if (!templatePath || !outputPath) {

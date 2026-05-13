@@ -50,6 +50,13 @@ Cloud runtime secrets live in:
 
 - `config/secrets.cloud.json`
 
+Create real secret files with mode `0600` so only the local owner can read or edit them:
+
+```bash
+install -m 600 config/secrets.local.example.json config/secrets.local.json
+install -m 600 config/secrets.cloud.example.json config/secrets.cloud.json
+```
+
 ## Local Runtime
 
 Initial setup:
@@ -57,7 +64,7 @@ Initial setup:
 ```bash
 cd /path/to/claw-gcp-runtime
 npm run deps:sync
-cp config/secrets.local.example.json config/secrets.local.json
+install -m 600 config/secrets.local.example.json config/secrets.local.json
 claw-runtime local deploy
 ```
 
@@ -99,7 +106,7 @@ Initial setup:
 ```bash
 cd /path/to/claw-gcp-runtime
 npm run deps:sync
-cp config/secrets.cloud.example.json config/secrets.cloud.json
+install -m 600 config/secrets.cloud.example.json config/secrets.cloud.json
 claw-runtime cloud push-secret
 claw-runtime cloud deploy
 ```
