@@ -188,8 +188,8 @@ const NESTED_COMMANDS = {
 
 function printHelp() {
   console.log(`Usage:
-  agent-runtime ENV COMMAND
-  agent-runtime ENV GROUP COMMAND
+  claw-runtime ENV COMMAND
+  claw-runtime ENV GROUP COMMAND
 
 Environments:
   local
@@ -227,16 +227,16 @@ Grouped commands:
   test gmail-send
 
 Examples:
-  agent-runtime local deploy
-  agent-runtime cloud deploy
-  agent-runtime local cron list
-  agent-runtime local test basic
-  agent-runtime local test core
-  agent-runtime local test integration
-  agent-runtime local prune
-  agent-runtime cloud prune
-  agent-runtime local test skill newsletter-digest
-  agent-runtime cloud test skill newsletter-digest
+  claw-runtime local deploy
+  claw-runtime cloud deploy
+  claw-runtime local cron list
+  claw-runtime local test basic
+  claw-runtime local test core
+  claw-runtime local test integration
+  claw-runtime local prune
+  claw-runtime cloud prune
+  claw-runtime local test skill newsletter-digest
+  claw-runtime cloud test skill newsletter-digest
 `);
 }
 

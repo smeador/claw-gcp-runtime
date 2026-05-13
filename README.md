@@ -109,7 +109,7 @@ Notes:
 ```bash
 npm run deps:sync
 cp config/secrets.local.example.json config/secrets.local.json
-agent-runtime local deploy
+claw-runtime local deploy
 ```
 
 ### 4. Start Cloud Runtime
@@ -129,47 +129,47 @@ Then:
 ```bash
 npm run deps:sync
 cp config/secrets.cloud.example.json config/secrets.cloud.json
-agent-runtime cloud push-secret
-agent-runtime cloud deploy
+claw-runtime cloud push-secret
+claw-runtime cloud deploy
 ```
 
 ## Common Commands
 
-`agent-runtime` is the unified runtime CLI for this repo. It exists so local and cloud workflows use the same verbs and so the operational surface stays smaller than the underlying script set.
+`claw-runtime` is the unified runtime CLI for this repo. It exists so local and cloud workflows use the same verbs and so the operational surface stays smaller than the underlying script set.
 
-The executable lives under [`bin/agent-runtime`](bin/agent-runtime). With `direnv` enabled in this repo, you can just run `agent-runtime ...` directly. Without `direnv`, use `./bin/agent-runtime ...`.
+The executable lives under [`bin/claw-runtime`](bin/claw-runtime). With `direnv` enabled in this repo, you can just run `claw-runtime ...` directly. Without `direnv`, use `./bin/claw-runtime ...`.
 
 Local:
 
 ```bash
-agent-runtime local help
-agent-runtime local deploy
-agent-runtime local restart
-agent-runtime local logs
-agent-runtime local shell
-agent-runtime local cron list
-agent-runtime local test basic
-agent-runtime local test core
-agent-runtime local test integration
-agent-runtime local test skill newsletter-digest
-agent-runtime local test gmail-read
-agent-runtime local test gmail-send
+claw-runtime local help
+claw-runtime local deploy
+claw-runtime local restart
+claw-runtime local logs
+claw-runtime local shell
+claw-runtime local cron list
+claw-runtime local test basic
+claw-runtime local test core
+claw-runtime local test integration
+claw-runtime local test skill newsletter-digest
+claw-runtime local test gmail-read
+claw-runtime local test gmail-send
 ```
 
 Cloud:
 
 ```bash
-agent-runtime cloud help
-agent-runtime cloud deploy
+claw-runtime cloud help
+claw-runtime cloud deploy
 # ...same commands as local...
-agent-runtime cloud tunnel
+claw-runtime cloud tunnel
 ```
 
 For the full command surface, run:
 
 ```bash
-agent-runtime local help
-agent-runtime cloud help
+claw-runtime local help
+claw-runtime cloud help
 ```
 
 ## Integrations

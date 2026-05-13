@@ -40,5 +40,5 @@ gcloud compute ssh "${VM_NAME}" \
 echo
 echo "Cloud Gmail service-account bootstrap complete for ${ACCOUNT_EMAIL}."
 echo "Next tests:"
-echo "  agent-runtime cloud test gmail-read"
-echo "  agent-runtime cloud test gmail-send"
+echo "  claw-runtime cloud test gmail-read"
+echo "  claw-runtime cloud test gmail-send"

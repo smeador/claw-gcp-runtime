@@ -2,7 +2,7 @@
   "name": "claw-gcp-runtime",
   "private": true,
   "bin": {
-    "agent-runtime": "./bin/agent-runtime"
+    "claw-runtime": "./bin/claw-runtime"
   },
   "engines": {
     "node": ">=22"

@@ -352,16 +352,16 @@ Follow a local-first, cloud-parity workflow:
 
 Operator interface guidance:
 
-- Prefer the `agent-runtime` CLI as the primary in-repo operator surface
-- Use `direnv` to expose `agent-runtime` directly from the repo `bin/` directory
+- Prefer the `claw-runtime` CLI as the primary in-repo operator surface
+- Use `direnv` to expose `claw-runtime` directly from the repo `bin/` directory
 - Keep the underlying shell scripts as the implementation layer behind that CLI
-- Keep `agent-runtime` as the sole runtime operator interface for local and cloud commands
+- Keep `claw-runtime` as the sole runtime operator interface for local and cloud commands
 - Prefer generic runtime validation before workflow validation:
-  - `agent-runtime local test basic`
-  - `agent-runtime local test core`
-  - `agent-runtime local test integration`
+  - `claw-runtime local test basic`
+  - `claw-runtime local test core`
+  - `claw-runtime local test integration`
 - Prefer generic skill dispatch for workflow checks:
-  - `agent-runtime local test skill <skill>`
+  - `claw-runtime local test skill <skill>`
 
 Local development:
 - Prefer a local OpenClaw runtime for the fastest iteration loop

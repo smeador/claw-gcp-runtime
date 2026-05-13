@@ -37,11 +37,11 @@ Then run these commands inside the container:
 Steady-state operations:
 - Rotate the Docker-local gateway token:
   1. Edit config/secrets.local.json
-  2. agent-runtime local restart
+  2. claw-runtime local restart
 - Add or update reviewed skills:
   edit the source integration repo declared in workspace/integrations.json and then rerun:
-  agent-runtime local restart
+  claw-runtime local restart
 - Add or update reviewed hooks:
   edit config/openclaw.container.example.json5 or the relevant repo-managed workspace files, then rerun:
-  agent-runtime local restart
+  claw-runtime local restart
 EOF

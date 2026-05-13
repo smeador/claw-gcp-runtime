@@ -10,7 +10,7 @@ Recommended local setup:
 
 - install `direnv`
 - create `.envrc.local`
-- let the repo-managed `.envrc` expose `agent-runtime` on `PATH`
+- let the repo-managed `.envrc` expose `claw-runtime` on `PATH`
 
 Example:
 
@@ -58,30 +58,30 @@ Initial setup:
 cd /path/to/claw-gcp-runtime
 npm run deps:sync
 cp config/secrets.local.example.json config/secrets.local.json
-agent-runtime local deploy
+claw-runtime local deploy
 ```
 
 Common commands:
 
 ```bash
-agent-runtime local help
-agent-runtime local deploy
-agent-runtime local restart
-agent-runtime local rebuild
-agent-runtime local prune
-agent-runtime local ps
-agent-runtime local logs
-agent-runtime local agent-logs
-agent-runtime local shell
-agent-runtime local cron apply
-agent-runtime local cron list
-agent-runtime local cron run-digest
-agent-runtime local test basic
-agent-runtime local test core
-agent-runtime local test integration
-agent-runtime local test skill newsletter-digest
-agent-runtime local test gmail-read
-agent-runtime local test gmail-send
+claw-runtime local help
+claw-runtime local deploy
+claw-runtime local restart
+claw-runtime local rebuild
+claw-runtime local prune
+claw-runtime local ps
+claw-runtime local logs
+claw-runtime local agent-logs
+claw-runtime local shell
+claw-runtime local cron apply
+claw-runtime local cron list
+claw-runtime local cron run-digest
+claw-runtime local test basic
+claw-runtime local test core
+claw-runtime local test integration
+claw-runtime local test skill newsletter-digest
+claw-runtime local test gmail-read
+claw-runtime local test gmail-send
 ```
 
 Useful maintenance helpers:
@@ -100,32 +100,32 @@ Initial setup:
 cd /path/to/claw-gcp-runtime
 npm run deps:sync
 cp config/secrets.cloud.example.json config/secrets.cloud.json
-agent-runtime cloud push-secret
-agent-runtime cloud deploy
+claw-runtime cloud push-secret
+claw-runtime cloud deploy
 ```
 
 Common commands:
 
 ```bash
-agent-runtime cloud help
-agent-runtime cloud push-secret
-agent-runtime cloud sync
-agent-runtime cloud deploy
-agent-runtime cloud restart
-agent-runtime cloud rebuild
-agent-runtime cloud prune
-agent-runtime cloud ps
-agent-runtime cloud logs
-agent-runtime cloud agent-logs
-agent-runtime cloud logs-download
-agent-runtime cloud shell
-agent-runtime cloud tunnel
-agent-runtime cloud cron apply
-agent-runtime cloud cron list
-agent-runtime cloud cron run-digest
-agent-runtime cloud test skill newsletter-digest
-agent-runtime cloud test gmail-read
-agent-runtime cloud test gmail-send
+claw-runtime cloud help
+claw-runtime cloud push-secret
+claw-runtime cloud sync
+claw-runtime cloud deploy
+claw-runtime cloud restart
+claw-runtime cloud rebuild
+claw-runtime cloud prune
+claw-runtime cloud ps
+claw-runtime cloud logs
+claw-runtime cloud agent-logs
+claw-runtime cloud logs-download
+claw-runtime cloud shell
+claw-runtime cloud tunnel
+claw-runtime cloud cron apply
+claw-runtime cloud cron list
+claw-runtime cloud cron run-digest
+claw-runtime cloud test skill newsletter-digest
+claw-runtime cloud test gmail-read
+claw-runtime cloud test gmail-send
 ```
 
 Direct VM shell:
@@ -145,10 +145,10 @@ Normal path:
 Preferred verification:
 
 ```bash
-agent-runtime local test gmail-read
-agent-runtime local test gmail-send
-agent-runtime cloud test gmail-read
-agent-runtime cloud test gmail-send
+claw-runtime local test gmail-read
+claw-runtime local test gmail-send
+claw-runtime cloud test gmail-read
+claw-runtime cloud test gmail-send
 ```
 
 Manual recovery scripts still exist for break-glass recovery:

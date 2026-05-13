@@ -57,5 +57,5 @@ docker compose --env-file config/docker.build.env -f "${COMPOSE_FILE}" exec -T o
 echo
 echo "Docker Gmail service-account bootstrap complete for ${ACCOUNT_EMAIL}."
 echo "Next tests:"
-echo "  agent-runtime local test gmail-read"
-echo "  agent-runtime local test gmail-send"
+echo "  claw-runtime local test gmail-read"
+echo "  claw-runtime local test gmail-send"
