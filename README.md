@@ -52,6 +52,18 @@ This model is meant to improve both configurability and durability:
 - [`workspace/`](workspace): reviewed composed workspace surface
 - [`docs/`](docs): detailed architecture, troubleshooting, and backlog docs
 
+## About the Workspace
+
+`workspace/` is the user's OpenClaw workspace for this runtime. It is where reviewed runtime-facing files such as workspace policy, composed skills, cron config, and integration-owned config come together.
+
+In the open source repo, the checked-in workspace files are intentionally generic placeholders:
+
+- identity and persona files such as [`workspace/IDENTITY.md`](workspace/IDENTITY.md), [`workspace/SOUL.md`](workspace/SOUL.md), and [`workspace/USER.md`](workspace/USER.md) are starter templates
+- [`workspace/AGENTS.md`](workspace/AGENTS.md) and [`workspace/TOOLS.md`](workspace/TOOLS.md) define the reviewed workspace policy surface
+- [`workspace/skills`](workspace/skills) and some files under [`workspace/config`](workspace/config) are generated or composed during staging
+
+In a real setup, you would typically fork this repo and update the checked-in workspace files to match your own OpenClaw usage, tone, workflows, and reviewed integrations.
+
 ## Prerequisites
 
 - OpenTofu
@@ -108,7 +120,7 @@ Notes:
 
 ```bash
 npm run deps:sync
-cp config/secrets.local.example.json config/secrets.local.json
+install -m 600 config/secrets.local.example.json config/secrets.local.json
 claw-runtime local deploy
 ```
 
@@ -128,7 +140,7 @@ Then:
 
 ```bash
 npm run deps:sync
-cp config/secrets.cloud.example.json config/secrets.cloud.json
+install -m 600 config/secrets.cloud.example.json config/secrets.cloud.json
 claw-runtime cloud push-secret
 claw-runtime cloud deploy
 ```
@@ -200,6 +212,13 @@ Use:
 
 - [`config/secrets.local.json`](config/secrets.local.json) for Docker-local secrets
 - [`config/secrets.cloud.json`](config/secrets.cloud.json) for cloud secrets
+
+Create real secret files with mode `0600`:
+
+```bash
+install -m 600 config/secrets.local.example.json config/secrets.local.json
+install -m 600 config/secrets.cloud.example.json config/secrets.cloud.json
+```
 
 Current defaults:
 
