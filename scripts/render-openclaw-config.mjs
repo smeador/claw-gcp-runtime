@@ -70,6 +70,19 @@ function ensureDir(filePath) {
   fs.mkdirSync(path.dirname(filePath), {recursive: true});
 }
 
+function normalizeRuntimeSecrets(secrets) {
+  const normalized = structuredClone(secrets);
+  const gogAccount = typeof normalized?.gog?.account === "string" && normalized.gog.account.length > 0
+    ? normalized.gog.account
+    : null;
+
+  if (gogAccount && normalized?.hooks?.gmail && (typeof normalized.hooks.gmail.account !== "string" || normalized.hooks.gmail.account.length === 0)) {
+    normalized.hooks.gmail.account = gogAccount;
+  }
+
+  return normalized;
+}
+
 const args = parseArgs(process.argv.slice(2));
 const templatePath = args.template;
 const outputPath = args.output;
@@ -88,9 +101,9 @@ const template = readJson(templatePath);
 let secretOverlay;
 
 if (localSecretsPath) {
-  secretOverlay = readJson(localSecretsPath);
+  secretOverlay = normalizeRuntimeSecrets(readJson(localSecretsPath));
 } else {
-  secretOverlay = JSON.parse(gcpSecretJson);
+  secretOverlay = normalizeRuntimeSecrets(JSON.parse(gcpSecretJson));
 }
 
 const rendered = stripLocalOnlyProviderSecrets(mergeDeep(template, secretOverlay));

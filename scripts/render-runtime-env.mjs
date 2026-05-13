@@ -52,6 +52,10 @@ function resolveGogAccount(secrets) {
     return process.env.GOG_ACCOUNT;
   }
 
+  if (typeof secrets?.gog?.account === "string" && secrets.gog.account.length > 0) {
+    return secrets.gog.account;
+  }
+
   if (typeof secrets?.hooks?.gmail?.account === "string" && secrets.hooks.gmail.account.length > 0) {
     return secrets.hooks.gmail.account;
   }

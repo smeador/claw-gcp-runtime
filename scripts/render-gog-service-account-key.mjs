@@ -40,6 +40,22 @@ function firstServiceAccount(secrets) {
   return account || null;
 }
 
+function resolveGogAccount(secrets) {
+  if (typeof process.env.GOG_ACCOUNT === "string" && process.env.GOG_ACCOUNT.length > 0) {
+    return process.env.GOG_ACCOUNT;
+  }
+
+  if (typeof secrets?.gog?.account === "string" && secrets.gog.account.length > 0) {
+    return secrets.gog.account;
+  }
+
+  if (typeof secrets?.hooks?.gmail?.account === "string" && secrets.hooks.gmail.account.length > 0) {
+    return secrets.hooks.gmail.account;
+  }
+
+  return firstServiceAccount(secrets);
+}
+
 const args = parseArgs(process.argv.slice(2));
 if (!args.output || ((args.secrets ? 1 : 0) + (args.json ? 1 : 0) !== 1)) {
   usage();
@@ -48,7 +64,7 @@ if (!args.output || ((args.secrets ? 1 : 0) + (args.json ? 1 : 0) !== 1)) {
 const secrets = args.secrets
   ? JSON.parse(fs.readFileSync(args.secrets, "utf8"))
   : JSON.parse(args.json);
-const account = args.account || firstServiceAccount(secrets);
+const account = args.account || resolveGogAccount(secrets);
 const key = account ? secrets?.gog?.serviceAccounts?.[account] : null;
 
 if (!key) {

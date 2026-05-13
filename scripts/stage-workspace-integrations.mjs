@@ -15,6 +15,21 @@ function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
 }
 
+function mergeDeep(base, overlay) {
+  if (overlay === undefined) {
+    return base;
+  }
+  if (base === null || overlay === null || Array.isArray(base) || Array.isArray(overlay) || typeof base !== "object" || typeof overlay !== "object") {
+    return overlay;
+  }
+
+  const merged = { ...base };
+  for (const [key, value] of Object.entries(overlay)) {
+    merged[key] = key in merged ? mergeDeep(merged[key], value) : value;
+  }
+  return merged;
+}
+
 function usage(message = "") {
   if (message) {
     console.error(message);
@@ -120,6 +135,22 @@ function copyWorkspaceTree(sourcePath, destPath) {
   });
 }
 
+function maybeApplyWorkspaceOverride(targetPath) {
+  if (!targetPath.endsWith(".json")) {
+    return;
+  }
+
+  const overridePath = targetPath.replace(/\.json$/, ".override.json");
+  if (!existsSync(overridePath)) {
+    return;
+  }
+
+  const base = readJson(targetPath);
+  const overlay = readJson(overridePath);
+  const merged = mergeDeep(base, overlay);
+  writeFileSync(targetPath, `${JSON.stringify(merged, null, 2)}\n`);
+}
+
 function loadIntegrationManifest(sourceRoot, integrationName) {
   const manifestPath = resolve(sourceRoot, "integration.json");
   if (!existsSync(manifestPath)) {
@@ -210,6 +241,7 @@ function stageWorkspaceFiles(sourceRoot, integrationName, manifest) {
     }
     const targetPath = resolveWorkspaceTarget(workspaceFile.target);
     copyWorkspaceTree(sourcePath, targetPath);
+    maybeApplyWorkspaceOverride(targetPath);
     stagedFiles.push({
       source: workspaceFile.source,
       target: workspaceFile.target,
