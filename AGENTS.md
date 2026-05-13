@@ -5,7 +5,7 @@ This file captures project-level working memory for agents operating on the repo
 ## Project Context
 
 - This repo manages a private OpenClaw lab on GCP plus a reviewed workspace for local and cloud agent workflows.
-- The main active product workflow is the Pip newsletter digest.
+- The main active product workflow is the newsletter digest.
 - Newsletter implementation logic now lives in the sibling `newsletter-digest` repo; this repo should stay runtime-first and integration-generic.
 - Treat this file as system-builder guidance, not end-user bot persona guidance.
 
@@ -55,7 +55,7 @@ This file captures project-level working memory for agents operating on the repo
 
 ## Keep Separate From Runtime Persona
 
-- Do not copy Pip bot voice, persona, or greeting behavior into repo-level guidance.
+- Do not copy deployment-specific bot voice, persona, or greeting behavior into repo-level guidance.
 - Do not store end-user personalization here unless it materially affects system design or operator workflow.
 - Put runtime-facing bot behavior in the reviewed workspace files, not in this repo-level file.
 

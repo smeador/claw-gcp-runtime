@@ -1,6 +1,6 @@
-# Claw Runtime Workspace Policy
+# Reviewed Workspace Policy
 
-This workspace is for OpenClaw running in the Claw Runtime project.
+This workspace is for OpenClaw running in a reviewed repository-local workspace.
 
 ## Operating Model
 

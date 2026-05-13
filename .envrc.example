@@ -12,6 +12,6 @@ export OPENCLAW_SECRET_NAME=
 # Optional overrides.
 export CLOUD_SECRET_FILE=
 export GMAIL_TEST_TO=
-# export GMAIL_TEST_SUBJECT="Pip Cloud Gmail send test"
+# export GMAIL_TEST_SUBJECT="Cloud Gmail send test"
 # export DIGEST_MESSAGE="Run newsletter-digest now in test mode."
 # export TAIL_LINES=200

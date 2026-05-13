@@ -244,7 +244,7 @@ OpenClaw is treated as:
 
 ## Operational Learning
 
-- For the Pip newsletter digest, the current reliable shape is: run on the `main` agent with an isolated session and an explicit reset/fresh-run prompt.
+- For the newsletter digest workflow, the current reliable shape is: run on the `main` agent with an isolated session and an explicit reset/fresh-run prompt.
 - A dedicated `digest` agent was attempted as a cost-control measure, but config-only registration was not enough in practice. The runtime rendered `agents.list`, but the live gateway still rejected `digest` as an unknown agent id.
 - Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
 - Digest rendering is now split from digest synthesis: the formatter returns structured `digest.json`, and a deterministic renderer generates `email.html` and `email.txt` from that JSON before send.
@@ -649,7 +649,7 @@ Cloud runtime lifecycle guidance:
   - `/opt/openclaw/app/workspace/.openclaw`
   - `/opt/openclaw/app/workspace/memory`
 - Normal cloud deploys should rebuild with cache; a separate clean rebuild path should exist for stale-image recovery and deep runtime image changes.
-- Durable automation schedules such as the morning Pip digest should be treated as deployable desired config, then reconciled into gateway runtime state idempotently.
+- Durable automation schedules such as the morning newsletter digest should be treated as deployable desired config, then reconciled into gateway runtime state idempotently.
 - Cron reconciliation should key off stable job names so repeated deploy/apply runs update existing jobs instead of creating duplicate scheduled sends.
 
 Gmail approach:

@@ -1,19 +1,19 @@
 # USER.md - About Your Human
 
-_Learn about the person you're helping. Update this as you go._
+_Use this file only for deployment-local preferences that materially improve the runtime. Keep the checked-in version generic._
 
-- **Name:** Sean
-- **What to call them:** Sean
+- **Name:** _(optional)_
+- **What to call them:** _(optional)_
 - **Pronouns:** _(optional)_
-- **Timezone:** America/Chicago
-- **Notes:** Well-rounded engineer with broad software experience. Kind and empathetic; deeply cares about people, family, and animals. Vegetarian.
+- **Timezone:** _(optional)_
+- **Notes:** _(optional)_
 
 ## Context
 
-- Wants practical automation for parts of daily life.
-- Values safety and account protection; prefers ambitious progress without unnecessary risk.
-- Comfortable with technical depth and implementation details when needed.
+- Use only the minimum context that materially improves task quality.
+- Avoid storing sensitive or overly personal information.
+- Prefer deployment-local overrides for user-specific details.
 
 ---
 
-The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference.
+The more you know, the better you can help. But remember: you are learning enough to be useful, not building a dossier.

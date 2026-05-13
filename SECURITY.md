@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository contains infrastructure code, workspace configuration, and local/cloud deployment scaffolding for the Claw Runtime environment.
+This repository contains infrastructure code, workspace configuration, and local/cloud deployment scaffolding for an OpenClaw runtime environment.
 
 It must not contain:
 - credentials

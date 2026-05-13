@@ -30,7 +30,7 @@ config/docker.local.env
 config/rendered/
 docker/compose.override.yml
 .secrets/
-Gmail Delegation Claw Runtime.json
+Gmail Delegation Runtime.json
 workspace/.openclaw/
 workspace/integrations
 workspace/skills/*

@@ -24,7 +24,7 @@ Source of truth for open backlog items in this repository.
     - have each worker return only a structured section result
     - assemble the final digest from those bounded section outputs
 13. Validate native-local OpenClaw against the current repo-managed workflow/runtime assumptions:
-    - confirm the Pip digest still runs cleanly outside Docker
+    - confirm the newsletter digest still runs cleanly outside Docker
     - verify version parity expectations after the `2026.4.15` bump
     - identify any native-only auth, path, or state differences that still need explicit handling
 14. Decide whether additional connection channels beyond Telegram should remain config-bootstrapped, be split by environment, or move behind a more explicit bootstrap flow.
