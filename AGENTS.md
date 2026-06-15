@@ -21,6 +21,7 @@ This file captures project-level working memory for agents operating on the repo
 ## Repo Conventions
 
 - Keep `README.md` at the repo root for GitHub rendering.
+- Keep coding-agent skills for this repo under [.agents/skills](.agents/skills); these are for agents editing this repository, not runtime-facing OpenClaw skills. [.claude](.claude) is a symlink to [.agents](.agents) for Claude Code compatibility.
 - Keep long-form docs in [docs](docs):
   - [docs/spec.md](docs/spec.md)
   - [docs/backlog.md](docs/backlog.md)
