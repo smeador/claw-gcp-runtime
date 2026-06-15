@@ -29,7 +29,7 @@ apply_cron() {
 case "${ENV_NAME}:${ACTION}" in
   local:prepare)
     runtime_prepare_local_artifacts
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build openclaw-gateway openclaw-cli
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --pull openclaw-gateway openclaw-cli
     runtime_seed_local_state
     ;;
   local:deploy)
@@ -45,7 +45,7 @@ case "${ENV_NAME}:${ACTION}" in
     ;;
   local:rebuild)
     runtime_prepare_local_artifacts
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --no-cache openclaw-gateway openclaw-cli
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --pull --no-cache openclaw-gateway openclaw-cli
     runtime_seed_local_state
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
@@ -54,7 +54,8 @@ case "${ENV_NAME}:${ACTION}" in
     ensure_cloud_secret
     runtime_prepare_cloud_state
     runtime_render_cloud_artifacts "${SECRET_NAME}"
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --build --force-recreate openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --pull openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
     ;;
   cloud:restart)
@@ -68,7 +69,7 @@ case "${ENV_NAME}:${ACTION}" in
     ensure_cloud_secret
     runtime_prepare_cloud_state
     runtime_render_cloud_artifacts "${SECRET_NAME}"
-    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --no-cache openclaw-gateway
+    runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --pull --no-cache openclaw-gateway
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
     ;;
