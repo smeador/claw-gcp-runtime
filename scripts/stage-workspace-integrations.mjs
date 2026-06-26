@@ -263,6 +263,7 @@ function main() {
     return;
   }
 
+  removeIfExists(STAGED_ROOT);
   mkdirSync(STAGED_ROOT, { recursive: true });
   mkdirSync(WORKSPACE_SKILLS_ROOT, { recursive: true });
   removeIfExists(LEGACY_WORKSPACE_INTEGRATIONS_PATH);
