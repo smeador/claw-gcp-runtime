@@ -9,7 +9,7 @@
       "tz": "America/Chicago",
       "exact": true,
       "session": "isolated",
-      "message": "Run newsletter-digest now.",
+      "message": "/skill:newsletter-digest Run newsletter-digest now.",
       "deliver": false,
       "disabled": true
     }
