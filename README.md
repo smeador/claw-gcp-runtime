@@ -69,7 +69,7 @@ In a real setup, you would typically fork this repo and update the checked-in wo
 - OpenTofu
 - Google Cloud CLI (`gcloud`)
 - Docker Desktop or OrbStack
-- Node.js 22+
+- Node.js 22.23.2 (`nvm install && nvm use`; see `.nvmrc`)
 - `direnv` is recommended but optional
 
 ## Quick Start
@@ -239,6 +239,7 @@ Manual Gmail bootstrap scripts still exist for recovery, but they are not the no
 Current source-of-truth docs:
 
 - [spec.md](docs/spec.md): current architecture, security posture, setup model, and runtime conventions
+- [openclaw-2026.9.2-upgrade.md](docs/openclaw-2026.9.2-upgrade.md): state migration, compatibility changes, verification, and rollback notes
 - [runtime-operations.md](docs/runtime-operations.md): detailed local/cloud runtime commands, secret setup, and operator runbook
 - [openclaw-agent-guide.md](docs/openclaw-agent-guide.md): operational lessons, troubleshooting guidance, and OpenClaw-specific heuristics
 - [skill-integration-options.md](docs/skill-integration-options.md): when to use built-in skills, generated workspace skills, plugins, or sibling integrations

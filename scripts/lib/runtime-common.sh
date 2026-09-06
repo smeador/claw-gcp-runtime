@@ -124,3 +124,11 @@ runtime_wait_for_gateway() {
   echo "${RUNTIME_LABEL} gateway did not become ready for cron operations after ${attempts} attempts." >&2
   return 1
 }
+
+# State migrations must run with the gateway stopped and the same persistent mounts.
+runtime_migrate_state() {
+  runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" stop openclaw-gateway
+  runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" run --rm --no-deps \
+    -e OPENCLAW_SERVICE_REPAIR_POLICY=external \
+    openclaw-gateway doctor --fix --non-interactive --no-workspace-suggestions
+}
