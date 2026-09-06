@@ -144,7 +144,7 @@ function runCore() {
 }
 
 function runIntegration() {
-  run(process.execPath, ["--test", "scripts/runtime/entrypoint.test.mjs"], "entrypoint regression tests");
+  run(process.execPath, ["--test", "scripts/runtime/entrypoint.test.mjs", "scripts/runtime/cloud-storage.test.mjs"], "runtime regression tests");
   run(process.execPath, ["scripts/runtime/cli.mjs", "help"], "runtime facade help");
   run(process.execPath, ["scripts/stage-workspace-integrations.mjs"], "stage workspace integrations");
 
