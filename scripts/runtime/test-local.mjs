@@ -105,6 +105,9 @@ function runCore() {
   const expectedVersion = readJsonFile("versions.json", "version pins").runtime.openclawVersion;
   const versionOutput = run(...composeExec("openclaw", "--version"), "local OpenClaw version");
   assertIncludes(versionOutput, `OpenClaw ${expectedVersion} `, "local OpenClaw version");
+  const expectedGog = readJsonFile("versions.json", "version pins").runtime.gogVersion;
+  const gogVersion = run(...composeExec("gog", "--version"), "local gog version");
+  assertIncludes(gogVersion, expectedGog, "local gog version");
   run(...composeExec("openclaw", "config", "validate"), "local config schema");
 
   const [healthCmd, healthArgs] = composeExec("openclaw", "health", "--json");

@@ -2,6 +2,8 @@
 
 Validated on September 6, 2026. OpenClaw + GCP remains the chosen runtime architecture; newsletter logic stays in the separate deterministic workflow integration.
 
+Follow-up: [September dependency maintenance](dependency-review-2026-09.md) resolves the Cloud Function advisories recorded below, and [cloud storage maintenance](cloud-docker-storage.md) fixes the accumulated Docker images. The original upgrade evidence below is retained as history.
+
 ## Versions and compatibility
 
 OpenClaw is pinned to **2026.9.2** (previous Docker pin: 2026.6.6). Both Dockerfile defaults match `versions.json`. The native installation was also upgraded from 2026.3.24. Node **22.23.2** was used in all three environments; `.nvmrc` selects that version for native use.

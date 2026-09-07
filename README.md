@@ -239,6 +239,8 @@ Manual Gmail bootstrap scripts still exist for recovery, but they are not the no
 Current source-of-truth docs:
 
 - [spec.md](docs/spec.md): current architecture, security posture, setup model, and runtime conventions
+- [cloud-docker-storage.md](docs/cloud-docker-storage.md): automatic cloud cleanup, rollback retention, and build-space checks
+- [dependency-review-2026-09.md](docs/dependency-review-2026-09.md): dependency updates, audits, and deployment validation
 - [openclaw-2026.9.2-upgrade.md](docs/openclaw-2026.9.2-upgrade.md): state migration, compatibility changes, verification, and rollback notes
 - [runtime-operations.md](docs/runtime-operations.md): detailed local/cloud runtime commands, secret setup, and operator runbook
 - [openclaw-agent-guide.md](docs/openclaw-agent-guide.md): operational lessons, troubleshooting guidance, and OpenClaw-specific heuristics

@@ -96,7 +96,7 @@ export async function resolveLatestVersions() {
       ),
       gogVersion: makeResolvedEntry(
         versions.runtime.gogVersion,
-        await fetchGoLatest("github.com/steipete/gogcli"),
+        await fetchGoLatest("github.com/openclaw/gogcli"),
         "go"
       )
     },
