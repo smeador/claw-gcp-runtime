@@ -9,15 +9,15 @@ Source of truth for open backlog items in this repository.
    - keep Telegram on the config-first path (`channels.telegram` in the template + `channels.telegram.botToken` in secret overlays)
    - verify whether local Docker should default to disabled while cloud remains the primary Telegram runtime
    - document the exact operator flow for future channel additions so local Docker, native local, and cloud stay aligned
-3. Move more digest orchestration into code with a higher-level runner script so artifact directory creation, staging files, and final send execution are less dependent on skill instructions.
+3. **Implemented in `newsletter-digest`:** `newsletter-digest-run` owns production orchestration; the skill invokes it and reports the result.
 4. Reduce digest token usage further with section-aware trimming and smaller formatter inputs, especially for longer newsletters such as NYT and AI News.
 5. Add a lighter-weight config-only cloud rollout and post-deploy verification path so simple config/cron changes do not require the same heavy operator flow as image rebuilds.
 6. Revisit a dedicated digest agent using the documented `openclaw agents add ...` bootstrap path if we want stronger isolation without relying on config-only agent registration.
 7. Add RSS feed ingestion as an optional supplemental source, normalized into the same artifact pipeline as Gmail-backed newsletter inputs.
-8. Add a code-owned digest runner script that orchestrates extraction, formatter handoff, artifact staging, and final send so less of the workflow depends on skill-level file choreography.
-9. Add extractor cache versioning so cleanup/parser changes can invalidate stale cached artifacts deterministically instead of reusing older outputs silently.
+8. **Implemented:** the code-owned runner covers extraction, formatting, artifact staging, and send (same work as item 3).
+9. **Implemented in `newsletter-digest`:** cached extraction requires the current `extractorVersion` and the complete artifact set.
 10. Harden the digest send path so HTML delivery is not dependent on passing the full HTML body as a large shell argument if a file-backed or wrapper-backed alternative is available.
-11. Add fixture-based regression tests for newsletter extraction and digest send helpers using sanitized representative inputs.
+11. **Implemented in `newsletter-digest`:** fixture and contract coverage exists for extraction, rendering, finalization, and delivery. Continue extending cases as behavior changes.
 12. Evaluate bounded parallel synthesis after the runner script exists:
     - keep message selection, extraction, and delivery centralized
     - hand one cleaned artifact bundle per source to a bounded worker/subagent
@@ -25,11 +25,12 @@ Source of truth for open backlog items in this repository.
     - assemble the final digest from those bounded section outputs
 13. Validate native-local OpenClaw against the current repo-managed workflow/runtime assumptions:
     - confirm the newsletter digest still runs cleanly outside Docker
-    - verify version parity expectations after the `2026.4.15` bump
+    - **Verified:** OpenClaw 2026.9.2 and Node 22.23.2 parity, bounded inference, adapter transports, and Gmail reads; full native digest delivery remains a separate check
     - identify any native-only auth, path, or state differences that still need explicit handling
 14. Decide whether additional connection channels beyond Telegram should remain config-bootstrapped, be split by environment, or move behind a more explicit bootstrap flow.
 15. Revisit cloud OpenClaw CLI performance:
-   - current evidence points to a real `5x` to `7x` cloud penalty in heavier CLI bootstrap paths
+   - see [current measurement guidance](runtime-performance.md) before treating old numbers as current
+   - historical pre-2026.9.2 evidence showed a `5x` to `7x` cloud penalty in heavier CLI bootstrap paths
    - packaged compile cache is active, but it only helps modestly
    - reducing bundled enabled plugins from `67` to `8` did not materially improve timings
    - local `2 CPU / 4 GB` limits did not reproduce the cloud slowdown

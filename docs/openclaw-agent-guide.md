@@ -216,10 +216,10 @@ OpenClaw also persists state under its home directory, including model/provider 
 Practical lessons:
 
 - compare rendered config and persisted state when local and cloud diverge
-- inspect `models.json` under the OpenClaw home when provider behavior looks wrong
-- if a stale persisted value breaks normal operation, reset or correct the persisted state directly
+- inspect provider status with `openclaw models status` when provider behavior looks wrong
+- use supported auth/config commands and doctor for repairs; back up state before migration or recovery
 
-This came up directly with a stale OpenRouter base URL in persisted state. The rendered config was healthy, but the runtime still failed until the persisted `models.json` entry was corrected.
+A historical incident involved a stale OpenRouter base URL in `models.json`. OpenClaw 2026.9.2 migrates several stores to SQLite, so old file-edit recipes are not a current recovery procedure; see [the upgrade notes](openclaw-2026.9.2-upgrade.md).
 
 ## Prevent Workspace Wandering
 
@@ -518,8 +518,12 @@ For OpenClaw projects, it is especially helpful to document:
 
 - where artifacts are written
 - which scripts own side effects
+- what a successful run must produce
+- how local and cloud execution differ, if they do
 
-## Cloud CLI Performance Findings
+## Historical Cloud CLI Performance Findings
+
+These measurements predate the 2026.9.2 upgrade. They are historical observations, not current-version benchmarks; hashed bundle filenames below are version-specific. See [current measurement guidance](runtime-performance.md) before drawing conclusions about the upgrade.
 
 We investigated a real cloud-only OpenClaw CLI slowdown where commands such as:
 
@@ -633,8 +637,6 @@ Also treat the following as different classes of command:
 1. Compare the same cloud image on a faster VM class to quantify how much of the penalty is raw single-core performance.
 2. If needed, run a focused syscall trace on the cloud import path to quantify `stat`/`open`/resolution cost more precisely.
 3. If operator ergonomics still matter more than root-cause research, prefer repo-owned fast status helpers instead of the heaviest stock OpenClaw commands.
-- what a successful run must produce
-- how local and cloud execution differ, if they do
 
 ## Practical Heuristics
 

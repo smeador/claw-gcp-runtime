@@ -15,6 +15,8 @@ Open backlog items live in [backlog.md](backlog.md). This spec describes the cur
 
 Skill integration guidance lives in [skill-integration-options.md](skill-integration-options.md).
 
+Implementation notes from the September 2026 documentation audit: the hardening recommendations below are targets, not a claim that every control is provisioned. The network module currently creates an IAP ingress rule and NAT, but no explicit egress firewall policy; templates explicitly enable `tools.exec.mode: full`. The cloud renderer reads Secret Manager `latest` using the VM metadata identity and writes private files under `/opt/openclaw/state/runtime`, rather than using a memory-backed secret store. Billing export, quotas, and organization policies must be verified/configured separately.
+
 Primary goals:
 
 1. Isolate agent runtime from personal laptop
@@ -107,7 +109,7 @@ No external IP assigned to VM.
         - Logging/Monitoring minimal roles if required
         - Prefer `roles/logging.logWriter` and `roles/monitoring.metricWriter` only when telemetry agents are installed
 
-Machine type: small (e2-small or e2-medium initially)
+Machine type: configurable (default: e2-medium)
 Region: configurable (default: us-central1)
 
 ## 3. Cost Control Automation
@@ -161,14 +163,13 @@ Application should prefer an approved version number or controlled alias rather 
 
 ## Runtime Access
 
-At VM startup:
-- Wrapper script retrieves required secrets via gcloud
+During cloud runtime deploy/restart/rebuild:
+- The renderer retrieves secrets through the Secret Manager REST API using the VM metadata identity
 - Writes secrets to a root-owned memory-backed file or other narrow handoff mechanism where possible
 - Uses environment variable injection only when the application cannot avoid it
 - Starts OpenClaw
 
-Secrets are resolved on application startup.
-Restart required to pick up updated secrets.
+Secrets are resolved by the runtime lifecycle renderer. A bare VM/container restart reuses rendered state; run `claw-runtime cloud restart` or deploy/rebuild to fetch updated secrets.
 Old secret versions should be disabled before destruction when rotating credentials.
 
 ---
@@ -229,7 +230,7 @@ Limit:
 
 ## 4. Operational Discipline
 
-VM should be stopped when not actively experimenting.
+An experimentation-only VM can be stopped when idle. A VM hosting the gateway scheduler must remain running for its scheduled jobs to execute.
 
 ---
 
@@ -244,7 +245,7 @@ OpenClaw is treated as:
 
 ## Operational Learning
 
-- For the newsletter digest workflow, the current reliable shape is: run on the `main` agent with an isolated session and an explicit reset/fresh-run prompt.
+- The newsletter skill is a lightweight entry point invoking `newsletter-digest-run`; the runner owns retrieval, extraction, bounded inference, validation, and delivery. Scheduled skill execution uses isolated context.
 - A dedicated `digest` agent was attempted as a cost-control measure, but config-only registration was not enough in practice. The runtime rendered `agents.list`, but the live gateway still rejected `digest` as an unknown agent id.
 - Digest reliability improved once raw Gmail JSON and raw HTML stopped being passed directly into the model conversation. The current pattern is: `gog` search/select -> extractor artifacts -> formatter -> artifact-backed send helper.
 - Digest rendering is now split from digest synthesis: the formatter returns structured `digest.json`, and a deterministic renderer generates `email.html` and `email.txt` from that JSON before send.
@@ -393,7 +394,7 @@ Runtime validation guidance:
 - Current local validation tiers are:
   - `basic`: deploy, container status, logs, cron list/status
   - `core`: `basic` plus health, model status, workspace mount expectations, required runtime binaries
-  - `integration`: `core` plus runtime facade resolution and host/container wrapper availability
+  - `integration`: `core` plus runtime facade resolution, host/container wrapper availability, and entrypoint/storage regression tests
 - Workflow tests such as Gmail or digest tests should be treated as a separate layer above runtime validation
 
 ## OpenClaw Runtime Configuration
@@ -493,7 +494,7 @@ Container operations guidance:
   - native local may use targeted model auth commands such as `openclaw models auth login --provider openai`
   - Docker-local API-key providers should prefer env-based injection derived from the local secret overlay
   - interactive bootstrap should be reserved for auth flows that cannot be expressed as static secret input
-- Routine gateway token rotation should happen by updating the environment-specific secret payload and restarting or redeploying the gateway
+- Routine gateway token rotation should happen by updating the environment-specific secret payload and running the runtime restart/deploy command to re-render it; a bare Docker restart does not fetch a new Secret Manager version
 - Routine runtime behavior changes should happen in reviewed repository files and then be applied via local restart or cloud redeploy
 - Device pairing for the dashboard is environment-local and must be approved against the same runtime environment that owns the gateway state
 - Routine container administration should prefer shelling into the running `openclaw-gateway` container and running OpenClaw commands there, rather than relying on long one-off `docker compose ... run` invocations
@@ -687,6 +688,8 @@ Cloud:
   - render runtime config on the VM host
   - start or restart Docker services
 - Cloud deploy should preserve persisted runtime state under `/opt/openclaw/state`.
+- Deploy/rebuild runs offline doctor migration before recreating the gateway; restart does not migrate or upload local changes. Cloud builds run automatic storage cleanup before building and on exit; see [runtime operations](runtime-operations.md) and [storage policy](cloud-docker-storage.md).
+- Provider keys and exec approvals are imported through supported CLI commands into runtime state. Do not recreate pre-migration JSON stores after upgrading to 2026.9.2.
 
 Operational stance:
 - Repo-managed templates and scripts are the source of truth for reviewed behavior.
@@ -696,7 +699,7 @@ Operational stance:
 ## Digest Design Direction
 
 - Keep retrieval, extraction, artifact staging, and final delivery code-owned wherever practical.
-- Keep skills focused on source-selection rules, synthesis rules, and output shape rather than filesystem choreography.
+- Keep the entry skill focused on invoking the runner and reporting its result; keep source policy in workflow config and synthesis rules in the bounded formatter contract.
 - The preferred digest pipeline is:
   1. select messages with `gog`
   2. extract each selected message into inspectable artifacts

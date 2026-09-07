@@ -58,7 +58,7 @@ This is still the standard OpenClaw skill model, but in this repo the `workspace
 How it works:
 
 - install a skill through OpenClaw or copy a reviewed skill folder into `workspace/skills`
-- keep it out of git
+- keep it out of git; integration staging may replace generated skill directories, so keep the authored source outside that generated tree
 - let local Docker or cloud runtime consume it as part of the reviewed workspace surface
 
 Good fit:
@@ -125,7 +125,7 @@ How it works:
 1. declare the sibling repo in [workspace/integrations.json](../workspace/integrations.json)
 2. the sibling repo provides:
    - `integration.json`
-   - `adapter/openclaw/skills/...`
+   - skill paths declared by `integration.json` (the newsletter integration uses `skills/...`)
    - optional package bins and test runners
 3. [scripts/stage-workspace-integrations.mjs](../scripts/stage-workspace-integrations.mjs) copies the repo into the generated staging area at `.runtime/integrations`
 4. the runtime copies the declared skill folders into [workspace/skills](../workspace/skills)

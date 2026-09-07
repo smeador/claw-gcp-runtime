@@ -1,6 +1,6 @@
 # OpenClaw 2026.9.2 upgrade
 
-Validated on September 6, 2026. OpenClaw + GCP remains the chosen runtime architecture; newsletter logic stays in the separate deterministic workflow integration.
+Validated on September 6, 2026. This is the upgrade-stage record; the subsequent [dependency review](dependency-review-2026-09.md) and [storage fix](cloud-docker-storage.md) supersede its outstanding dependency and disk-space findings. OpenClaw + GCP remains the chosen runtime architecture; newsletter logic stays in the separate deterministic workflow integration.
 
 Follow-up: [September dependency maintenance](dependency-review-2026-09.md) resolves the Cloud Function advisories recorded below, and [cloud storage maintenance](cloud-docker-storage.md) fixes the accumulated Docker images. The original upgrade evidence below is retained as history.
 
