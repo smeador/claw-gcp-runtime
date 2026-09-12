@@ -20,14 +20,12 @@
   "commands": {
     "native": "auto",
     "nativeSkills": "auto",
-    "restart": true,
-    "ownerDisplay": "raw"
+    "restart": true
   },
   "tools": {
     "exec": {
       "host": "gateway",
-      "security": "full",
-      "ask": "off"
+      "mode": "full"
     }
   },
   "plugins": {
@@ -50,8 +48,7 @@
       "openrouter": { "enabled": true },
       "telegram": { "enabled": true },
       "web-readability": { "enabled": true }
-    },
-    "bundledDiscovery": "allowlist"
+    }
   },
   "session": {
     "dmScope": "per-channel-peer"
@@ -88,18 +85,19 @@
     "port": 18789,
     "bind": "loopback",
     "tailscale": {
-      "mode": "off",
-      "resetOnExit": false
+      "mode": "off"
     },
     "nodes": {
-      "denyCommands": [
-        "camera.snap",
-        "camera.clip",
-        "screen.record",
-        "calendar.add",
-        "contacts.add",
-        "reminders.add"
-      ]
+      "commands": {
+        "deny": [
+          "camera.snap",
+          "camera.clip",
+          "screen.record",
+          "calendar.add",
+          "contacts.add",
+          "reminders.add"
+        ]
+      }
     }
   }
 }

@@ -5,7 +5,6 @@ HOME_DIR="${HOME:-/home/node}"
 STATE_DIR="${HOME_DIR}/.openclaw"
 WORKSPACE_DIR="${OPENCLAW_WORKSPACE:-/workspace}"
 CONFIG_PATH="${STATE_DIR}/openclaw.json"
-EXEC_APPROVALS_PATH="${STATE_DIR}/exec-approvals.json"
 CONFIG_SEED="${OPENCLAW_CONFIG_SEED:-}"
 CONFIG_SOURCE="${OPENCLAW_CONFIG_SOURCE:-}"
 EXEC_APPROVALS_SOURCE="${OPENCLAW_EXEC_APPROVALS_SOURCE:-}"
@@ -21,7 +20,7 @@ if [ -n "${CONFIG_SOURCE}" ] && [ -f "${CONFIG_SOURCE}" ]; then
       . as [$existing, $source]
       | $source
       | if ($existing.wizard | type) == "object" then .wizard = $existing.wizard else . end
-      | if ($existing.meta | type) == "object" then .meta = $existing.meta else . end
+      | if ($existing.meta | type) == "object" then .meta = ($existing.meta | del(.lastTouchedAt)) else . end
     ' "${CONFIG_PATH}" "${CONFIG_SOURCE}" > "${tmp}"
     mv "${tmp}" "${CONFIG_PATH}"
   else
@@ -35,7 +34,7 @@ elif [ -n "${CONFIG_SEED}" ] && [ -f "${CONFIG_SEED}" ]; then
       | $template
       | .auth = ($existing.auth // .auth)
       | .wizard = ($existing.wizard // .wizard)
-      | .meta = ($existing.meta // .meta)
+      | .meta = (($existing.meta // .meta) | if type == "object" then del(.lastTouchedAt) else . end)
       | .gateway = (($template.gateway // {}) + {auth: (($existing.gateway // {}).auth // (($template.gateway // {}).auth // {}))})
     ' "${CONFIG_PATH}" "${CONFIG_SEED}" > "${tmp}"
     mv "${tmp}" "${CONFIG_PATH}"
@@ -44,113 +43,37 @@ elif [ -n "${CONFIG_SEED}" ] && [ -f "${CONFIG_SEED}" ]; then
   fi
 fi
 
-if [ -n "${EXEC_APPROVALS_SOURCE}" ] && [ -f "${EXEC_APPROVALS_SOURCE}" ]; then
-  if [ -f "${EXEC_APPROVALS_PATH}" ]; then
-    tmp="$(mktemp)"
-    jq -s '
-      . as [$existing, $source]
-      | $source
-      | if ($existing.socket | type) == "object" then .socket = $existing.socket else . end
-    ' "${EXEC_APPROVALS_PATH}" "${EXEC_APPROVALS_SOURCE}" > "${tmp}"
-    mv "${tmp}" "${EXEC_APPROVALS_PATH}"
-  else
-    cp "${EXEC_APPROVALS_SOURCE}" "${EXEC_APPROVALS_PATH}"
+# Doctor owns legacy JSON-to-SQLite migration while the gateway is stopped.
+# Never recreate retired auth-profiles.json or exec-approvals.json files.
+if [ "${1:-}" != "doctor" ]; then
+  if [ -n "${EXEC_APPROVALS_SOURCE}" ] && [ -f "${EXEC_APPROVALS_SOURCE}" ]; then
+    openclaw approvals set --file "${EXEC_APPROVALS_SOURCE}" >/dev/null
   fi
-  chmod 600 "${EXEC_APPROVALS_PATH}"
-fi
 
-AGENT_AUTH_PATH="${STATE_DIR}/agents/main/agent/auth-profiles.json"
-CONFIG_PATH="${CONFIG_PATH}" AGENT_AUTH_PATH="${AGENT_AUTH_PATH}" node <<'EOF'
-const fs = require("fs");
-const path = require("path");
-
-function defaultApiKeyEnvVar(provider) {
-  if (provider === "openai") {
-    return "OPENAI_API_KEY";
-  }
-
-  return `${String(provider || "provider").replace(/[^A-Za-z0-9]+/g, "_").toUpperCase()}_API_KEY`;
-}
-
+  CONFIG_PATH="${CONFIG_PATH}" node <<'EOF'
+const fs = require("node:fs");
+const { spawnSync } = require("node:child_process");
 const configPath = process.env.CONFIG_PATH;
-const authPath = process.env.AGENT_AUTH_PATH;
-if (!configPath || !authPath || !fs.existsSync(configPath)) {
-  process.exit(0);
-}
-
-let config;
-try {
-  config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-} catch {
-  process.exit(0);
-}
-
-const declaredProfiles = config?.auth?.profiles ?? {};
-const seededProfiles = {};
-
-for (const [name, profile] of Object.entries(declaredProfiles)) {
-  if (!profile || typeof profile !== "object") {
-    continue;
-  }
-  if (profile.mode !== "api_key" || typeof profile.provider !== "string" || profile.provider.length === 0) {
-    continue;
-  }
-
-  const envName = typeof profile.apiKeyEnvVar === "string" && profile.apiKeyEnvVar.length > 0
-    ? profile.apiKeyEnvVar
-    : defaultApiKeyEnvVar(profile.provider);
+if (!configPath || !fs.existsSync(configPath)) process.exit(0);
+const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+for (const [name, profile] of Object.entries(config?.auth?.profiles ?? {})) {
+  if (profile?.mode !== "api_key" || typeof profile.provider !== "string") continue;
+  const envName = profile.apiKeyEnvVar || profile.provider.replace(/[^A-Za-z0-9]+/g, "_").toUpperCase() + "_API_KEY";
   const secret = process.env[envName];
-  if (!secret) {
-    continue;
-  }
-
-  seededProfiles[name] = {
-    type: "api_key",
-    provider: profile.provider,
-    key: secret,
-  };
-}
-
-if (Object.keys(seededProfiles).length === 0) {
-  process.exit(0);
-}
-
-let authStore = {
-  version: 1,
-  profiles: {},
-  lastGood: {},
-  usageStats: {},
-};
-
-if (fs.existsSync(authPath)) {
-  try {
-    const parsed = JSON.parse(fs.readFileSync(authPath, "utf8"));
-    if (parsed && typeof parsed === "object") {
-      authStore = {
-        version: parsed.version ?? 1,
-        profiles: parsed.profiles && typeof parsed.profiles === "object" ? parsed.profiles : {},
-        lastGood: parsed.lastGood && typeof parsed.lastGood === "object" ? parsed.lastGood : {},
-        usageStats: parsed.usageStats && typeof parsed.usageStats === "object" ? parsed.usageStats : {},
-      };
-    }
-  } catch {
-    // Ignore malformed persisted auth store and rebuild a minimal one.
+  if (!secret) continue;
+  const result = spawnSync("openclaw", ["models", "auth", "paste-api-key", "--agent", "main", "--provider", profile.provider, "--profile-id", name], {
+    input: secret + "\n",
+    encoding: "utf8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  if (result.error || result.status !== 0) {
+    // Auth command output may contain sensitive context; do not echo it.
+    console.error("Failed to seed runtime auth profile " + name + "; run openclaw doctor --fix with the gateway stopped.");
+    process.exit(1);
   }
 }
-
-for (const [name, seeded] of Object.entries(seededProfiles)) {
-  authStore.profiles[name] = seeded;
-  authStore.lastGood[seeded.provider] = name;
-  if (!authStore.usageStats[name] || typeof authStore.usageStats[name] !== "object") {
-    authStore.usageStats[name] = {errorCount: 0};
-  } else if (typeof authStore.usageStats[name].errorCount !== "number") {
-    authStore.usageStats[name].errorCount = 0;
-  }
-}
-
-fs.mkdirSync(path.dirname(authPath), {recursive: true});
-fs.writeFileSync(authPath, `${JSON.stringify(authStore, null, 2)}\n`, {mode: 0o600});
 EOF
+fi
 
 if [ -n "${GOG_ACCOUNT}" ] && [ -n "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" ] && [ -f "${GOG_SERVICE_ACCOUNT_KEY_SOURCE}" ]; then
   mkdir -p "${HOME_DIR}/.config/gogcli"
