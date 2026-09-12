@@ -2,6 +2,7 @@ data "archive_file" "shutdown_function" {
   type        = "zip"
   source_dir  = "${path.module}/function_source"
   output_path = "${path.root}/.tofu-build/${var.function_name}.zip"
+  excludes    = ["node_modules"]
 }
 
 resource "google_pubsub_topic" "budget_notifications" {
@@ -69,8 +70,9 @@ resource "google_cloudfunctions2_function" "shutdown" {
 
     source {
       storage_source {
-        bucket = google_storage_bucket.function_source.name
-        object = google_storage_bucket_object.function_archive.name
+        bucket     = google_storage_bucket.function_source.name
+        object     = google_storage_bucket_object.function_archive.name
+        generation = google_storage_bucket_object.function_archive.generation
       }
     }
   }

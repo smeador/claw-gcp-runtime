@@ -141,6 +141,20 @@ Direct VM shell:
 bash scripts/cloud/ssh-app.sh bash
 ```
 
+## Deploy, Restart, and State Migration
+
+| Command | Behavior |
+| --- | --- |
+| `local deploy` / `cloud deploy` | Build with cache, stop the gateway for doctor migration, recreate it, and reconcile cron. Cloud also uploads the app and runs automatic storage cleanup before building and on exit. |
+| `local rebuild` / `cloud rebuild` | Same lifecycle with a no-cache image build. |
+| `local restart` / `cloud restart` | Re-render config and recreate the gateway using the existing image. No build or doctor migration. Cloud uses the app already on the VM; it does not upload local changes. |
+| `cloud sync` | Upload the app bundle; does not by itself apply it to a running gateway. |
+| `cloud prune` | Explicit broad image pruning; can remove tagged rollback images. Not required after normal deploy/rebuild. |
+
+Use deploy/rebuild for runtime version upgrades. OpenClaw 2026.9.2 migrates state to SQLite; do not recreate legacy auth/approval files or downgrade against migrated state. See [upgrade and rollback steps](openclaw-2026.9.2-upgrade.md) and [storage retention](cloud-docker-storage.md). Native OpenClaw is operator-managed and separate from `claw-runtime local`, which targets Docker.
+
+`agent-logs` currently searches legacy JSONL session files; after SQLite migration it can show no transcript or an old archived transcript. Use workflow artifacts, `openclaw sessions --json`, `openclaw sessions tail --agent main`, and `claw-runtime local logs` / `cloud logs` for current diagnosis until that helper is migrated.
+
 ## Gmail Bootstrap and Testing
 
 Normal path:
@@ -149,7 +163,9 @@ Normal path:
 - let the runtime render the key and bootstrap `gog`
 - verify with the runtime test commands
 
-Preferred verification:
+`gmail-read` reads mail. `gmail-send`, the newsletter skill test, and `cron run-digest` can send real email; choose those only when delivery is intended.
+
+Verification commands:
 
 ```bash
 claw-runtime local test gmail-read

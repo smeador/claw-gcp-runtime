@@ -8,6 +8,7 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_DIR}/../lib/runtime-common.sh"
+source "${SCRIPT_DIR}/../lib/cloud-storage.sh"
 
 ENV_NAME="$1"
 ACTION="$2"
@@ -54,9 +55,11 @@ case "${ENV_NAME}:${ACTION}" in
     ;;
   cloud:deploy)
     ensure_cloud_secret
+    runtime_cloud_storage_prepare
     runtime_prepare_cloud_state
     runtime_render_cloud_artifacts "${SECRET_NAME}"
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --pull openclaw-gateway
+    runtime_cloud_preserve_rollback
     runtime_migrate_state
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron
@@ -70,9 +73,11 @@ case "${ENV_NAME}:${ACTION}" in
     ;;
   cloud:rebuild)
     ensure_cloud_secret
+    runtime_cloud_storage_prepare
     runtime_prepare_cloud_state
     runtime_render_cloud_artifacts "${SECRET_NAME}"
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" build --pull --no-cache openclaw-gateway
+    runtime_cloud_preserve_rollback
     runtime_migrate_state
     runtime_compose_cmd -f "${RUNTIME_COMPOSE_FILE}" up -d --force-recreate openclaw-gateway
     apply_cron

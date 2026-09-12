@@ -105,6 +105,9 @@ function runCore() {
   const expectedVersion = readJsonFile("versions.json", "version pins").runtime.openclawVersion;
   const versionOutput = run(...composeExec("openclaw", "--version"), "local OpenClaw version");
   assertIncludes(versionOutput, `OpenClaw ${expectedVersion} `, "local OpenClaw version");
+  const expectedGog = readJsonFile("versions.json", "version pins").runtime.gogVersion;
+  const gogVersion = run(...composeExec("gog", "--version"), "local gog version");
+  assertIncludes(gogVersion, expectedGog, "local gog version");
   run(...composeExec("openclaw", "config", "validate"), "local config schema");
 
   const [healthCmd, healthArgs] = composeExec("openclaw", "health", "--json");
@@ -144,7 +147,7 @@ function runCore() {
 }
 
 function runIntegration() {
-  run(process.execPath, ["--test", "scripts/runtime/entrypoint.test.mjs"], "entrypoint regression tests");
+  run(process.execPath, ["--test", "scripts/runtime/entrypoint.test.mjs", "scripts/runtime/cloud-storage.test.mjs"], "runtime regression tests");
   run(process.execPath, ["scripts/runtime/cli.mjs", "help"], "runtime facade help");
   run(process.execPath, ["scripts/stage-workspace-integrations.mjs"], "stage workspace integrations");
 

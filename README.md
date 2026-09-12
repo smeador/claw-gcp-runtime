@@ -121,7 +121,8 @@ Notes:
 ```bash
 npm run deps:sync
 install -m 600 config/secrets.local.example.json config/secrets.local.json
-claw-runtime local deploy
+# Fill in the secret overlay before deploying.
+./bin/claw-runtime local deploy
 ```
 
 ### 4. Start Cloud Runtime
@@ -141,8 +142,9 @@ Then:
 ```bash
 npm run deps:sync
 install -m 600 config/secrets.cloud.example.json config/secrets.cloud.json
-claw-runtime cloud push-secret
-claw-runtime cloud deploy
+# Fill in the secret overlay before publishing it.
+./bin/claw-runtime cloud push-secret
+./bin/claw-runtime cloud deploy
 ```
 
 ## Common Commands
@@ -210,8 +212,8 @@ Start from:
 
 Use:
 
-- [`config/secrets.local.json`](config/secrets.local.json) for Docker-local secrets
-- [`config/secrets.cloud.json`](config/secrets.cloud.json) for cloud secrets
+- `config/secrets.local.json` for Docker-local secrets
+- `config/secrets.cloud.json` for cloud secrets
 
 Create real secret files with mode `0600`:
 
@@ -220,7 +222,7 @@ install -m 600 config/secrets.local.example.json config/secrets.local.json
 install -m 600 config/secrets.cloud.example.json config/secrets.cloud.json
 ```
 
-Current defaults:
+Template defaults (environment secret overlays may override them):
 
 - provider: OpenRouter
 - model: `openrouter/openai/gpt-5.4`
@@ -238,8 +240,12 @@ Manual Gmail bootstrap scripts still exist for recovery, but they are not the no
 
 Current source-of-truth docs:
 
+- [SECURITY.md](SECURITY.md): secret handling and private vulnerability reporting
 - [spec.md](docs/spec.md): current architecture, security posture, setup model, and runtime conventions
+- [cloud-docker-storage.md](docs/cloud-docker-storage.md): automatic cloud cleanup, rollback retention, and build-space checks
+- [dependency-review-2026-09.md](docs/dependency-review-2026-09.md): dependency updates, audits, and deployment validation
 - [openclaw-2026.9.2-upgrade.md](docs/openclaw-2026.9.2-upgrade.md): state migration, compatibility changes, verification, and rollback notes
+- [runtime-performance.md](docs/runtime-performance.md): command latency measurement and interpretation
 - [runtime-operations.md](docs/runtime-operations.md): detailed local/cloud runtime commands, secret setup, and operator runbook
 - [openclaw-agent-guide.md](docs/openclaw-agent-guide.md): operational lessons, troubleshooting guidance, and OpenClaw-specific heuristics
 - [skill-integration-options.md](docs/skill-integration-options.md): when to use built-in skills, generated workspace skills, plugins, or sibling integrations

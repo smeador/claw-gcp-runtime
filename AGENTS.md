@@ -62,14 +62,14 @@ This file captures project-level working memory for agents operating on the repo
 
 ## Current Known Fragilities
 
-- The cloud cron job can appear healthy even when the actual digest workflow stops early, so inspect session files and artifacts, not just cron status.
+- The cloud cron job can appear healthy even when the actual digest workflow stops early, so inspect current session metadata and workflow artifacts, not just cron status; legacy JSONL files are not authoritative after SQLite migration.
 - Remote/cloud commands that use `gcloud compute ssh ... --command ...` are easy to break with nested quoting.
 - The installed `gog` CLI command surface should be treated as authoritative. Verify real command names and flags before encoding them in skills.
 
 ## Preferred Debugging Order
 
 1. Check run artifacts.
-2. Check session files.
+2. Check current session metadata through OpenClaw; do not assume legacy JSONL stores are current.
 3. Check helper script behavior.
 4. Check gateway logs.
 5. Check cloud/container/environment differences.
